@@ -25,7 +25,7 @@ public class Main {
       }
       String hdfsuri = args[0];
 
-      String path="/user/hdfs/example/hdfs/";
+      String path="/user/hdfs/example/hdfs 2/";
       String fileName="hello.csv";
       String fileContent="hello;world";
 
