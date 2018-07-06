@@ -1,11 +1,16 @@
 package orchi.SucreCloud.hdfs;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Paths;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -47,6 +52,30 @@ public class HdfsManager {
 		}
 		return instance;
 	}
+	
+	public void readFile(Path path,OutputStream out) throws IOException {
+		
+		if (!fs.exists(path)) {
+			System.out.println("File " + path.getName() + " does not exists");
+			return;
+		}
+
+		FSDataInputStream in = fs.open(path);
+
+	
+		byte[] b = new byte[1024*1024];
+		int numBytes = 0;
+		while ((numBytes = in.read(b)) > 0) {
+			out.write(b, 0, numBytes);
+			//String parte = new String(b, 0, numBytes);
+			//System.out.print(parte);
+		}
+
+		in.close();
+		//out.close();
+		//fs.close();
+	}
+	
 
 	public static Path newPath(String pRoot, String path) {
 		Path p = new Path(Paths.get("/", path).normalize().toString());

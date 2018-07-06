@@ -24,24 +24,36 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
+import org.mortbay.util.ajax.JSON;
 
 import orchi.SucreCloud.hdfs.HdfsManager;
+import orchi.SucreCloud.operations.ListOperation;
+import orchi.SucreCloud.operations.Operation;
+import orchi.SucreCloud.operations.OperationsManager;
 
 public class App extends HttpServlet {
 
-	private static String root = "/mi_dfs/david";
+	private static String root = "/mi_dfs/";
 	private ThreadPoolExecutor executor;
-
+	
+	public static String getRoot(){
+		return root+"david";
+	}
+	public static String getRoot(String user){
+		return root+user;
+	}
+	
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 
-		executor = new ThreadPoolExecutor(1000, 100000, 50000L, TimeUnit.MILLISECONDS,
+		executor = new ThreadPoolExecutor(1000, 100000, 50000L, TimeUnit.HOURS,
 				new LinkedBlockingQueue<Runnable>(100000));
 
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
 		executor.execute(new Task(req.startAsync()));
 	}
 
@@ -51,7 +63,9 @@ public class App extends HttpServlet {
 		private JSONObject json;
 
 		public Task(AsyncContext ctx) {
+			
 			this.ctx = ctx;
+			this.ctx.setTimeout(Long.MAX_VALUE);
 			this.json = new JSONObject();
 
 		}
@@ -62,47 +76,28 @@ public class App extends HttpServlet {
 
 			HttpServletRequest reqs = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resps = (HttpServletResponse) ctx.getResponse();
-
-			String path = reqs.getParameter("path");
-			String operation = reqs.getParameter("op");
-			List<FileStatus> ls = null;
-			List<String> lsm = null;
-			final JSONObject  lsJson = new JSONObject();;
-
-			try {
-				ls = Arrays.asList(fs.listStatus(new Path(HdfsManager.newPath(root, path).toString())));
-				//lsJson = new JSONObject();
-				ls.stream().forEach(x->{
-					lsJson.put(x.getPath().getName(),new JSONObject(x).put("path",nc(x.getPath().toString())));
-				});
-			} catch (IllegalArgumentException | IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			String args = reqs.getParameter("args");
+			JSONObject JsonArgs = new  JSONObject(args);
+			
+			
+			String user = null;
+			if(JsonArgs.has("user")){
+				user = JsonArgs.getString("user");
 			}
-			try {
-				resps.getWriter().println(json
-						.put("path", HdfsManager.newPath(root, path))
-						.put("ls", lsJson)
-						.put("operation", operation).toString(2));
-				
-				ctx.complete();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			
+			if(user== null){
+				JsonArgs.put("root", getRoot("david"));
+			}else{
+				JsonArgs.put("root", getRoot(user));
 			}
+			String path = JsonArgs.getString("path");
+			String operation = JsonArgs.getString("op");
+			
+			OperationsManager.getInstance().processOperation(ctx,JsonArgs);
 			
 
 		}
 
 	}
-	private static String type(FileStatus i) {
-		// TODO Auto-generated method stub
-		return i.isFile() ? "file":"folder";
-	}
-	public static String nc(String in) {
-		java.nio.file.Path p = Paths.get(in);
-
-		p = p.subpath(4, p.getNameCount());
-		return Paths.get(p + "").normalize() + "";
-	}
+	
 }
