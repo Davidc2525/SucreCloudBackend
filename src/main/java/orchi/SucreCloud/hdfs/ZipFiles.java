@@ -26,7 +26,8 @@ public class ZipFiles {
 			// FileOutputStream fos = new
 			// FileOutputStream("/home/david/atest.zip");
 			ZipOutputStream zos = new ZipOutputStream(servletOutputStream);
-
+			//level 0 para solo empaquetar, es mas rapido
+			zos.setLevel(0);
 			for (String item : tree.dirs) {
 				addToZipFile(item, zos);
 			}
@@ -56,13 +57,13 @@ public class ZipFiles {
 
 		} catch (IOException e) {
 
-			//e.printStackTrace();
+			// e.printStackTrace();
 		} finally {
 			try {
 				zos.closeEntry();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}
 

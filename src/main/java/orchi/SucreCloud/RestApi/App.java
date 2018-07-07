@@ -46,7 +46,7 @@ public class App extends HttpServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 
-		executor = new ThreadPoolExecutor(1000, 100000, 50000L, TimeUnit.HOURS,
+		executor = new ThreadPoolExecutor(1000, 100000, 50000L, TimeUnit.MICROSECONDS,
 				new LinkedBlockingQueue<Runnable>(100000));
 
 	}
