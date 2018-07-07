@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -20,11 +21,10 @@ public class ZipFiles {
 
 	private FileSystem fs;
 
-	public ZipFiles(orchi.SucreCloud.operations.DownloadOperation.Tree tree, ServletOutputStream servletOutputStream) {
+	public ZipFiles(orchi.SucreCloud.operations.DownloadOperation.Tree tree, OutputStream servletOutputStream) {
 		fs = HdfsManager.getInstance().fs;
 		try {
-			// FileOutputStream fos = new
-			// FileOutputStream("/home/david/atest.zip");
+			
 			ZipOutputStream zos = new ZipOutputStream(servletOutputStream);
 			//level 0 para solo empaquetar, es mas rapido
 			zos.setLevel(0);
@@ -33,7 +33,7 @@ public class ZipFiles {
 			}
 
 			zos.close();
-			// fos.close();
+			
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -47,9 +47,6 @@ public class ZipFiles {
 
 		System.out.println("Writing '" + fileName + "' to zip file");
 
-		// File file = new File(fileName);
-		// FileInputStream fis = new FileInputStream(file);
-		// FSDataInputStream in = fs.open(new Path(fileName));
 		ZipEntry zipEntry = new ZipEntry(Util.nc(fileName));
 		try {
 			zos.putNextEntry(zipEntry);
