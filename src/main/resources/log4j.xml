@@ -61,8 +61,8 @@
    </category>
 
    <!-- limit logging for mina -->
-   <category name="org.apache.mina">
-     <priority value="WARN"/>
+   <category name="org.apache.hadoop">
+     <priority value="INFO"/>
    </category>
    <category name="org.apache.vysper.mina">
      <priority value="WARN"/>

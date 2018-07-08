@@ -2,7 +2,7 @@ package orchi.SucreCloud.operations;
 
 public enum Operation {
 	LIST("list"), 
-	GETSTAT("getstat"), 
+	GETSTATUS("getstatus"), 
 	DOWNLOAD("download"), 
 	PUT("put"), 
 	MKDIR("mkdir"), 
