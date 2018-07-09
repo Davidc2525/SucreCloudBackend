@@ -54,9 +54,11 @@ public class GetStatusOperation implements IOperation {
 			JSONObject file = new JSONObject();
 			
 			FileStatus fileStatus = fs.getFileLinkStatus(opath);
+			log.error("{}",fileStatus.getPath());
 			file.put("size",fileStatus.getLen())
+			.put("file", fileStatus.isFile())
 			.put("name", fileStatus.getPath().getName())
-			.put("path",fileStatus.getPath().toString() )
+			//.put("path","/"+ Util.nc(fileStatus.getPath().toString())  )
 			.put("mime", Files.probeContentType(Paths.get(opath.toString())));
 			if (fs.isDirectory(opath)) {
 				
@@ -65,8 +67,15 @@ public class GetStatusOperation implements IOperation {
 				file.put("list", new ListOperation(args).call());
 			}
 			
-			json.put("path", opath.toString()).put("args", args);
+			json.put("path",  HdfsManager.newPath(root, path))
 			
+			.put("args", args);
+			
+			if(fs.isFile(opath)){
+				json.put("file",true);				
+			}else{
+				json.put("file",false);
+			}
 			
 			
 			json.put("data",file);

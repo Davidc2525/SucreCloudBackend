@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,25 +50,33 @@ public class ListOperation implements IOperation {
 		
 
 		try {
-			if(!fs.exists(new Path(HdfsManager.newPath(root, path).toString()))){
+			if(!fs.exists(opath)){
 				json.put("error", "file dont exists");
 				log.error("file dont exists {} ",opath);
 			}
-			if (fs.isDirectory(new Path(HdfsManager.newPath(root, path).toString()))) {
+			if (fs.isDirectory(opath)) {
 				List<FileStatus> ls = Arrays
 						.asList(fs.listStatus(new Path(HdfsManager.newPath(root, path).toString())));
-				JSONObject lsJson = new JSONObject();
+				List<JSONObject> lsyet = new ArrayList<>();
+				
+				
 				// lsJson = new JSONObject();
+				
 				ls.stream().forEach(x -> {
 					 
 					try { 
+						
 						log.debug("\t{} in path",x.getPath().getName());
-						lsJson.put(x.getPath().getName(),
-								new JSONObject(x)
-								.put("mime", Files.probeContentType(Paths.get( x.getPath().getName()  )) )
+						JSONObject lsJson = new JSONObject();
+						lsJson.put("name",x.getPath().getName())
+						.put("size", x.getLen())
+						.put("replication", x.getReplication())
+						.put("file",x.isFile())
+						.put("name",x.getPath().getName() )
+						.put("mime", Files.probeContentType(Paths.get( x.getPath().getName()  )) )
 								//.put("mayme_mime", org.apache.http.entity.ContentType.parse(x.getPath().getName())    )
-								.put("path", "/" + Util.nc(x.getPath().toString())));
-								
+						.put("path", "/" + Util.nc(x.getPath().toString()));
+						lsyet.add(lsJson);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -76,8 +85,10 @@ public class ListOperation implements IOperation {
 						e.printStackTrace();
 					}
 				});
-
-				json.put("path", HdfsManager.newPath(root, path)).put("data", lsJson).put("args", args);
+				json.put("data", lsyet);
+				json.put("path", HdfsManager.newPath(root, path))
+				.put("file", false)
+				.put("args", args);
 				json.put("spaceConsumed", fs.getContentSummary(opath).getSpaceConsumed());
 				
 				log.info("Fin de operacion de listado");

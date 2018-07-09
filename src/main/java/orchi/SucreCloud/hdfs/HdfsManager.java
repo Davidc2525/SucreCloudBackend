@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Paths;
@@ -11,8 +12,10 @@ import java.nio.file.Paths;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 
 public class HdfsManager {
@@ -34,11 +37,7 @@ public class HdfsManager {
 		// Get the filesystem - HDFS
 		try {
 			 fs = FileSystem.get(URI.create(hdfsuri), conf);
-			for (FileStatus f : fs.listStatus(new Path("/"))) {
-
-				System.err.println(f.getPath().toString());
-
-			}
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -72,6 +71,26 @@ public class HdfsManager {
 		}
 
 		in.close();
+		//out.close();
+		//fs.close();
+	}
+public void writeFile(Path path,InputStream inStream) throws IOException {
+		 
+		if (!fs.exists(path)) {
+			
+			System.out.println("creando archivo "+path.toString());
+			FSDataOutputStream f = fs.create(path);
+			byte[] b = new byte[1024];
+			int numBytes = 0;
+			while ((numBytes = inStream.read(b)) > 0) {
+				f.write(b, 0, numBytes);
+			}
+			inStream.close();
+			f.close();
+			return;
+		}
+		
+		
 		//out.close();
 		//fs.close();
 	}

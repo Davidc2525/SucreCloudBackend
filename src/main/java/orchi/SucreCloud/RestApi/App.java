@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
+import org.mortbay.log.Log;
 import org.mortbay.util.ajax.JSON;
 
 import orchi.SucreCloud.hdfs.HdfsManager;
@@ -52,7 +53,7 @@ public class App extends HttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		
 		executor.execute(new Task(req.startAsync()));
 	}
@@ -76,7 +77,10 @@ public class App extends HttpServlet {
 
 			HttpServletRequest reqs = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resps = (HttpServletResponse) ctx.getResponse();
+			resps.addHeader("Access-Control-Allow-Origin", "*");
+			
 			String args = reqs.getParameter("args");
+			Log.info("{}",args);
 			JSONObject JsonArgs = new  JSONObject(args);
 			
 			

@@ -8,6 +8,7 @@ import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileUploadException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,6 +54,7 @@ public class OperationsManager {
 		setContentType("application/json");
 		HttpServletRequest r = ((HttpServletRequest) ctx.getRequest());
 
+		
 		JSONObject response = null;
 		String operation = arg.getString("op");
 
@@ -85,6 +87,12 @@ public class OperationsManager {
 		if (Operation.PUT.equalsName(operation)) {
 			if (r.getMethod().equalsIgnoreCase("get")) {
 				return new JSONObject().put("error", "invalid method");
+			}
+			try {
+				response = new UploadOperation(ctx,arg).call();
+			} catch (FileUploadException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 
