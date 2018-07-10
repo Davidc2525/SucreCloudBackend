@@ -32,7 +32,7 @@ public class ListOperation implements IOperation {
 	private String path;
 
 	public ListOperation(JSONObject args) {
-		
+
 		this.args = args;
 		fs = HdfsManager.getInstance().fs;
 		root = args.getString("root");
@@ -45,9 +45,9 @@ public class ListOperation implements IOperation {
 	@Override
 	public JSONObject call() {
 		JSONObject json = new JSONObject();
-		
-		
-		
+
+
+
 
 		try {
 			if(!fs.exists(opath)){
@@ -58,14 +58,14 @@ public class ListOperation implements IOperation {
 				List<FileStatus> ls = Arrays
 						.asList(fs.listStatus(new Path(HdfsManager.newPath(root, path).toString())));
 				List<JSONObject> lsyet = new ArrayList<>();
-				
-				
+
+
 				// lsJson = new JSONObject();
-				
+
 				ls.stream().forEach(x -> {
-					 
-					try { 
-						
+
+					try {
+
 						log.debug("\t{} in path",x.getPath().getName());
 						JSONObject lsJson = new JSONObject();
 						lsJson.put("name",x.getPath().getName())
@@ -86,11 +86,11 @@ public class ListOperation implements IOperation {
 					}
 				});
 				json.put("data", lsyet);
-				json.put("path", HdfsManager.newPath(root, path))
+				json.put("path",  path)
 				.put("file", false)
 				.put("args", args);
 				json.put("spaceConsumed", fs.getContentSummary(opath).getSpaceConsumed());
-				
+
 				log.info("Fin de operacion de listado");
 			}else if(fs.isFile(new Path(HdfsManager.newPath(root, path).toString()))){
 				log.warn("transfer operation, get status file",opath);

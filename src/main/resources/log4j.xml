@@ -55,6 +55,8 @@
      </layout>
    </appender>
 
+
+
    <!-- limit logging for spring -->
    <category name="org.springframework">
      <priority value="INFO"/>

@@ -21,7 +21,7 @@ import org.apache.hadoop.fs.Path;
 public class HdfsManager {
 
 	private static HdfsManager instance;
-	private String hdfsuri = "hdfs://orchi:9000";
+	private String hdfsuri = "hdfs://orchi2:9000";
 	public FileSystem fs;
 
 	public HdfsManager() {
@@ -37,7 +37,7 @@ public class HdfsManager {
 		// Get the filesystem - HDFS
 		try {
 			 fs = FileSystem.get(URI.create(hdfsuri), conf);
-			
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -51,9 +51,9 @@ public class HdfsManager {
 		}
 		return instance;
 	}
-	
+
 	public void readFile(Path path,OutputStream out) throws IOException {
-		
+
 		if (!fs.exists(path)) {
 			System.out.println("File " + path.getName() + " does not exists");
 			return;
@@ -61,7 +61,7 @@ public class HdfsManager {
 
 		FSDataInputStream in = fs.open(path);
 
-	
+
 		byte[] b = new byte[1024*1024];
 		int numBytes = 0;
 		while ((numBytes = in.read(b)) > 0) {
@@ -75,9 +75,9 @@ public class HdfsManager {
 		//fs.close();
 	}
 public void writeFile(Path path,InputStream inStream) throws IOException {
-		 
+
 		if (!fs.exists(path)) {
-			
+
 			System.out.println("creando archivo "+path.toString());
 			FSDataOutputStream f = fs.create(path);
 			byte[] b = new byte[1024];
@@ -89,12 +89,12 @@ public void writeFile(Path path,InputStream inStream) throws IOException {
 			f.close();
 			return;
 		}
-		
-		
+
+
 		//out.close();
 		//fs.close();
 	}
-	
+
 
 	public static Path newPath(String pRoot, String path) {
 		Path p = new Path(Paths.get("/", path).normalize().toString());

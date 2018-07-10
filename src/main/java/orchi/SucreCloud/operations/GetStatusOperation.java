@@ -39,8 +39,8 @@ public class GetStatusOperation implements IOperation {
 	@Override
 	public JSONObject call() {
 		JSONObject json = new JSONObject();
-		
-		
+
+
 
 		try {
 			if(!fs.exists(opath)){
@@ -50,9 +50,9 @@ public class GetStatusOperation implements IOperation {
 			/*if (fs.isDirectory(opath)) {
 				return new ListOperation(args).call();
 			}*/
-			
+
 			JSONObject file = new JSONObject();
-			
+
 			FileStatus fileStatus = fs.getFileLinkStatus(opath);
 			log.error("{}",fileStatus.getPath());
 			file.put("size",fileStatus.getLen())
@@ -61,23 +61,23 @@ public class GetStatusOperation implements IOperation {
 			//.put("path","/"+ Util.nc(fileStatus.getPath().toString())  )
 			.put("mime", Files.probeContentType(Paths.get(opath.toString())));
 			if (fs.isDirectory(opath)) {
-				
+
 				//file.put("spaceQuota", fs.getContentSummary(fileStatus.getPath()).getSpaceQuota());
 				//file.put("spaceConsumed", fs.getContentSummary(fileStatus.getPath()).getSpaceConsumed());
 				file.put("list", new ListOperation(args).call());
 			}
-			
-			json.put("path",  HdfsManager.newPath(root, path))
-			
+
+			json.put("path",  path)
+
 			.put("args", args);
-			
+
 			if(fs.isFile(opath)){
-				json.put("file",true);				
+				json.put("file",true);
 			}else{
 				json.put("file",false);
 			}
-			
-			
+
+
 			json.put("data",file);
 			log.info("Fin de operacion de estatus de archivo {}",opath.toString());
 		} catch (IllegalArgumentException e) {
