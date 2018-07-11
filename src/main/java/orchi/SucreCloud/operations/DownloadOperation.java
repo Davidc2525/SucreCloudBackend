@@ -19,14 +19,14 @@ import orchi.SucreCloud.hdfs.ZipFiles;
 
 public class DownloadOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(DownloadOperation.class);
-	private static FileSystem fs;
+	private static FileSystem fs = HdfsManager.getInstance().fs;
 
 	public DownloadOperation() {
 	}
 
 	public DownloadOperation(AsyncContext ctx, JSONObject arg) {
 		log.info("Nueva operacion de descarga.");
-		fs = HdfsManager.getInstance().fs;
+		//fs = HdfsManager.getInstance().fs;
 		String root = arg.getString("root");
 		String path = arg.getString("path");
 		Path opath = new Path(HdfsManager.newPath(root, path).toString());
@@ -56,7 +56,10 @@ public class DownloadOperation implements IOperation {
 				
 				r.addHeader("Content-Disposition", " attachment; filename=\"" + opath.getName() + ".zip\"");
 
-				new ZipFiles(new Tree(opath), ctx.getResponse().getOutputStream());
+				Tree tree = new Tree(opath);
+				ZipFiles zip = new ZipFiles(tree, ctx.getResponse().getOutputStream());
+				zip = null;
+				tree = null;
 				
 				log.info("Operacion de descarga terminada {}",opath.toString());
 				// ctx.getResponse().getWriter().println("descargar carpeta");
@@ -78,7 +81,7 @@ public class DownloadOperation implements IOperation {
 	public static class Tree {
 
 		public ArrayList<String> dirs = new ArrayList<String>();;
-
+		public Long totalSize = 0L;
 		public Tree(Path path) {
 			log.info("new  tree");
 			get(path);
@@ -91,6 +94,7 @@ public class DownloadOperation implements IOperation {
 				for (FileStatus item : fs.listStatus(path)) {
 					if (item.isFile()) {
 						dirs.add(item.getPath().toString());
+						totalSize+=item.getLen();
 						log.info("\tadd to tree {}",item.getPath().toString());
 					}
 					if (item.isDirectory()) {

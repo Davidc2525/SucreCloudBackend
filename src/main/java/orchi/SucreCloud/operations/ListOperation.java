@@ -40,6 +40,7 @@ public class ListOperation implements IOperation {
 		opath = new Path(HdfsManager.newPath(root, path).toString());
 
 		log.info("Nueva operacion de listado {}",opath.toString());
+
 	}
 
 	@Override
@@ -69,13 +70,19 @@ public class ListOperation implements IOperation {
 						log.debug("\t{} in path",x.getPath().getName());
 						JSONObject lsJson = new JSONObject();
 						lsJson.put("name",x.getPath().getName())
-						.put("size", x.getLen())
 						.put("replication", x.getReplication())
 						.put("file",x.isFile())
 						.put("name",x.getPath().getName() )
 						.put("mime", Files.probeContentType(Paths.get( x.getPath().getName()  )) )
 								//.put("mayme_mime", org.apache.http.entity.ContentType.parse(x.getPath().getName())    )
-						.put("path", "/" + Util.nc(x.getPath().toString()));
+						.put("path", "/" + Util.getPathWithoutRootPath(x.getPath().toString()));
+
+						if(x.isFile()){
+							lsJson.put("size", x.getLen());
+						}else{
+							lsJson.put("size", fs.listStatus(x.getPath()).length );
+						}
+
 						lsyet.add(lsJson);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
@@ -89,8 +96,11 @@ public class ListOperation implements IOperation {
 				json.put("path",  path)
 				.put("file", false)
 				.put("args", args);
-				json.put("spaceConsumed", fs.getContentSummary(opath).getSpaceConsumed());
+				json.put("spaceConsumed", fs.getContentSummary(opath).getLength());
+				json.put("directoryCount", fs.getContentSummary(opath).getDirectoryCount());
+				json.put("fileCount", fs.getContentSummary(opath).getFileCount());
 
+				//json.put("totalSize",new orchi.SucreCloud.operations.DownloadOperation.Tree(opath).totalSize );
 				log.info("Fin de operacion de listado");
 			}else if(fs.isFile(new Path(HdfsManager.newPath(root, path).toString()))){
 				log.warn("transfer operation, get status file",opath);

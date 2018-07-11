@@ -1,5 +1,6 @@
 package orchi.SucreCloud.hdfs;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,7 +31,7 @@ public class ZipFiles {
 		int current = 0;
 		try {
 			
-			ZipOutputStream zos = new ZipOutputStream(outputStream);
+			ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(outputStream));
 			//level 0 para solo empaquetar, es mas rapido
 			zos.setLevel(0);
 			for (String item : tree.dirs) {
@@ -44,8 +45,9 @@ public class ZipFiles {
 					break;
 				}
 			}
-
+			zos.flush();
 			zos.close();
+
 			log.debug("zip file created, terminated");
 
 		} catch (FileNotFoundException e) {
@@ -61,11 +63,13 @@ public class ZipFiles {
 		log.debug("Escribiendo '{}' a zip",fileName );
 		log.debug("thread '{}' a zip",Thread.currentThread());
 
-		ZipEntry zipEntry = new ZipEntry(Util.nc(fileName));
+		ZipEntry zipEntry = new ZipEntry(Util.getPathWithoutRootPath(fileName));
 		try {
 			zos.putNextEntry(zipEntry);
+			
 			HdfsManager.getInstance().readFile(new Path(fileName), zos);
 			zos.closeEntry();
+			
 		} catch (IOException e) {
 			
 			throw new Exception("Error al agregar ");

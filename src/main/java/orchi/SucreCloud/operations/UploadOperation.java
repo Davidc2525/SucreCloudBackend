@@ -2,6 +2,7 @@ package orchi.SucreCloud.operations;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +25,7 @@ public class UploadOperation implements IOperation{
 	private Path opath;
 
 	public  UploadOperation(AsyncContext ctx, JSONObject arg) throws FileUploadException, IOException {
-		
+		//Streams
 		
 		
 		boolean isMultipart = ServletFileUpload.isMultipartContent((HttpServletRequest) ctx.getRequest());
@@ -36,19 +37,12 @@ public class UploadOperation implements IOperation{
 			    FileItemStream item = iter.next();
 			    String name = item.getFieldName();
 			    //InputStream stream = item.getInputStream();
-			    if(name != "args"){
-			    	System.out.println(item);
-			    	HdfsManager.getInstance().writeFile(new Path("/mi_dfs/david/"+item.getName()), item.openStream());
+			    if(name.equals("f")){
+			    	//System.out.println();
+			    	java.nio.file.Path p = Paths.get(arg.getString("root"), arg.getString("path"),item.getName());
+			    	HdfsManager.getInstance().writeFile(new Path(p.toString()), item.openStream());
 			    }
-			    if (item.isFormField()) {
-			        System.out.println("Form field " + name + " with value "
-			            + Streams.asString(item.openStream()) + " detected.");
-			    } else {
-			        System.out.println("File field " + name + " with file name "
-			            + item.getName() + " detected.");
-			        // Process the input stream
-			        
-			    }
+			   
 			}
 		}
 		// Parse the request

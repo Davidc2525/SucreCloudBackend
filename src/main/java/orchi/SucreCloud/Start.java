@@ -1,5 +1,6 @@
 package orchi.SucreCloud;
 
+import org.apache.hadoop.fs.Path;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.SucreCloud.RestApi.App;
+import orchi.SucreCloud.hdfs.HdfsManager;
 
 /**
  *david
@@ -20,6 +22,13 @@ public class Start {
 	private static Server server;
 
 	public static void main(String[] args) throws Exception {
+
+		log.info("{}",HdfsManager.getInstance().fs);;
+		//log.info("path {}",new Path("/mi_dfs/david").);
+		log.info("path {}",Path.getPathWithoutSchemeAndAuthority(new Path("/mi_dfs/david"))  );
+
+
+
 		server = new Server();
 
 		// HTTP Configuration
@@ -36,13 +45,13 @@ public class Start {
 		ServerConnector http = new ServerConnector(server, new HttpConnectionFactory(http_config));
 		http.setPort(8080);
 		http.setHost("orchi");
-		// http.setIdleTimeout(30000);
+		http.setIdleTimeout(Long.MAX_VALUE);
 
 		server.addConnector(http);
 
 		ServletContextHandler servletContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
-		servletContext.setContextPath("/api"); 
+		servletContext.setContextPath("/api");
 
 		servletContext.addServlet(App.class, "/").setAsyncSupported(true);
 		servletContext.addServlet(TEST.class, "/test").setAsyncSupported(true);
@@ -53,7 +62,8 @@ public class Start {
 
 		server.setHandler(contexts);
 
-		log.info("Iniciando servidor de API SMS");
+
+		log.info("Iniciando servidor");
 		server.start();
 		server.join();
 	}

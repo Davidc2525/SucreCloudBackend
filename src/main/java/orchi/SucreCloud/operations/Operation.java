@@ -7,7 +7,9 @@ public enum Operation {
 	PUT("put"), 
 	MKDIR("mkdir"), 
 	COPY("copy"), 
-	MOVE("move");
+	MOVE("move"), 
+	RENAME("rename"),
+	DELETE("delete");
 
 	public final String name;
 

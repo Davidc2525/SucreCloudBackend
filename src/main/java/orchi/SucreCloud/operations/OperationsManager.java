@@ -83,6 +83,10 @@ public class OperationsManager {
 		/**operacion para mover de una rruta a otra*/
 		if (Operation.MOVE.equalsName(operation)) {
 		}
+		/**operacion para eliminar de una rruta a otra*/
+		if (Operation.DELETE.equalsName(operation)) {
+			response = new DeleteOperation(ctx, arg).call();
+		}
 		/**operacion pendiente por validad*/
 		if (Operation.PUT.equalsName(operation)) {
 			if (r.getMethod().equalsIgnoreCase("get")) {
@@ -91,14 +95,13 @@ public class OperationsManager {
 			try {
 				response = new UploadOperation(ctx,arg).call();
 			} catch (FileUploadException | IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
+		} 
 
 		try {
 			ctx.getResponse().setContentType(getContentType());
-			ctx.getResponse().getWriter().println(response.toString(2));
+			ctx.getResponse().getWriter().println(response.toString());
 		} catch (JSONException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

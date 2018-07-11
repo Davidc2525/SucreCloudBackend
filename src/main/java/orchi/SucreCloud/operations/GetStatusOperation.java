@@ -58,12 +58,12 @@ public class GetStatusOperation implements IOperation {
 			file.put("size",fileStatus.getLen())
 			.put("file", fileStatus.isFile())
 			.put("name", fileStatus.getPath().getName())
-			//.put("path","/"+ Util.nc(fileStatus.getPath().toString())  )
+			.put("path","/"+ Util.getPathWithoutRootPath(fileStatus.getPath().toString())  )
 			.put("mime", Files.probeContentType(Paths.get(opath.toString())));
 			if (fs.isDirectory(opath)) {
 
 				//file.put("spaceQuota", fs.getContentSummary(fileStatus.getPath()).getSpaceQuota());
-				//file.put("spaceConsumed", fs.getContentSummary(fileStatus.getPath()).getSpaceConsumed());
+				file.put("size", fs.getContentSummary(fileStatus.getPath()).getLength());
 				file.put("list", new ListOperation(args).call());
 			}
 

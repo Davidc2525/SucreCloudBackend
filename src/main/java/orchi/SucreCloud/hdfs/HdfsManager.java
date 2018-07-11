@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -17,12 +19,14 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 
 public class HdfsManager {
 
 	private static HdfsManager instance;
 	private String hdfsuri = "hdfs://orchi2:9000";
 	public FileSystem fs;
+	public FileSystem dfs;
 
 	public HdfsManager() {
 		Configuration conf = new Configuration();
@@ -36,14 +40,22 @@ public class HdfsManager {
 		// System.setProperty("hadoop.home.dir", "/");
 		// Get the filesystem - HDFS
 		try {
-			 fs = FileSystem.get(URI.create(hdfsuri), conf);
+			fs = FileSystem.get(URI.create(hdfsuri), conf);
+			//dfs = DistributedFileSystem.get(URI.create(hdfsuri),conf);
+			Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(()->{
+				try {
+					fs.printStatistics();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} , 0, 5, TimeUnit.SECONDS);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
 
 	public static HdfsManager getInstance() {
 		if (instance == null) {
@@ -52,7 +64,7 @@ public class HdfsManager {
 		return instance;
 	}
 
-	public void readFile(Path path,OutputStream out) throws IOException {
+	public void readFile(Path path, OutputStream out) throws IOException {
 
 		if (!fs.exists(path)) {
 			System.out.println("File " + path.getName() + " does not exists");
@@ -61,40 +73,62 @@ public class HdfsManager {
 
 		FSDataInputStream in = fs.open(path);
 
-
-		byte[] b = new byte[1024*1024];
+		byte[] b = new byte[1024 * 1024];
 		int numBytes = 0;
 		while ((numBytes = in.read(b)) > 0) {
 			out.write(b, 0, numBytes);
-			//String parte = new String(b, 0, numBytes);
-			//System.out.print(parte);
+			// String parte = new String(b, 0, numBytes);
+			// System.out.print(parte);
 		}
-
+		
 		in.close();
-		//out.close();
-		//fs.close();
+		in=null;
+		// out.close();
+
 	}
-public void writeFile(Path path,InputStream inStream) throws IOException {
 
-		if (!fs.exists(path)) {
+	public void writeFile(Path path, InputStream inStream) throws IOException {
 
-			System.out.println("creando archivo "+path.toString());
-			FSDataOutputStream f = fs.create(path);
+		if (!fs.exists(path)||true) {
+
+			System.out.println("creando archivo " + path.toString());
+			FSDataOutputStream f = fs.create(path,true);
 			byte[] b = new byte[1024];
 			int numBytes = 0;
 			while ((numBytes = inStream.read(b)) > 0) {
 				f.write(b, 0, numBytes);
+				
 			}
+			
 			inStream.close();
+			f.flush();
+			f.hflush();
 			f.close();
+			
 			return;
 		}
 
-
-		//out.close();
-		//fs.close();
+		// out.close();
+		// fs.close();
 	}
+	public void deletePath(Path path) throws IOException {
+		
+		if (fs.exists(path)) {
 
+			if(fs.isDirectory(path)){
+				fs.delete(path, true);
+			}
+			if(fs.isFile(path)){
+				fs.delete(path,true);
+			}
+			
+			
+			
+		}
+
+		// out.close();
+		// fs.close();
+	}
 
 	public static Path newPath(String pRoot, String path) {
 		Path p = new Path(Paths.get("/", path).normalize().toString());
