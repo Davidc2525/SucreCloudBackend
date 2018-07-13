@@ -76,11 +76,13 @@ public class HdfsManager {
 		FSDataInputStream in = fs.open(path);
 
 		byte[] b = new byte[1024 * 1024];
+		int totalReads=0;
 		int numBytes = 0;
 		while ((numBytes = in.read(b)) > 0) {
 			out.write(b, 0, numBytes);
-			// String parte = new String(b, 0, numBytes);
-			// System.out.print(parte);
+			totalReads+=numBytes;
+			//String parte = "Leido "+totalReads;
+			//System.out.println(String.format("read %s", totalReads));
 		}
 		
 		in.close();
@@ -144,6 +146,6 @@ public class HdfsManager {
 		Path p = new Path(Paths.get("/", path).normalize().toString());
 
 		p = Path.mergePaths(new Path(pRoot), p);
-		return p;
+		return p = new Path(Paths.get(p.toString()).normalize().toString());
 	}
 }

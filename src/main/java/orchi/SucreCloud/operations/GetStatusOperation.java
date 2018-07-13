@@ -1,6 +1,7 @@
 
 package orchi.SucreCloud.operations;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,6 +9,12 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.ws.rs.PUT;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.fileupload.util.Streams;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -26,12 +33,14 @@ public class GetStatusOperation implements IOperation {
 	private JSONObject args;
 	private Path opath;
 	private String path;
+	private boolean withContent;
 
 	public GetStatusOperation(JSONObject args) {
 		this.args = args;
 		fs = HdfsManager.getInstance().fs;
 		root = args.getString("root");
-		path = args.getString("path");
+		path = Paths.get(args.getString("path")).normalize().toString();
+		withContent = args.has("withContent") ? args.getBoolean("withContent"):false;
 		opath = new Path(HdfsManager.newPath(root, path).toString());
 		log.info("Nueva operacion de estatus de archivo {}", opath.toString());
 	}
@@ -44,8 +53,12 @@ public class GetStatusOperation implements IOperation {
 
 		try {
 			if(!fs.exists(opath)){
-				json.put("error", "file dont exists");
-				log.error("file dont exists {}",opath);
+				json.put("status", "error");
+				json.put("error", "path_no_found")
+				.put("errorMsg", "la rruta no existe "+Util.getPathWithoutRootPath(opath.toString()) );
+				log.error("	file dont exists {}",opath);
+				log.info("Fin de operacion de listado");
+				return json;
 			}
 			/*if (fs.isDirectory(opath)) {
 				return new ListOperation(args).call();
@@ -54,17 +67,33 @@ public class GetStatusOperation implements IOperation {
 			JSONObject file = new JSONObject();
 
 			FileStatus fileStatus = fs.getFileLinkStatus(opath);
-			log.error("{}",fileStatus.getPath());
+			log.debug("{}",fileStatus.getPath());
 			file.put("size",fileStatus.getLen())
 			.put("file", fileStatus.isFile())
 			.put("name", fileStatus.getPath().getName())
-			.put("path","/"+ Util.getPathWithoutRootPath(fileStatus.getPath().toString())  )
-			.put("mime", Files.probeContentType(Paths.get(opath.toString())));
+			.put("path", Util.getPathWithoutRootPath(opath.toString())  )
+			.put("mime", Files.probeContentType(Paths.get(opath.toString())))
+			.put("persission",fileStatus.getPermission())
+			.put("accessTime",fileStatus.getAccessTime())
+			.put("modificationTime",fileStatus.getModificationTime());
+			if(fileStatus.isFile() && withContent){
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				HdfsManager.getInstance().readFile(fileStatus.getPath(), baos);
+				String fileBase64Content = Base64.encodeBase64String((baos.toByteArray()));
+				//log.info("content {}",new String(Base64.decodeBase64(fileBase64Content.getBytes())));
+				file.put("fileBase64Content", fileBase64Content);
+			}
 			if (fs.isDirectory(opath)) {
+				
+				ContentSummary contentSumary = fs.getContentSummary(fileStatus.getPath());
+				file.put("size", contentSumary.getLength());
+				file.put("elements", fs.listStatus(fileStatus.getPath()).length );
+				file.put("fileCount", contentSumary.getFileCount());
+				file.put("directoryCount", contentSumary.getDirectoryCount());
+				file.put("spaceQuota", contentSumary.getSpaceQuota());
 
-				//file.put("spaceQuota", fs.getContentSummary(fileStatus.getPath()).getSpaceQuota());
-				file.put("size", fs.getContentSummary(fileStatus.getPath()).getLength());
-				file.put("list", new ListOperation(args).call());
+				//file.put("size", fs.getContentSummary(fileStatus.getPath()).getLength());
+				//file.put("list", new ListOperation(args).call());
 			}
 
 			json.put("path",  path)
@@ -79,15 +108,22 @@ public class GetStatusOperation implements IOperation {
 
 
 			json.put("data",file);
+			json.put("status", "ok");
 			log.info("Fin de operacion de estatus de archivo {}",opath.toString());
 		} catch (IllegalArgumentException e) {
-			json.put("error", e.getMessage());
+			json.put("status", "error");
+			json.put("error", "server");
+			json.put("errorMsg", e.getMessage());
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
-			json.put("error", e.getMessage());
+			json.put("status", "error");
+			json.put("error", "server");
+			json.put("errorMsg", e.getMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
-			json.put("error", e.getMessage());
+			json.put("status", "error");
+			json.put("error", "server");
+			json.put("errorMsg", e.getMessage());
 			e.printStackTrace();
 		}
 

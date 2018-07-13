@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -52,8 +53,12 @@ public class ListOperation implements IOperation {
 
 		try {
 			if(!fs.exists(opath)){
-				json.put("error", "file dont exists");
-				log.error("file dont exists {} ",opath);
+				json.put("status", "error");
+				json.put("error", "path_no_found")
+				.put("errorMsg", "la rruta no existe "+Util.getPathWithoutRootPath(opath.toString()) );
+				log.error("	file dont exists {} ",opath);
+				log.info("Fin de operacion de listado");
+				return json;
 			}
 			if (fs.isDirectory(opath)) {
 				List<FileStatus> ls = Arrays
@@ -75,8 +80,10 @@ public class ListOperation implements IOperation {
 						.put("name",x.getPath().getName() )
 						.put("mime", Files.probeContentType(Paths.get( x.getPath().getName()  )) )
 								//.put("mayme_mime", org.apache.http.entity.ContentType.parse(x.getPath().getName())    )
-						.put("path", "/" + Util.getPathWithoutRootPath(x.getPath().toString()));
-
+						.put("path",  Util.getPathWithoutRootPath(x.getPath().toString()))
+						.put("persission",x.getPermission())
+						.put("accessTime",x.getAccessTime())
+						.put("modificationTime",x.getModificationTime());
 						if(x.isFile()){
 							lsJson.put("size", x.getLen());
 						}else{
@@ -96,11 +103,15 @@ public class ListOperation implements IOperation {
 				json.put("path",  path)
 				.put("file", false)
 				.put("args", args);
-				json.put("size", fs.getContentSummary(opath).getLength());
-				json.put("directoryCount", fs.getContentSummary(opath).getDirectoryCount());
-				json.put("fileCount", fs.getContentSummary(opath).getFileCount());
+				
+				
+				ContentSummary contentSumary = fs.getContentSummary(opath);
+				json.put("size", contentSumary.getLength());
+				json.put("directoryCount", contentSumary.getDirectoryCount());
+				json.put("fileCount", contentSumary.getFileCount());
 
 				//json.put("totalSize",new orchi.SucreCloud.operations.DownloadOperation.Tree(opath).totalSize );
+				json.put("status", "ok");
 				log.info("Fin de operacion de listado");
 			}else if(fs.isFile(new Path(HdfsManager.newPath(root, path).toString()))){
 				log.warn("transfer operation, get status file",opath);
@@ -108,13 +119,19 @@ public class ListOperation implements IOperation {
 			}
 
 		} catch (IllegalArgumentException e) {
-			json.put("error", e.getMessage());
+			json.put("status", "error");
+			json.put("error", "server");
+			json.put("errorMsg", e.getMessage());
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
-			json.put("error", e.getMessage());
+			json.put("status", "error");
+			json.put("error", "server");
+			json.put("errorMsg", e.getMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
-			json.put("error", e.getMessage());
+			json.put("status", "error");
+			json.put("error", "server");
+			json.put("errorMsg", e.getMessage());
 			e.printStackTrace();
 		}
 

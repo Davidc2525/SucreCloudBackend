@@ -10,14 +10,20 @@ public abstract class Util {
 		// TODO Auto-generated method stub
 		return i.isFile() ? "file" : "folder";
 	}
-	
-	
 
-	
 	public static String getPathWithoutRootPath(String in) {
-		java.nio.file.Path p = Paths.get(Path.getPathWithoutSchemeAndAuthority(new Path(in)).toString());
-		
-		p = p.subpath(2, p.getNameCount());
-		return Paths.get(p + "").normalize() + "";
+
+		java.nio.file.Path p = null;
+		Path p2 = new Path(in);
+
+		p = Paths.get(Path.getPathWithoutSchemeAndAuthority(p2).toString());
+
+		if (p2.depth() > 2) {
+			p = p.subpath(2, p.getNameCount());
+		}{
+			p = Paths.get("/",p+"");
+		}
+		// p = p.subpath(2, p.getNameCount());
+		return Paths.get("/",p + "").normalize() + "";
 	}
 }
