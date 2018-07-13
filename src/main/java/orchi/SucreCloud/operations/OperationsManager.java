@@ -12,6 +12,8 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import orchi.SucreCloud.ParseParamsMultiPart;
+
 /**
  * @author david
  * 
@@ -49,8 +51,9 @@ public class OperationsManager {
 	 * @param arg
 	 *            {@link JSONObject} argumento json con la peticion al api
 	 * @author david
+	 * @param params 
 	 */
-	public JSONObject processOperation(AsyncContext ctx, JSONObject arg) {
+	public JSONObject processOperation(AsyncContext ctx, JSONObject arg, ParseParamsMultiPart params) {
 		setContentType("application/json");
 		HttpServletRequest r = ((HttpServletRequest) ctx.getRequest());
 
@@ -66,10 +69,17 @@ public class OperationsManager {
 		if (Operation.GETSTATUS.equalsName(operation)) {
 			response = new GetStatusOperation(arg).call();
 		}
-		/**Operacion para copiar de una rruta a otra*/
-		if (Operation.COPY.equalsName(operation)) {
+		if (Operation.RENAME.equalsName(operation)) {
+			response = new RenameOperation(arg).call();
 		}
-
+		/**Operacion para copiar de una rruta a otra*/
+		if (Operation.COPY.equalsName(operation)) {	
+			response = new MoveOrCopyOperation(arg,false).call();
+		}
+		/**operacion para mover de una rruta a otra*/
+		if (Operation.MOVE.equalsName(operation)) {
+			response = new MoveOrCopyOperation(arg,true).call();
+		}
 		/**Operacion para descargar un archivo o carpeta en formato ZIP, cambia en contentype a 
 		 * 'application/octet-stream'*/
 		if (Operation.DOWNLOAD.equalsName(operation)) {
@@ -79,10 +89,9 @@ public class OperationsManager {
 		}
 		/**Operacin para crear directorio*/
 		if (Operation.MKDIR.equalsName(operation)) {
+			response = new CreateDirectoryOperation(arg).call();			
 		}
-		/**operacion para mover de una rruta a otra*/
-		if (Operation.MOVE.equalsName(operation)) {
-		}
+		
 		/**operacion para eliminar de una rruta a otra*/
 		if (Operation.DELETE.equalsName(operation)) {
 			response = new DeleteOperation(ctx, arg).call();
@@ -93,7 +102,7 @@ public class OperationsManager {
 				return new JSONObject().put("error", "invalid method");
 			}
 			try {
-				response = new UploadOperation(ctx,arg).call();
+				response = new UploadOperation(ctx,arg,params).call();
 			} catch (FileUploadException | IOException e) {
 				e.printStackTrace();
 			}
@@ -101,7 +110,7 @@ public class OperationsManager {
 
 		try {
 			ctx.getResponse().setContentType(getContentType());
-			ctx.getResponse().getWriter().println(response.toString());
+			ctx.getResponse().getWriter().println(response.toString(2));
 		} catch (JSONException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

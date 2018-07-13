@@ -19,14 +19,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.util.Streams;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.yarn.webapp.Params;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.mortbay.log.Log;
 import org.mortbay.util.ajax.JSON;
 
+import orchi.SucreCloud.ParseParamsMultiPart;
 import orchi.SucreCloud.hdfs.HdfsManager;
 import orchi.SucreCloud.operations.ListOperation;
 import orchi.SucreCloud.operations.Operation;
@@ -78,8 +85,24 @@ public class App extends HttpServlet {
 			HttpServletRequest reqs = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resps = (HttpServletResponse) ctx.getResponse();
 			resps.addHeader("Access-Control-Allow-Origin", "*");
+			ParseParamsMultiPart params = null;
+			try {
+				params = new ParseParamsMultiPart(reqs);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			String args = null;
+			try {
+				args = params.getAsString("args");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}//reqs.getParameter("args");
 			
-			String args = reqs.getParameter("args");
+			Log.info("params {}",params);
+			
+			//String args = reqs.getParameter("args");
 			Log.info("{}",args);
 			JSONObject JsonArgs = new  JSONObject(args);
 			
@@ -97,7 +120,7 @@ public class App extends HttpServlet {
 			String path = JsonArgs.getString("path");
 			String operation = JsonArgs.getString("op");
 			
-			OperationsManager.getInstance().processOperation(ctx,JsonArgs);
+			OperationsManager.getInstance().processOperation(ctx,JsonArgs,params);
 			
 
 		}

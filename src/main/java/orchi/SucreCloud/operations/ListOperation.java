@@ -80,7 +80,7 @@ public class ListOperation implements IOperation {
 						if(x.isFile()){
 							lsJson.put("size", x.getLen());
 						}else{
-							lsJson.put("size", fs.listStatus(x.getPath()).length );
+							lsJson.put("elements", fs.listStatus(x.getPath()).length );
 						}
 
 						lsyet.add(lsJson);
@@ -96,7 +96,7 @@ public class ListOperation implements IOperation {
 				json.put("path",  path)
 				.put("file", false)
 				.put("args", args);
-				json.put("spaceConsumed", fs.getContentSummary(opath).getLength());
+				json.put("size", fs.getContentSummary(opath).getLength());
 				json.put("directoryCount", fs.getContentSummary(opath).getDirectoryCount());
 				json.put("fileCount", fs.getContentSummary(opath).getFileCount());
 

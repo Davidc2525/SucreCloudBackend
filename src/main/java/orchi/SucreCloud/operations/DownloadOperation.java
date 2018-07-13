@@ -53,14 +53,15 @@ public class DownloadOperation implements IOperation {
 
 			if (fs.isDirectory(opath)) {
 				log.info("Descargar directorio {}",opath.toString());
-				
+
+				//r.addHeader("Transfer-Encoding","gzip");
 				r.addHeader("Content-Disposition", " attachment; filename=\"" + opath.getName() + ".zip\"");
 
 				Tree tree = new Tree(opath);
 				ZipFiles zip = new ZipFiles(tree, ctx.getResponse().getOutputStream());
 				zip = null;
 				tree = null;
-				
+
 				log.info("Operacion de descarga terminada {}",opath.toString());
 				// ctx.getResponse().getWriter().println("descargar carpeta");
 				ctx.complete();
