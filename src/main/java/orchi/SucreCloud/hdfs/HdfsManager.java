@@ -20,6 +20,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.util.Progressable;
 
 public class HdfsManager {
 
@@ -92,7 +94,15 @@ public class HdfsManager {
 		if (!fs.exists(path)||true) {
 
 			System.out.println("creando archivo " + path.toString());
-			FSDataOutputStream f = fs.create(path,true);
+			FSDataOutputStream f = fs.create(path,true,1024*4, new Progressable() {
+				
+				@Override
+				public void progress() {
+						
+					System.out.println(String.format("copiando %s ...",path.toString()));
+					
+				}
+			});
 			byte[] b = new byte[1024];
 			int numBytes = 0;
 			while ((numBytes = inStream.read(b)) > 0) {

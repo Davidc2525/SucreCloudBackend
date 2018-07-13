@@ -67,7 +67,7 @@ public class MoveOrCopyOperation implements IOperation {
 				response
 				.put("status","error")
 				.put("error", "srcpath_no_found")
-				.put("errorMsg", String.format("la ruta que quiere {} no existe",move?"mover":"copiar"));
+				.put("errorMsg", String.format("la ruta que quiere %s no existe",move?"mover":"copiar"));
 				
 				log.debug("	falla al {}, '{}' no existe",move?"mover":"copiar",srcPath.toString());
 			}
