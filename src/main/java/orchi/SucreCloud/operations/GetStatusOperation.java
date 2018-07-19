@@ -1,27 +1,21 @@
 
 package orchi.SucreCloud.operations;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.PUT;
-
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.spi.LoggerFactory;
 import org.json.JSONObject;
-import org.slf4j.*;
+import org.slf4j.Logger;
 
 import orchi.SucreCloud.Util;
 import orchi.SucreCloud.hdfs.HdfsManager;
@@ -34,12 +28,15 @@ public class GetStatusOperation implements IOperation {
 	private Path opath;
 	private String path;
 	private boolean withContent;
+	private List<Object> paths;
+	private Long MAX_FILE_SIZE = 102400L; //100kb
 
 	public GetStatusOperation(JSONObject args) {
 		this.args = args;
 		fs = HdfsManager.getInstance().fs;
 		root = args.getString("root");
 		path = Paths.get(args.getString("path")).normalize().toString();
+		paths = args.has("paths") && !args.isNull("paths") ?args.getJSONArray("paths").toList():null;
 		withContent = args.has("withContent") ? args.getBoolean("withContent"):false;
 		opath = new Path(HdfsManager.newPath(root, path).toString());
 		log.info("Nueva operacion de estatus de archivo {}", opath.toString());
@@ -49,7 +46,36 @@ public class GetStatusOperation implements IOperation {
 	public JSONObject call() {
 		JSONObject json = new JSONObject();
 
+		if(paths!=null){//Multiple
+			try{
 
+				json
+				.put("args", args)
+				.put("multiple",true);
+
+				//new  JSONObject();
+				List<JSONObject> datalist = new ArrayList<>();
+				args.remove("paths");
+				for(Object p:  paths){
+					String item = (String) p;
+					String itemPath = Util.getPathWithoutRootPath(item);//;new Path(Paths.get(item).normalize().toString());
+					JSONObject contentItem = new GetStatusOperation(new JSONObject(args.toMap()).put("root",root).put("path", item)).call();
+					contentItem.put("path", itemPath);
+					datalist.add(contentItem);
+					//data.put(itemPath.toString(), contentItem);
+					//System.out.println(contentItem.toString(2));
+				}
+				json.put("payload", new JSONObject().put("paths", datalist));
+				json.put("status", "ok");
+				return json;
+			}catch(Exception e){
+				e.printStackTrace();
+				json.put("status", "error");
+				json.put("error", "fetch_info");
+				json.put("errorMsg", "Error al intentar obtener informacion de las rrutas");
+				return json;
+			}
+		}
 
 		try {
 			if(!fs.exists(opath)){
@@ -63,7 +89,7 @@ public class GetStatusOperation implements IOperation {
 			/*if (fs.isDirectory(opath)) {
 				return new ListOperation(args).call();
 			}*/
-
+ 
 			JSONObject file = new JSONObject();
 
 			FileStatus fileStatus = fs.getFileLinkStatus(opath);
@@ -76,15 +102,24 @@ public class GetStatusOperation implements IOperation {
 			.put("persission",fileStatus.getPermission())
 			.put("accessTime",fileStatus.getAccessTime())
 			.put("modificationTime",fileStatus.getModificationTime());
-			if(fileStatus.isFile() && withContent){
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				HdfsManager.getInstance().readFile(fileStatus.getPath(), baos);
-				String fileBase64Content = Base64.encodeBase64String((baos.toByteArray()));
-				//log.info("content {}",new String(Base64.decodeBase64(fileBase64Content.getBytes())));
-				file.put("fileBase64Content", fileBase64Content);
+			if(fileStatus.isFile() && withContent ){
+				if(fileStatus.getLen() > MAX_FILE_SIZE){
+					file.put("fileSoLong", true);
+				}else{
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					HdfsManager.getInstance().readFile(fileStatus.getPath(), baos);
+
+					//log.info("content {}",new String(Base64.decodeBase64(fileBase64Content.getBytes())));
+					file.put("fileBase64Content", Base64.encodeBase64String( baos.toByteArray()) );
+					file.put("fileSoLong", false);
+					baos.flush();
+					baos.close();
+					baos = null;
+				}
+
 			}
 			if (fs.isDirectory(opath)) {
-				
+
 				ContentSummary contentSumary = fs.getContentSummary(fileStatus.getPath());
 				file.put("size", contentSumary.getLength());
 				file.put("elements", fs.listStatus(fileStatus.getPath()).length );

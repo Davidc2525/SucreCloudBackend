@@ -16,14 +16,14 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
-import org.mortbay.log.Log;
+//import org.mortbay.log.Log;
 
 public class ParseParamsMultiPart {
 	private Map<String, FileItemStream> paramsMap = new HashMap<String, FileItemStream>();
 
 	public ParseParamsMultiPart(HttpServletRequest req) throws Exception {
 		boolean isMultipart = ServletFileUpload.isMultipartContent(req);
-		
+
 		if(!isMultipart){
 			throw new Exception("los parametros no son multipar/data-form");
 		}
@@ -33,12 +33,12 @@ public class ParseParamsMultiPart {
 			while (params.hasNext()) {
 				FileItemStream param = params.next();
 				System.out.println("add param " + param.getFieldName());
-				paramsMap.put(param.getFieldName(), 
+				paramsMap.put(param.getFieldName(),
 						new Param(
-							param.getFieldName(), 
-							param.getHeaders(), 
+							param.getFieldName(),
+							param.getHeaders(),
 							param.getName(),
-							param.isFormField(), 
+							param.isFormField(),
 							param.getContentType(),
 							param.openStream())
 				);
@@ -61,7 +61,7 @@ public class ParseParamsMultiPart {
 	public FileItemStream getParam(String name){
 		return paramsMap.get(name);
 	}
-	
+
 	public String getAsString(String name) throws IOException {
 		FileItemStream item = paramsMap.get(name);
 		if (item == null) {
@@ -71,7 +71,7 @@ public class ParseParamsMultiPart {
 	}
 
 	private static InputStream copyInputStream(InputStream input) throws IOException {
-		
+
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 		byte[] buffer = new byte[1024];
@@ -114,7 +114,7 @@ public class ParseParamsMultiPart {
 
 		@Override
 		public void setHeaders(FileItemHeaders arg0) {
-			
+
 		}
 
 		@Override
@@ -143,8 +143,8 @@ public class ParseParamsMultiPart {
 			return inputStream;
 		}
 
-		
-		
+
+
 	}
 
 }

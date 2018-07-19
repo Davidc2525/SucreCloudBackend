@@ -6,8 +6,6 @@ import java.util.List;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.fileupload.FileUploadException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,7 +14,7 @@ import orchi.SucreCloud.ParseParamsMultiPart;
 
 /**
  * @author david
- * 
+ *
  *         Se encarga de manejar las operaciones
  */
 public class OperationsManager {
@@ -38,62 +36,62 @@ public class OperationsManager {
 	}
 
 	/**
-	 * 
+	 *
 	 * metodo para procesar la operacion debuelve un {@link JSONObject} de la
 	 * respuesta <br/>
 	 * para la operacin de descarga (download), hace uso del contexto directo
 	 * para enviar el archivo por el OutPutStream de la respuesta. <br/>
 	 * la cabesera de respuesta es 'application/json' por defecto, para
 	 * descargar se cambia a 'application/octet-stream'
-	 * 
+	 *
 	 * @param ctx
 	 *            {@link AsyncContext} contexto asincrono de la peticion actual
 	 * @param arg
 	 *            {@link JSONObject} argumento json con la peticion al api
 	 * @author david
-	 * @param params 
+	 * @param params
 	 */
 	public JSONObject processOperation(AsyncContext ctx, JSONObject arg, ParseParamsMultiPart params) {
 		setContentType("application/json");
 		HttpServletRequest r = ((HttpServletRequest) ctx.getRequest());
 
-		
+
 		JSONObject response = null;
 		String operation = arg.getString("op");
 
 		/**Operacion de listar directorio*/
-		if (Operation.LIST.equalsName(operation)) {
+		if (Operation.LIST.equalsName(operation)) {//TODO hacer multiple
 			response = new ListOperation(arg).call();
 		}
 		/**Operacion de obtener informacion de un archivo*/
-		if (Operation.GETSTATUS.equalsName(operation)) {
+		if (Operation.GETSTATUS.equalsName(operation)) {//multiple
 			response = new GetStatusOperation(arg).call();
 		}
-		if (Operation.RENAME.equalsName(operation)) {
+		if (Operation.RENAME.equalsName(operation)) {//TODO hacer multiple
 			response = new RenameOperation(arg).call();
 		}
 		/**Operacion para copiar de una rruta a otra*/
-		if (Operation.COPY.equalsName(operation)) {	
+		if (Operation.COPY.equalsName(operation)) {//TODO hacer multiple
 			response = new MoveOrCopyOperation(arg,false).call();
 		}
 		/**operacion para mover de una rruta a otra*/
-		if (Operation.MOVE.equalsName(operation)) {
+		if (Operation.MOVE.equalsName(operation)) {//TODO hacer multiple
 			response = new MoveOrCopyOperation(arg,true).call();
 		}
-		/**Operacion para descargar un archivo o carpeta en formato ZIP, cambia en contentype a 
+		/**Operacion para descargar un archivo o carpeta en formato ZIP, cambia en contentype a
 		 * 'application/octet-stream'*/
-		if (Operation.DOWNLOAD.equalsName(operation)) {
+		if (Operation.DOWNLOAD.equalsName(operation)) {//mutiple
 			setContentType("application/octet-stream");
 			new DownloadOperation(ctx, arg);
 			return null;
 		}
 		/**Operacin para crear directorio*/
-		if (Operation.MKDIR.equalsName(operation)) {
-			response = new CreateDirectoryOperation(arg).call();			
+		if (Operation.MKDIR.equalsName(operation)) {//no creo q sea necesario hacerlo multiple
+			response = new CreateDirectoryOperation(arg).call();
 		}
-		
+
 		/**operacion para eliminar de una rruta a otra*/
-		if (Operation.DELETE.equalsName(operation)) {
+		if (Operation.DELETE.equalsName(operation)) {//multiple
 			response = new DeleteOperation(ctx, arg).call();
 		}
 		/**operacion pendiente por validad*/
@@ -106,11 +104,14 @@ public class OperationsManager {
 			} catch (FileUploadException | IOException e) {
 				e.printStackTrace();
 			}
-		} 
+		}
 
 		try {
 			ctx.getResponse().setContentType(getContentType());
-			ctx.getResponse().getWriter().println(response.toString(2));
+			ctx.getResponse().getWriter().println(response.toString());
+			response = null;
+			arg = null;
+			params = null;
 		} catch (JSONException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -2,6 +2,7 @@ package orchi.SucreCloud.operations;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 
 import javax.servlet.AsyncContext;
 
@@ -14,12 +15,11 @@ import orchi.SucreCloud.hdfs.HdfsManager;
 
 public class DeleteOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(DeleteOperation.class);
-	private AsyncContext ctx;
 	private JSONObject arg;
-
+	private List<Object> paths;
 	public DeleteOperation(AsyncContext ctx, JSONObject arg) {
-		this.ctx = ctx;
 		this.arg = arg;
+		paths = (arg.has("paths") && !arg.isNull("paths")) ?arg.getJSONArray("paths").toList():null;
 		log.debug("Nueva operacion de eliminacion");
 	}
 
@@ -27,12 +27,26 @@ public class DeleteOperation implements IOperation {
 	public JSONObject call() {
 		String root = arg.getString("root");
 		String path = arg.getString("path");
-		Path opath = new Path(HdfsManager.newPath(root, path).toString());
+
+
 		try {
-			
-			log.debug("Eliminando {}",path);
-			HdfsManager.getInstance().deletePath(opath);
-			log.debug("{} eliminando",path);
+			if(paths!=null){
+				Path opath = null;
+				for(Object p:paths){
+					opath  = new Path(HdfsManager.newPath(root, p+"").toString());
+					log.debug("Eliminando {}",opath);
+					HdfsManager.getInstance().deletePath(opath);
+					log.debug("{} eliminando",opath);
+				}
+
+				return new JSONObject().put("args",arg).put("status","ok").put("parent", Paths.get(opath.toString()).getParent().toString());
+			}else{
+				Path opath = new Path(HdfsManager.newPath(root, path).toString());
+				log.debug("Eliminando {}",path);
+				HdfsManager.getInstance().deletePath(opath);
+				log.debug("{} eliminando",path);
+			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 			return new JSONObject().put("args",arg).put("status","error").put("error", e.getMessage());

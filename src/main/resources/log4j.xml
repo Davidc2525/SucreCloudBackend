@@ -55,7 +55,9 @@
      </layout>
    </appender>
 
-
+    <category name="orchi.SucreCloud">
+     <priority value="DEBUG"/>
+   </category>
 
    <!-- limit logging for spring -->
    <category name="org.springframework">

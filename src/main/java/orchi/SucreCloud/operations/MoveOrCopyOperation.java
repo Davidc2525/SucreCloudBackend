@@ -22,7 +22,7 @@ public class MoveOrCopyOperation implements IOperation {
 	private Path srcpathWithRoot;
 	private Path dstpathWithRoot;
 	private FileSystem fs;
-	
+
 	public MoveOrCopyOperation(JSONObject arg, boolean move) {
 		this.arg = arg;
 		this.move = move;
@@ -49,8 +49,9 @@ public class MoveOrCopyOperation implements IOperation {
 					.put("errorMsg","la rruta de destino ya existe "+dstPath.toString());
 					log.debug("la rruta de destino ya existe {}",dstPath.toString());
 				}else{
-					
+
 					can = FileUtil.copy(fs, srcpathWithRoot, fs, dstpathWithRoot, move, true, fs.getConf());
+
 					if(can){
 						response.put("args", arg).put("status", "ok");
 						log.debug("	{} exitoso ",move ? "movido":"copiado");
@@ -60,18 +61,18 @@ public class MoveOrCopyOperation implements IOperation {
 						.put("error", String.format("no pudo {} ", move?"mover":"copiar"));
 						log.debug("no pudo {} ", move?"mover":"copiar");
 					}
-					
+
 				}
-				
+
 			}else{
 				response
 				.put("status","error")
 				.put("error", "srcpath_no_found")
 				.put("errorMsg", String.format("la ruta que quiere %s no existe",move?"mover":"copiar"));
-				
+
 				log.debug("	falla al {}, '{}' no existe",move?"mover":"copiar",srcPath.toString());
 			}
-			
+
 		} catch (IOException e) {
 			response
 			.put("status", "error")

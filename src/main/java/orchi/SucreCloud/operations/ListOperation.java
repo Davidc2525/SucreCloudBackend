@@ -87,10 +87,15 @@ public class ListOperation implements IOperation {
 						if(x.isFile()){
 							lsJson.put("size", x.getLen());
 						}else{
+						    ContentSummary contentSumary = fs.getContentSummary(x.getPath());
+						    lsJson.put("size",contentSumary.getLength());
+							//lsJson.put("size", fs.listStatus(x.getPath()).length );
 							lsJson.put("elements", fs.listStatus(x.getPath()).length );
+							contentSumary = null;
 						}
 
 						lsyet.add(lsJson);
+						lsJson = null;
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -103,8 +108,8 @@ public class ListOperation implements IOperation {
 				json.put("path",  path)
 				.put("file", false)
 				.put("args", args);
-				
-				
+
+
 				ContentSummary contentSumary = fs.getContentSummary(opath);
 				json.put("size", contentSumary.getLength());
 				json.put("directoryCount", contentSumary.getDirectoryCount());

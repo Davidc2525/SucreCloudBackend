@@ -84,7 +84,7 @@ public class HdfsManager {
 			//String parte = "Leido "+totalReads;
 			//System.out.println(String.format("read %s", totalReads));
 		}
-		
+
 		in.close();
 		in=null;
 		// out.close();
@@ -96,27 +96,27 @@ public class HdfsManager {
 		if (!fs.exists(path)||true) {
 
 			System.out.println("creando archivo " + path.toString());
-			FSDataOutputStream f = fs.create(path,true,1024*4, new Progressable() {
-				
+			FSDataOutputStream f = fs.create(path,true);/*,1024*4, new Progressable() {
+
 				@Override
 				public void progress() {
-						
+
 					System.out.println(String.format("copiando %s ...",path.toString()));
-					
+
 				}
-			});
+			});*/
 			byte[] b = new byte[1024];
 			int numBytes = 0;
 			while ((numBytes = inStream.read(b)) > 0) {
 				f.write(b, 0, numBytes);
-				
+
 			}
-			
+
 			inStream.close();
-			f.flush();
-			f.hflush();
+			//f.flush();
+			//f.hflush();
 			f.close();
-			
+
 			return;
 		}
 
@@ -124,7 +124,7 @@ public class HdfsManager {
 		// fs.close();
 	}
 	public void deletePath(Path path) throws IOException {
-		
+
 		if (fs.exists(path)) {
 
 			if(fs.isDirectory(path)){
@@ -133,9 +133,9 @@ public class HdfsManager {
 			if(fs.isFile(path)){
 				fs.delete(path,true);
 			}
-			
-			
-			
+
+
+
 		}
 
 		// out.close();

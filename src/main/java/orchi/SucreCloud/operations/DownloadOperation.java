@@ -1,16 +1,20 @@
 package orchi.SucreCloud.operations;
 
-import java.awt.List;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.json.JSONException;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.json.JSONObject;
 import org.slf4j.*;
 
@@ -20,6 +24,7 @@ import orchi.SucreCloud.hdfs.ZipFiles;
 public class DownloadOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(DownloadOperation.class);
 	private static FileSystem fs = HdfsManager.getInstance().fs;
+	private java.util.List<Object> paths;
 
 	public DownloadOperation() {
 	}
@@ -29,9 +34,49 @@ public class DownloadOperation implements IOperation {
 		//fs = HdfsManager.getInstance().fs;
 		String root = arg.getString("root");
 		String path = arg.getString("path");
+		paths = (arg.has("paths") && !arg.isNull("paths")) ?arg.getJSONArray("paths").toList():null;
 		Path opath = new Path(HdfsManager.newPath(root, path).toString());
 		HttpServletResponse r = ((HttpServletResponse) ctx.getResponse());
+		if(paths!=null){
+			log.info("Descarga de multiples archivos {}",paths);
 
+			java.util.List<Path> yetPaths = paths.stream()
+			.map(x->new Path(HdfsManager.newPath(root, (String)x).toString()))
+			.filter(x->{
+				try {
+					return fs.exists( x);
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return false;
+			}).collect(Collectors.toList());;
+			
+			
+			try{
+				log.info("Descargar directorio {}",opath.toString());
+
+				//r.addHeader("Transfer-Encoding","gzip");
+				r.addHeader("Content-Disposition", " attachment; filename=\"" + opath.getName() + ".zip\"");
+
+				MultiTree tree = new MultiTree(fs,yetPaths);
+				ZipFiles zip = new ZipFiles(tree, ctx.getResponse().getOutputStream());
+				zip = null;
+				tree = null;
+
+				log.info("Operacion de descarga terminada {}",opath.toString());
+				// ctx.getResponse().getWriter().println("descargar carpeta");
+				ctx.getResponse().flushBuffer();
+				ctx.complete();
+				
+			}catch(IOException e){
+				
+			}
+			return ;
+		}
 		try {
 			if (!fs.exists(opath)) {
 				log.info("{} no existe",opath.toString());
@@ -57,7 +102,7 @@ public class DownloadOperation implements IOperation {
 				//r.addHeader("Transfer-Encoding","gzip");
 				r.addHeader("Content-Disposition", " attachment; filename=\"" + opath.getName() + ".zip\"");
 
-				Tree tree = new Tree(opath);
+				MultiTree tree = new MultiTree(fs,Arrays.asList(opath));
 				ZipFiles zip = new ZipFiles(tree, ctx.getResponse().getOutputStream());
 				zip = null;
 				tree = null;
@@ -77,6 +122,156 @@ public class DownloadOperation implements IOperation {
 	public JSONObject call() {
 
 		return null;
+	}
+	
+	public static class MultiTree {
+		//public ArrayList<String> pathsS = new ArrayList<String>();
+		public ArrayList<PathAndDepth> paths = new ArrayList<PathAndDepth>();
+		//public Map<String, Integer> pathMap = new HashMap<String, Integer>();
+		private FileSystem fs;
+		private int depth = -1;
+
+		public MultiTree (FileSystem fs, Path path) throws FileNotFoundException, IOException {
+			this.fs = fs;
+			get(path);
+		}
+
+		public MultiTree (FileSystem fs,List<Path> ps) throws FileNotFoundException, IOException {
+			this.fs = fs;
+
+			for (Path path : ps) {
+				get(path);
+			}
+		}
+
+		/**debug*/
+		private static String repeat(String value, int x) {
+			String r = "";
+
+			for (int i = 0; i < x; i++) {
+				r += value;
+			}
+
+			return r;
+		}
+
+		public void get(Path path) throws FileNotFoundException, IOException {
+			if(fs.isFile(path)){
+				
+				paths.add(new PathAndDepth(path.toString().toString(), 0));
+				return ;
+			}
+
+			++depth;
+			RemoteIterator<FileStatus> list = fs.listStatusIterator(path);
+			while (list.hasNext()) {
+				FileStatus item = list.next();
+				if (item.isFile() ) {
+					// System.out.println(String.format("%s %s %s",
+					// repeat("\t",depth),item.getPath().getName(),
+					// item.getLen()));
+					paths.add(new PathAndDepth((item.getPath().toString()).toString(), depth));
+					// pathMap.put(item.getPath().getName(), depth);
+					// pathsS.add(item.getPath().toString());
+					
+				}else{
+					get(item.getPath());
+					depth--;
+				}
+
+			}
+		}
+		/**debug*/
+		public void get2(Path path) throws FileNotFoundException, IOException {
+			++depth;
+			FileStatus[] list = fs.listStatus(path);
+			for (FileStatus item : list) {
+				if (item.isDirectory() && depth <= 3) {
+
+					// System.out.println(String.format("%s %s %s",
+					// repeat("\t",depth),item.getPath().getName(),
+					// item.getLen()));
+					paths.add(
+							new PathAndDepth(Path.getPathWithoutSchemeAndAuthority(item.getPath()).toString(), depth));
+					// pathMap.put(item.getPath().getName(), depth);
+					get2(item.getPath());
+					depth--;
+				}
+
+			}
+		}
+		
+		/** debug
+		 * el peor */
+		public void get3(Path path) throws FileNotFoundException, IOException {
+			++depth;
+			FileStatus[] list = fs.listStatus(path, new PathFilter() {
+
+				@Override
+				public boolean accept(Path path) {
+					try {
+						return fs.isDirectory(path);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return false;
+				}
+			});
+			for (FileStatus item : list) {
+				if (item.isDirectory() && depth <= 3) {
+
+					// System.out.println(String.format("%s %s %s",
+					// repeat("\t",depth),item.getPath().getName(),
+					// item.getLen()));
+					paths.add(
+							new PathAndDepth(Path.getPathWithoutSchemeAndAuthority(item.getPath()).toString(), depth));
+					// pathMap.put(item.getPath().getName(), depth);
+					get3(item.getPath());
+					depth--;
+				}
+
+			}
+		}
+	}
+
+	public static class PathAndDepth {
+		private String name;
+		private int depth;
+
+		public PathAndDepth(String name, int depth) {
+			this.setName(name);
+			this.setDepth(depth);
+
+		}
+
+		/**
+		 * @return the name
+		 */
+		public String getName() {
+			return name;
+		}
+
+		/**
+		 * @param name the name to set
+		 */
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		/**
+		 * @return the depth
+		 */
+		public int getDepth() {
+			return depth;
+		}
+
+		/**
+		 * @param depth the depth to set
+		 */
+		public void setDepth(int depth) {
+			this.depth = depth;
+		}
 	}
 
 	public static class Tree {
