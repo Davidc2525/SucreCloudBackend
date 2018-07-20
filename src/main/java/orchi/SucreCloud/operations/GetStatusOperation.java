@@ -89,7 +89,7 @@ public class GetStatusOperation implements IOperation {
 			/*if (fs.isDirectory(opath)) {
 				return new ListOperation(args).call();
 			}*/
- 
+
 			JSONObject file = new JSONObject();
 
 			FileStatus fileStatus = fs.getFileLinkStatus(opath);

@@ -18,6 +18,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.json.JSONObject;
 import org.slf4j.*;
 
+import orchi.SucreCloud.Util;
 import orchi.SucreCloud.hdfs.HdfsManager;
 import orchi.SucreCloud.hdfs.ZipFiles;
 
@@ -44,12 +45,10 @@ public class DownloadOperation implements IOperation {
 			.map(x->new Path(HdfsManager.newPath(root, (String)x).toString()))
 			.filter(x->{
 				try {
-					return fs.exists( x);
+					return fs.exists(x);
 				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				return false;
@@ -57,9 +56,7 @@ public class DownloadOperation implements IOperation {
 			
 			
 			try{
-				log.info("Descargar directorio {}",opath.toString());
 
-				//r.addHeader("Transfer-Encoding","gzip");
 				r.addHeader("Content-Disposition", " attachment; filename=\"" + opath.getName() + ".zip\"");
 
 				MultiTree tree = new MultiTree(fs,yetPaths);
@@ -68,7 +65,7 @@ public class DownloadOperation implements IOperation {
 				tree = null;
 
 				log.info("Operacion de descarga terminada {}",opath.toString());
-				// ctx.getResponse().getWriter().println("descargar carpeta");
+				
 				ctx.getResponse().flushBuffer();
 				ctx.complete();
 				
@@ -108,12 +105,11 @@ public class DownloadOperation implements IOperation {
 				tree = null;
 
 				log.info("Operacion de descarga terminada {}",opath.toString());
-				// ctx.getResponse().getWriter().println("descargar carpeta");
+				ctx.getResponse().flushBuffer();
 				ctx.complete();
 			}
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -132,16 +128,22 @@ public class DownloadOperation implements IOperation {
 		private int depth = -1;
 
 		public MultiTree (FileSystem fs, Path path) throws FileNotFoundException, IOException {
+			log.info("Nuevo arbol de directorio {}",path);
 			this.fs = fs;
-			get(path);
+			get(path,null);
+			log.info("Arbol de directorio multiple {} completado. ",path);
+			log.info("\t {} elementos.",paths.size());
 		}
 
 		public MultiTree (FileSystem fs,List<Path> ps) throws FileNotFoundException, IOException {
+			log.info("Nuevo arbol de directorio multiple {}",ps);
 			this.fs = fs;
 
 			for (Path path : ps) {
-				get(path);
+				get(path,null);
 			}
+			log.info("Arbol de directorio multiple {} completado. ",ps);
+			log.info("\t {} elementos.",paths.size());
 		}
 
 		/**debug*/
@@ -155,27 +157,35 @@ public class DownloadOperation implements IOperation {
 			return r;
 		}
 
-		public void get(Path path) throws FileNotFoundException, IOException {
-			if(fs.isFile(path)){
-				
-				paths.add(new PathAndDepth(path.toString().toString(), 0));
-				return ;
+		public void get(Path path,Boolean isFile) throws FileNotFoundException, IOException {
+			if(isFile==null){
+				if(fs.isFile(path)){
+					log.debug("\tfile {}",Util.getPathWithoutRootPath(path+""));
+					paths.add(new PathAndDepth(path.toString().toString(), 0));
+					return ;
+				}
+			}else{
+				if(isFile&&fs.isFile(path)){
+					log.debug("\tfile {}",Util.getPathWithoutRootPath(path+""));
+					paths.add(new PathAndDepth(path.toString().toString(), 0));
+					return ;
+				}
 			}
+			
+			log.debug("path {}",Util.getPathWithoutRootPath(path+""));
 
 			++depth;
 			RemoteIterator<FileStatus> list = fs.listStatusIterator(path);
 			while (list.hasNext()) {
 				FileStatus item = list.next();
 				if (item.isFile() ) {
-					// System.out.println(String.format("%s %s %s",
-					// repeat("\t",depth),item.getPath().getName(),
-					// item.getLen()));
+					
 					paths.add(new PathAndDepth((item.getPath().toString()).toString(), depth));
-					// pathMap.put(item.getPath().getName(), depth);
-					// pathsS.add(item.getPath().toString());
+					
+					log.debug("\tfile {}",Util.getPathWithoutRootPath(item.getPath().toString()));
 					
 				}else{
-					get(item.getPath());
+					get(item.getPath(),false);
 					depth--;
 				}
 

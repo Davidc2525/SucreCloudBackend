@@ -1,5 +1,7 @@
 package orchi.SucreCloud.operations;
 
+import orchi.SucreCloud.Util;
+
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -32,14 +34,16 @@ public class DeleteOperation implements IOperation {
 		try {
 			if(paths!=null){
 				Path opath = null;
+				String lastPath = "/";
 				for(Object p:paths){
+				    lastPath = (String) p;
 					opath  = new Path(HdfsManager.newPath(root, p+"").toString());
 					log.debug("Eliminando {}",opath);
 					HdfsManager.getInstance().deletePath(opath);
 					log.debug("{} eliminando",opath);
 				}
-
-				return new JSONObject().put("args",arg).put("status","ok").put("parent", Paths.get(opath.toString()).getParent().toString());
+                String parentOfLastPath = (Paths.get(lastPath).getParent().toString());
+				return new JSONObject().put("args",arg).put("status","ok").put("parent", parentOfLastPath);
 			}else{
 				Path opath = new Path(HdfsManager.newPath(root, path).toString());
 				log.debug("Eliminando {}",path);

@@ -23,6 +23,17 @@ public class Start {
 
 	public static void main(String[] args) throws Exception {
 
+		int port = 8080;
+		String host = "orchi";
+
+		if(args.length==1){
+			host = args[0];
+		}
+		if(args.length==2){
+			host = args[0];
+			port = Integer.valueOf(args[1]);
+		}
+
 		log.info("{}",HdfsManager.getInstance().fs);;
 		//log.info("path {}",new Path("/mi_dfs/david").);
 		log.info("path {}",Path.getPathWithoutSchemeAndAuthority(new Path("/mi_dfs/david"))  );
@@ -43,8 +54,8 @@ public class Start {
 		http_config.setSendDateHeader(false);
 
 		ServerConnector http = new ServerConnector(server, new HttpConnectionFactory(http_config));
-		http.setPort(8080);
-		http.setHost("orchi");
+		http.setPort(port);
+		http.setHost(host);
 		http.setIdleTimeout(Long.MAX_VALUE);
 
 		server.addConnector(http);
