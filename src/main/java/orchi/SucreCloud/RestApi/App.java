@@ -47,7 +47,7 @@ public class App extends HttpServlet {
 	}
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.getSession(true);
+		req.getSession(true);		
 		executor.execute(new Task(req.startAsync()));
 	}
 

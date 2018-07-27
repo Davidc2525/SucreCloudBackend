@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.SucreCloud.RestApi.App;
+import orchi.SucreCloud.RestApi.Opener;
 import orchi.SucreCloud.hdfs.HdfsManager;
 
 /**
@@ -19,7 +20,7 @@ import orchi.SucreCloud.hdfs.HdfsManager;
  */
 public class Start {
 	private static Logger log = LoggerFactory.getLogger(Start.class);
-	private static Server server;
+	public static Server server;
 
 	public static void main(String[] args) throws Exception {
 
@@ -59,14 +60,17 @@ public class Start {
 		http.setIdleTimeout(Long.MAX_VALUE);
 
 		server.addConnector(http);
-
+		
 		ServletContextHandler servletContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
 		servletContext.setContextPath("/api");
 
 		servletContext.addServlet(App.class, "/").setAsyncSupported(true);
-		servletContext.addServlet(TEST.class, "/test").setAsyncSupported(true);
+		servletContext.addServlet(Opener.class, "/opener").setAsyncSupported(true);
 
+		servletContext.addServlet(TEST.class, "/test").setAsyncSupported(true);
+		
+		
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 
 		contexts.setHandlers(new Handler[] { servletContext });

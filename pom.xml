@@ -14,10 +14,18 @@
         <log4j.version>1.7.5</log4j.version>
         <commons-io.version>2.6</commons-io.version>
         <jettyVersion>9.3.9.v20160517</jettyVersion>
+        <firebase.version>6.3.0</firebase.version>
     </properties>
 
 
     <dependencies>
+
+<dependency>
+  <groupId>com.google.firebase</groupId>
+  <artifactId>firebase-admin</artifactId>
+  <version>${firebase.version}</version>
+</dependency>
+
 
 <dependency>
     <groupId>commons-fileupload</groupId>

@@ -65,7 +65,39 @@ public class HdfsManager {
 		}
 		return instance;
 	}
+	
+	public void readFile(Path path, OutputStream out, Long[] range) throws IOException {
 
+		if (!fs.exists(path)) {
+			System.out.println("File " + path.getName() + " does not exists");
+			return;
+		}
+
+		FSDataInputStream in = fs.open(path);
+		in.seek(range[0]);
+		long contentLength = range[1] - range[0]+1;
+		byte[] b = new byte[1024];
+		Long totalReads=0L;
+		int numBytes = 0;
+		while ((numBytes = in.read(b)) > 0 && totalReads < contentLength ) {
+			
+			out.write(b, 0, numBytes);
+			totalReads+=numBytes;
+			
+			//System.out.println(String.format("read %s", totalReads));
+			
+			
+			//String parte = "Leido "+totalReads;
+			
+		}
+
+		//in.close();
+		//in=null;
+		// out.close();
+
+	}
+
+		
 	public void readFile(Path path, OutputStream out) throws IOException {
 
 		if (!fs.exists(path)) {

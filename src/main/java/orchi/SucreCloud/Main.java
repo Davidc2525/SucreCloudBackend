@@ -21,6 +21,9 @@ public class Main {
 	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException {
 
 		System.out.println("SucreCLoud!");
+		
+		
+		
 		FileSystem fs = HdfsManager.getInstance().fs;
 
 		/*
