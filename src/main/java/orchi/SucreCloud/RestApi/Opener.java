@@ -8,10 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.ZipOutputStream;
-
-import javax.annotation.RegEx;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -43,14 +39,14 @@ public class Opener extends HttpServlet {
 				Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
 				String mime = Files.probeContentType(Paths.get(path.toString()));
 				
-				ParseRange parseRange = new ParseRange(hRange,fileSize);
-				Long[] range = parseRange.range;
-				long contentLength = parseRange.contentLength;
+				Range range = new Range(hRange,fileSize);
+				Long[] ranges = range.range;
+				long contentLength = range.getContentLength();
 				
 				log.debug("contenido parcial");
 				log.debug("cabesera {}",hRange);
 				log.debug("ruta decodificada {}",decodePath);
-				log.debug("rango de consulta {} {}",range[0],range[1]);
+				log.debug("rango de consulta {} {}",ranges[0],ranges[1]);
 				log.debug("tamaño de contenido de salida {}",contentLength);
 				log.debug("tamaño del contenido total {}",fileSize);
 				log.debug("tipo de mime {}",mime);
@@ -61,7 +57,7 @@ public class Opener extends HttpServlet {
 				resp.setStatus(206);
 				resp.setHeader("Accept-Ranges", "bytes");
 				resp.setHeader("Content-Length", contentLength + "");
-				resp.setHeader("Content-Range", "bytes " + range[0] + "-" + range[1] + "/" + fileSize);
+				resp.setHeader("Content-Range", "bytes " + ranges[0] + "-" + ranges[1] + "/" + fileSize);
 				resp.setHeader("Content-Type", mime);
 				HdfsManager.getInstance().readFile(path, (resp.getOutputStream()), range);
 
@@ -73,7 +69,7 @@ public class Opener extends HttpServlet {
 				String mime = Files.probeContentType(Paths.get(path.toString()));
 				Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
 				
-				log.debug("contenido parcial");
+				log.debug("contenido total");
 				log.debug("ruta decodificada {}",decodePath);
 				log.debug("tamaño del contenido total {}",fileSize);
 				log.debug("tipo de mime {}",mime);
@@ -120,13 +116,13 @@ public class Opener extends HttpServlet {
 		}
 	}
 
-	public static class ParseRange {
+	public static class Range {
 		public Long[] range = { 0L, 0L };
 		private String reg = "(?:bytes)=(\\d+)-(\\d+)?";
 		private Pattern pattern = Pattern.compile(reg);
 		private long contentLength;
 
-		public ParseRange(String headerRange,Long fileSize) {
+		public Range(String headerRange,Long fileSize) {
 			//System.out.println(headerRange);
 			Matcher m = pattern.matcher(headerRange);
 			// System.out.println(m.matches());
@@ -146,11 +142,24 @@ public class Opener extends HttpServlet {
 					range[1] = fileSize-1;
 				}
 				
-				contentLength = range[1] - range[0] + 1;
+				setContentLength(range[1] - range[0] + 1);
 
 			}
 
-			//System.out.println(String.format("range => %s %s", range[0], range[1]));
+		}
+
+		/**
+		 * @return the contentLength
+		 */
+		public long getContentLength() {
+			return contentLength;
+		}
+
+		/**
+		 * @param contentLength the contentLength to set
+		 */
+		public void setContentLength(long contentLength) {
+			this.contentLength = contentLength;
 		}
 
 	}
