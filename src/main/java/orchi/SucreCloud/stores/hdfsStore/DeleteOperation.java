@@ -1,4 +1,4 @@
-package orchi.SucreCloud.operations;
+package orchi.SucreCloud.stores.hdfsStore;
 
 import orchi.SucreCloud.Util;
 
@@ -13,13 +13,14 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import orchi.SucreCloud.hdfs.HdfsManager;
+import orchi.SucreCloud.operations.IOperation;
+import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
 
 public class DeleteOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(DeleteOperation.class);
 	private JSONObject arg;
 	private List<Object> paths;
-	public DeleteOperation(AsyncContext ctx, JSONObject arg) {
+	public DeleteOperation(JSONObject arg) {
 		this.arg = arg;
 		paths = (arg.has("paths") && !arg.isNull("paths")) ?arg.getJSONArray("paths").toList():null;
 		log.debug("Nueva operacion de eliminacion");

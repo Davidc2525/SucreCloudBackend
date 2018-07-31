@@ -3,6 +3,11 @@ package orchi.SucreCloud;
 import java.awt.List;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,18 +18,39 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import orchi.SucreCloud.hdfs.HdfsManager;
+import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
+
+
 
 public class Main {
-
-	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException {
+	private static Logger log = LoggerFactory.getLogger(Main.class);
+	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 
 		System.out.println("SucreCLoud!");
 		
 		
+		String driver = "org.apache.derby.jdbc.EmbeddedDriver";
+		Class.forName(driver).newInstance();
+		String protocol = "jdbc:derby:";
 		
-		FileSystem fs = HdfsManager.getInstance().fs;
+		Connection conn = DriverManager.getConnection(protocol + "HHCloud;create=false");
+		log.info("{}",conn);
+		
+		/*conn.createStatement().execute("create table users (name varchar(32) not null)");
+		PreparedStatement psInsert = conn.prepareStatement("insert into users(name) values (?)");
+		psInsert.setString(1,"david");
+		psInsert.executeUpdate();
+		*/
+		ResultSet myWishes = conn.createStatement().executeQuery("select * from users");
+		while (myWishes.next()) {
+			log.info(" name {}",myWishes.getString(1));
+			//System.out.println("On " + myWishes.getTimestamp(1) + " I wished for " + myWishes.getString(2));
+		}
+		//log.info("{}",nc.toString());;
+		//FileSystem fs = HdfsManager.getInstance().fs;
 
 		/*
 		 * RemoteIterator<FileStatus> list = fs.listStatusIterator(new
@@ -34,7 +60,7 @@ public class Main {
 		 * System.out.println(String.format("%s %s", item.getPath(),
 		 * item.getLen())); }
 		 */
-		int X = 0;
+		/*int X = 1;
 		while (X < 1) {
 			X++;
 			System.err.println("comienso " + X);
@@ -52,7 +78,7 @@ public class Main {
 			});
 			System.err.println("listo" + X);
 		}
-
+*/
 	}
 
 	public static class Tree {

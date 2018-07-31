@@ -12,8 +12,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.SucreCloud.RestApi.App;
+import orchi.SucreCloud.RestApi.Login;
+import orchi.SucreCloud.RestApi.Logout;
 import orchi.SucreCloud.RestApi.Opener;
-import orchi.SucreCloud.hdfs.HdfsManager;
+import orchi.SucreCloud.database.DbConnectionManager;
+import orchi.SucreCloud.store.StoreManager;
+import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
+import orchi.auth.AuthProvider;
+import orchi.auth.DefaultAuthProvider;
+import orchi.auth.logIO.LogInAndOut;
+import orchi.user.UserManager;
 
 /**
  *david
@@ -68,6 +76,9 @@ public class Start {
 		servletContext.addServlet(App.class, "/").setAsyncSupported(true);
 		servletContext.addServlet(Opener.class, "/opener").setAsyncSupported(true);
 
+		servletContext.addServlet(Login.class, "/login").setAsyncSupported(true);
+		servletContext.addServlet(Logout.class, "/logout").setAsyncSupported(true);
+
 		servletContext.addServlet(TEST.class, "/test").setAsyncSupported(true);
 		
 		
@@ -81,5 +92,25 @@ public class Start {
 		log.info("Iniciando servidor");
 		server.start();
 		server.join();
+	}
+	
+	public static UserManager getUserManager(){
+		return UserManager.getInstance();
+	}
+
+	public static AuthProvider getAuthProvider(){
+		return DefaultAuthProvider.getInstance();
+	}
+
+	public static LogInAndOut getLoginAndOut() {
+		return LogInAndOut.getInstance();
+	}
+	
+	public static StoreManager getStoreProvider() {
+		return StoreManager.getInstance();
+	}
+	
+	public static DbConnectionManager getDbConnectionManager() {
+		return DbConnectionManager.getInstance();
 	}
 }

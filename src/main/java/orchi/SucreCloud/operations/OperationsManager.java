@@ -11,6 +11,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import orchi.SucreCloud.ParseParamsMultiPart;
+import orchi.SucreCloud.Start;
+import orchi.SucreCloud.store.Store;
 
 /**
  * @author david
@@ -24,13 +26,15 @@ public class OperationsManager {
 	 */
 	private static OperationsManager instance;
 
-	private static List<Class<? extends IOperation>> opsDefault = Arrays.asList(ListOperation.class);
+	//private static List<Class<? extends IOperation>> opsDefault = Arrays.asList(ListOperation.class);
 
 	/** typo de contenido de la respuesta */
 	private String contentType;
 
-	public OperationsManager() {
+	private Store store;
 
+	public OperationsManager() {
+		store = Start.getStoreProvider().getStoreProvider();
 		setContentType("application/json");
 
 	}
@@ -61,38 +65,46 @@ public class OperationsManager {
 
 		/**Operacion de listar directorio*/
 		if (Operation.LIST.equalsName(operation)) {//TODO hacer multiple
-			response = new ListOperation(arg).call();
+			response = store.ls(arg);
+			//response = new ListOperation(arg).call();
 		}
 		/**Operacion de obtener informacion de un archivo*/
 		if (Operation.GETSTATUS.equalsName(operation)) {//multiple
-			response = new GetStatusOperation(arg).call();
+			response = store.status(arg);
+			//response = new GetStatusOperation(arg).call();
 		}
 		if (Operation.RENAME.equalsName(operation)) {//TODO hacer multiple
-			response = new RenameOperation(arg).call();
+			response = store.rename(arg);
+			//response = new RenameOperation(arg).call();
 		}
 		/**Operacion para copiar de una rruta a otra*/
 		if (Operation.COPY.equalsName(operation)) {//TODO hacer multiple
-			response = new MoveOrCopyOperation(arg,false).call();
+			response = store.copy(arg);
+			//response = new MoveOrCopyOperation(arg,false).call();
 		}
 		/**operacion para mover de una rruta a otra*/
 		if (Operation.MOVE.equalsName(operation)) {//TODO hacer multiple
-			response = new MoveOrCopyOperation(arg,true).call();
+			response = store.move(arg);
+			//response = new MoveOrCopyOperation(arg,true).call();
 		}
 		/**Operacion para descargar un archivo o carpeta en formato ZIP, cambia en contentype a
 		 * 'application/octet-stream'*/
 		if (Operation.DOWNLOAD.equalsName(operation)) {//mutiple
 			setContentType("application/octet-stream");
-			new DownloadOperation(ctx, arg);
+			store.download(ctx,arg);
+			//new DownloadOperation(ctx, arg);
 			return null;
 		}
 		/**Operacin para crear directorio*/
 		if (Operation.MKDIR.equalsName(operation)) {//no creo q sea necesario hacerlo multiple
-			response = new CreateDirectoryOperation(arg).call();
+			response = store.mkdir(arg);
+			//response = new CreateDirectoryOperation(arg).call();
 		}
 
 		/**operacion para eliminar de una rruta a otra*/
 		if (Operation.DELETE.equalsName(operation)) {//multiple
-			response = new DeleteOperation(ctx, arg).call();
+			response = store.delete(arg);
+			//response = new DeleteOperation(ctx, arg).call();
 		}
 		/**operacion pendiente por validad*/
 		if (Operation.PUT.equalsName(operation)) {
@@ -100,7 +112,8 @@ public class OperationsManager {
 				return new JSONObject().put("error", "invalid method");
 			}
 			try {
-				response = new UploadOperation(ctx,arg,params).call();
+				response = store.upload(ctx,arg,params);
+				//response = new UploadOperation(ctx,arg,params).call();
 			} catch (FileUploadException | IOException e) {
 				e.printStackTrace();
 			}

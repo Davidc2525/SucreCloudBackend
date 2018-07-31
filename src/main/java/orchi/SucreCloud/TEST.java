@@ -23,7 +23,5 @@ public class TEST extends HttpServlet {
 		
 		JSONObject json = new JSONObject();
 		resp.getWriter().println(json.put("name", "david").put("token",req.getParameter("t")));
-		
-		
 	}
 }

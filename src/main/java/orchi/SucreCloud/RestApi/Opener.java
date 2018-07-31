@@ -17,15 +17,20 @@ import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import orchi.SucreCloud.hdfs.HdfsManager;
+import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
+
+
 
 public class Opener extends HttpServlet {
 	private Logger log = LoggerFactory.getLogger(Opener.class);
 	private Long readedParts = 0L;
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		// resp.addHeader("Access-Control-Allow-Origin",
-		// "http://localhost:9090");
+		resp.addHeader("Access-Control-Allow-Origin","http://localhost:9090");
+		if(req.getSession(false)==null){
+			resp.getWriter().println("no tiene session activa");
+			return;
+		};
 		resp.addHeader("Access-Control-Allow-Credentials", "true");
 		log.debug("Abrir contenido de archivo.");
 		Path p;

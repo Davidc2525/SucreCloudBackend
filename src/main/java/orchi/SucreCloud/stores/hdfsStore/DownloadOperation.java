@@ -1,4 +1,4 @@
-package orchi.SucreCloud.operations;
+package orchi.SucreCloud.stores.hdfsStore;
 
 
 import java.io.FileNotFoundException;
@@ -19,8 +19,9 @@ import org.json.JSONObject;
 import org.slf4j.*;
 
 import orchi.SucreCloud.Util;
-import orchi.SucreCloud.hdfs.HdfsManager;
-import orchi.SucreCloud.hdfs.ZipFiles;
+import orchi.SucreCloud.operations.IOperation;
+import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
+import orchi.SucreCloud.stores.hdfsStore.ZipFiles;
 
 public class DownloadOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(DownloadOperation.class);

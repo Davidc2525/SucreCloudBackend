@@ -11,13 +11,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.hadoop.fs.FileSystem;
 import org.json.JSONObject;
 import org.mortbay.log.Log;
 import orchi.SucreCloud.ParseParamsMultiPart;
-import orchi.SucreCloud.hdfs.HdfsManager;
 import orchi.SucreCloud.operations.OperationsManager;
 
 public class App extends HttpServlet {
@@ -25,11 +24,12 @@ public class App extends HttpServlet {
 	private static String root = "/mi_dfs/";
 	private ThreadPoolExecutor executor;
 
-	public static String getRoot(){
-		return root+"david";
+	public static String getRoot() {
+		return root + "david";
 	}
-	public static String getRoot(String user){
-		return root+user;
+
+	public static String getRoot(String user) {
+		return root + user;
 	}
 
 	@Override
@@ -40,14 +40,15 @@ public class App extends HttpServlet {
 
 	}
 
-    @Override
+	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    	req.getSession(true);
-		doPost(req,resp);
+		req.getSession(false);
+		doPost(req, resp);
 	}
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.getSession(true);		
+		req.getSession(false);
 		executor.execute(new Task(req.startAsync()));
 	}
 
@@ -66,10 +67,11 @@ public class App extends HttpServlet {
 
 		@Override
 		public void run() {
-			FileSystem fs = HdfsManager.getInstance().fs;
+			// FileSystem fs = HdfsManager.getInstance().fs;
 
 			HttpServletRequest reqs = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resps = (HttpServletResponse) ctx.getResponse();
+			HttpSession session = reqs.getSession(false);
 			resps.addHeader("Access-Control-Allow-Origin", "http://localhost:9090");
 			resps.addHeader("Access-Control-Allow-Credentials", "true");
 
@@ -79,14 +81,15 @@ public class App extends HttpServlet {
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 
-				/*try {
-			        ctx.getResponse().setContentType("application/json");
-				    ctx.getResponse().getWriter().println( new JSONObject().put("error","invalid_method").put("status","error").put("errorMsg","nada"));
-				    ctx.complete();
-		        } catch (JSONException | IOException e) {
-
-			        e.printStackTrace();
-		        }*/
+				/*
+				 * try { ctx.getResponse().setContentType("application/json");
+				 * ctx.getResponse().getWriter().println( new
+				 * JSONObject().put("error","invalid_method").put("status",
+				 * "error").put("errorMsg","nada")); ctx.complete(); } catch
+				 * (JSONException | IOException e) {
+				 * 
+				 * e.printStackTrace(); }
+				 */
 				e1.printStackTrace();
 			}
 			String args = null;
@@ -100,31 +103,34 @@ public class App extends HttpServlet {
 			} else if (reqs.getMethod().equalsIgnoreCase("get")) {
 				args = new String(Base64.decodeBase64(reqs.getParameter("args")));
 			}
-			//reqs.getParameter("args");
+			// reqs.getParameter("args");
 
-			//Log.info("params {}",params);
+			// Log.info("params {}",params);
 
-			//String args = reqs.getParameter("args");
+			// String args = reqs.getParameter("args");
 
-			Log.info("{}",args);
-			JSONObject JsonArgs = new  JSONObject(args);
-
+			Log.info("{}", args);
+			JSONObject JsonArgs = new JSONObject(args);
 
 			String user = null;
-			if(JsonArgs.has("user")){
+			if (JsonArgs.has("user")) {
 				user = JsonArgs.getString("user");
 			}
 
-			if(user== null){
+			if (user == null) {
 				JsonArgs.put("root", getRoot("david"));
-			}else{
+			} else {
 				JsonArgs.put("root", getRoot(user));
+				
+				
+			}
+			if(session!=null){
+				JsonArgs.put("rootSession", getRoot((String)session.getAttribute("uid")));
 			}
 			String path = JsonArgs.getString("path");
 			String operation = JsonArgs.getString("op");
 
-			OperationsManager.getInstance().processOperation(ctx,JsonArgs,params);
-
+			OperationsManager.getInstance().processOperation(ctx, JsonArgs, params);
 
 		}
 

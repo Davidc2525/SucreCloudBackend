@@ -1,5 +1,5 @@
 
-package orchi.SucreCloud.operations;
+package orchi.SucreCloud.stores.hdfsStore;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,7 +18,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import orchi.SucreCloud.Util;
-import orchi.SucreCloud.hdfs.HdfsManager;
+import orchi.SucreCloud.operations.IOperation;
+import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
 
 public class GetStatusOperation implements IOperation {
 	private static Logger log = org.slf4j.LoggerFactory.getLogger(GetStatusOperation.class);

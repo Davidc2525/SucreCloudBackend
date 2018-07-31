@@ -1,4 +1,4 @@
-package orchi.SucreCloud.operations;
+package orchi.SucreCloud.stores.hdfsStore;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -10,7 +10,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import orchi.SucreCloud.hdfs.HdfsManager;
+import orchi.SucreCloud.operations.IOperation;
+import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
 
 public class MoveOrCopyOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(RenameOperation.class);

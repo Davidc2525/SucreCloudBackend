@@ -1,4 +1,4 @@
-package orchi.SucreCloud.hdfs;
+package orchi.SucreCloud.stores.hdfsStore;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -11,14 +11,15 @@ import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 
 import orchi.SucreCloud.Util;
-import orchi.SucreCloud.operations.DownloadOperation.PathAndDepth;
+import orchi.SucreCloud.stores.hdfsStore.DownloadOperation.MultiTree;
+import orchi.SucreCloud.stores.hdfsStore.DownloadOperation.PathAndDepth;
 
 public class ZipFiles {
 	private Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
 	private FileSystem fs;
 
-	public ZipFiles(orchi.SucreCloud.operations.DownloadOperation.MultiTree tree, OutputStream outputStream) {
+	public ZipFiles(MultiTree tree, OutputStream outputStream) {
 		log.debug("creating new zip file");
 		fs = HdfsManager.getInstance().fs;
 		int total = tree.paths.size();

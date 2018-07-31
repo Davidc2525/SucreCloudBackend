@@ -1,4 +1,4 @@
-package orchi.SucreCloud.hdfs;
+package orchi.SucreCloud.stores.hdfsStore;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

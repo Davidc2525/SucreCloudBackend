@@ -1,22 +1,17 @@
-package orchi.SucreCloud.operations;
+package orchi.SucreCloud.stores.hdfsStore;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Paths;
 
 import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.util.Streams;
 import org.apache.hadoop.fs.Path;
 import org.json.JSONObject;
 
 import orchi.SucreCloud.ParseParamsMultiPart;
-import orchi.SucreCloud.hdfs.HdfsManager;
+import orchi.SucreCloud.operations.IOperation;
+import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
 
 public class UploadOperation implements IOperation {
 

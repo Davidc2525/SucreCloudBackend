@@ -1,6 +1,5 @@
-package orchi.SucreCloud.operations;
+package orchi.SucreCloud.stores.hdfsStore;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -20,9 +17,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.medsea.mimeutil.MimeUtil;
 import orchi.SucreCloud.Util;
-import orchi.SucreCloud.hdfs.HdfsManager;
+import orchi.SucreCloud.operations.IOperation;
+import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
 
 public class ListOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(ListOperation.class);
