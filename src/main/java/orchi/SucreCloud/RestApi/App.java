@@ -25,11 +25,11 @@ public class App extends HttpServlet {
 	private ThreadPoolExecutor executor;
 
 	public static String getRoot() {
-		return root + "david";
+		return  "david";
 	}
 
 	public static String getRoot(String user) {
-		return root + user;
+		return  user;
 	}
 
 	@Override
@@ -42,13 +42,13 @@ public class App extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.getSession(false);
+
 		doPost(req, resp);
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.getSession(false);
+		
 		executor.execute(new Task(req.startAsync()));
 	}
 
@@ -74,7 +74,21 @@ public class App extends HttpServlet {
 			HttpSession session = reqs.getSession(false);
 			resps.addHeader("Access-Control-Allow-Origin", "http://localhost:9090");
 			resps.addHeader("Access-Control-Allow-Credentials", "true");
-
+				
+			if(session==null){
+				try {
+					JSONObject response = new JSONObject();
+					response.put("status","error");
+					response.put("error","auth");
+					response.put("errorMsg", "No ha iniciado sesion.");
+					resps.getWriter().println(response.toString(2));
+					ctx.complete();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 			ParseParamsMultiPart params = null;
 			try {
 				params = new ParseParamsMultiPart(reqs);
@@ -112,21 +126,12 @@ public class App extends HttpServlet {
 			Log.info("{}", args);
 			JSONObject JsonArgs = new JSONObject(args);
 
-			String user = null;
-			if (JsonArgs.has("user")) {
-				user = JsonArgs.getString("user");
-			}
-
-			if (user == null) {
-				JsonArgs.put("root", getRoot("david"));
-			} else {
-				JsonArgs.put("root", getRoot(user));
-				
-				
-			}
+			
+			
 			if(session!=null){
 				JsonArgs.put("rootSession", getRoot((String)session.getAttribute("uid")));
 			}
+			JsonArgs.put("root", getRoot((String)session.getAttribute("uid")));
 			String path = JsonArgs.getString("path");
 			String operation = JsonArgs.getString("op");
 

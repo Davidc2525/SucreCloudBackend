@@ -14,7 +14,7 @@ public class UserManager {
 	public UserManager() throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException {
 		
-		this(DefaultUserProvider.class);
+		this(EmbedUserProvider.class);
 	}
 	
 	/**inicia con un proveedor pasado como String*/

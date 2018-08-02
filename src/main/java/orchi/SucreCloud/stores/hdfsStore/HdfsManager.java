@@ -1,8 +1,5 @@
 package orchi.SucreCloud.stores.hdfsStore;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,59 +8,75 @@ import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.util.Progressable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import orchi.SucreCloud.RestApi.Opener.Range;
 
 public class HdfsManager {
-
+	private static Logger log = LoggerFactory.getLogger(HdfsManager.class);
+	public static Boolean isLocalFileSystem;
+	
 	private static HdfsManager instance;
-	private String hdfsuri = "hdfs://orchi2:9000";
+	private String hdfsuri;//getIsLocalFileSystem() ? "file:///": "hdfs://orchi2:9000";
+	public static String root;// = getIsLocalFileSystem() ? "/home/david/HHCloudFsStore/mi_dfs/":"/mi_dfs/";
+	
 	public FileSystem fs;
 	public FileSystem dfs;
-
-	public HdfsManager() {
+	
+	public HdfsManager(){
+		this(false);
+	}
+	public HdfsManager(Boolean isLocal) {
+		setIsLocalFileSystem(isLocal);
+		log.info("Iniciando administrador hdfs");
+		log.info("isLocalFileSystem: {}",getIsLocalFileSystem());
 		Configuration conf = new Configuration();
-		// Set FileSystem URI
+		
+		
+		hdfsuri = getIsLocalFileSystem() ? "file:///": "hdfs://orchi2:9000";
+		root = getIsLocalFileSystem() ? "/home/david/HHCloudFsStore/mi_dfs/":"/mi_dfs/";
+		log.debug("hdfs uri {}",hdfsuri);
+		log.debug("root system {}",root);
+		
 		conf.set("fs.defaultFS", hdfsuri);
-		// Because of Maven
 		conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
 		conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
-		// Set HADOOP user
-		// System.setProperty("HADOOP_USER_NAME", "david");
-		// System.setProperty("hadoop.home.dir", "/");
-		// Get the filesystem - HDFS
+		
 		try {
 			fs = FileSystem.get(URI.create(hdfsuri), conf);
-			//dfs = DistributedFileSystem.get(URI.create(hdfsuri),conf);
+			
+			
 			Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(()->{
 				try {
-					fs.printStatistics();
+					FileSystem.printStatistics();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 				}
 			} , 0, 5, TimeUnit.SECONDS);
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 	}
 
 	public static HdfsManager getInstance() {
 		if (instance == null) {
-			instance = new HdfsManager();
+			instance = new HdfsManager(false);
+		}
+		return instance;
+	}
+	
+	public static HdfsManager getInstance(boolean isLocal) {
+		if (instance == null) {
+			instance = new HdfsManager(isLocal);
 		}
 		return instance;
 	}
@@ -102,13 +115,9 @@ public class HdfsManager {
 		FSDataInputStream in = fs.open(path);
 
 		byte[] b = new byte[1024 * 1024];
-		int totalReads=0;
 		int numBytes = 0;
 		while ((numBytes = in.read(b)) > 0) {
 			out.write(b, 0, numBytes);
-			totalReads+=numBytes;
-			//String parte = "Leido "+totalReads;
-			//System.out.println(String.format("read %s", totalReads));
 		}
 
 		in.close();
@@ -167,11 +176,57 @@ public class HdfsManager {
 		// out.close();
 		// fs.close();
 	}
-
+	
+	public static String getRoot (String uid){
+		return root+uid+"/files/";
+	}
+	
+	/**
+	 * Crea una nueva rruta añadiendo el valor root como '/' para no permitir salir de su contexto de 
+	 * almacenamiento de el usuario y entrar a otro
+	 * <br>
+	 * 	si el usuario quiere entrar a una rruta de su unidad '/mi imagenes/img1.jpg'
+	 * 	se añadira la rruta root del sistema HHCloud donde se almacenan las carpetas root de los usuarios registrados
+	 * <br>
+	 *  para q funcione las rrutas absolutas ingresadas por los usuarios con las rrutas absolutas del sistema HHCloud, temporalmente, y se eliminara cuando se muestre la informacion al cliente
+	 *  <br>
+	 *  
+	 *<pre>
+	 *  si tenemos '/mi imagenes/img1.jpg'
+	 *  se añade la rruta root configurada dependiendo de si es en sistema local o distribuido
+	 *	
+	 *	asumiendo q la rruta root es del sistema local '/home/david/HHCloudFsStore/mi_dfs/'
+	 *	la rruta completa queda: '/home/david/HHCloudFsStore/mi_dfs/${iduser}/mi imagenes/img1.jpg'
+	 *
+	 *	Ó
+	 *
+	 *	asumiendo q la rruta root es del sistema distribuido 'hdfs://${host}:${port}/mi_dfs/'
+	 *	la rruta completa queda: 'hdfs://${host}:${port}/mi_dfs/${iduser}/mi imagenes/img1.jpg'
+	 *  </pre>
+	 *  
+	 * 	
+	 * @param pRoot contiene la ruta root del sistema mas la id del usuario
+	 * @param contiene la rruta a la q quiere acceder el usuario
+	 * */
 	public static Path newPath(String pRoot, String path) {
 		Path p = new Path(Paths.get("/", path).normalize().toString());
 
-		p = Path.mergePaths(new Path(pRoot), p);
+		p = Path.mergePaths(new Path(getRoot(pRoot)), p);
+		System.err.println("newPath "+p.toString());
 		return p = new Path(Paths.get(p.toString()).normalize().toString());
+	}
+
+	/**
+	 * @return the isLocalFileSystem
+	 */
+	public static Boolean getIsLocalFileSystem() {
+		return isLocalFileSystem;
+	}
+
+	/**
+	 * @param isLocalFileSystem the isLocalFileSystem to set
+	 */
+	public static void setIsLocalFileSystem(Boolean isLocalFileSystem) {
+		HdfsManager.isLocalFileSystem = isLocalFileSystem;
 	}
 }

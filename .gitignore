@@ -6,5 +6,5 @@ target/*
 .project
 .settings
 log/
-HHCloud
+/db
 /derby.log

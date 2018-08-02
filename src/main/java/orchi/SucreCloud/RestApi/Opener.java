@@ -12,11 +12,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import orchi.SucreCloud.Start;
 import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
 
 
@@ -27,7 +29,8 @@ public class Opener extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.addHeader("Access-Control-Allow-Origin","http://localhost:9090");
-		if(req.getSession(false)==null){
+		HttpSession session = req.getSession(false);
+		if(session==null){
 			resp.getWriter().println("no tiene session activa");
 			return;
 		};
@@ -40,7 +43,7 @@ public class Opener extends HttpServlet {
 				String hRange = new ParseOpenerHeaders(req).headers.get("Range");
 				String endodePath = new ParseOpenerParams(req).params.get("path");
 				String decodePath = new decodeParam(endodePath).decodedParam;
-				Path path  = new Path("/mi_dfs/david/" + decodePath);
+				Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
 				Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
 				String mime = Files.probeContentType(Paths.get(path.toString()));
 				
@@ -70,7 +73,7 @@ public class Opener extends HttpServlet {
 
 				String endodePath = new ParseOpenerParams(req).params.get("path");
 				String decodePath = new decodeParam(endodePath).decodedParam;
-				Path path  = new Path("/mi_dfs/david/" + decodePath);
+				Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
 				String mime = Files.probeContentType(Paths.get(path.toString()));
 				Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
 				
@@ -86,7 +89,7 @@ public class Opener extends HttpServlet {
 			}
 		} catch (Exception e1) {
 			
-			//e1.printStackTrace();
+			e1.printStackTrace();
 		}
 
 	}

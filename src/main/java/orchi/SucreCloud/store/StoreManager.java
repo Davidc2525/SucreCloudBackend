@@ -5,11 +5,12 @@ import org.slf4j.LoggerFactory;
 
 public class StoreManager {
 	private static Logger log = LoggerFactory.getLogger(StoreManager.class);
-	private static String defaultStore = "orchi.SucreCloud.stores.hdfsStore.HdfsStoreProvider";
+	private static String propertyProviderStore = System.getProperty("StoreManager.storeProvider");
+	private static String defaultStore = propertyProviderStore != null ? propertyProviderStore : "orchi.SucreCloud.stores.hdfsStore.HdfsStoreProvider";
 	private static StoreManager instance = null;
 	private Store storeProvider = null;
 
-	public StoreManager() {
+	public StoreManager() {		
 		this(defaultStore);
 	}
 
@@ -20,6 +21,8 @@ public class StoreManager {
 			Class<? extends Store> ClassStore = (Class<? extends Store>) Class.forName(storeProviderClassName);
 
 			storeProvider = ClassStore.newInstance();
+			storeProvider.init();
+			storeProvider.start();
 			log.debug("Creado proveedor de almacenamiento: {}",storeProviderClassName);
 		} catch (ClassNotFoundException e) {
 			log.error("No se encontro la clase proveedora de almacenamiento: {}",storeProviderClassName);
@@ -39,6 +42,8 @@ public class StoreManager {
 			Class<? extends Store> ClassStore = storeProviderClass;
 
 			storeProvider = ClassStore.newInstance();
+			storeProvider.init();
+			storeProvider.start();
 			log.debug("Creado proveedor de almacenamiento: {}",storeProviderClass.getName());
 		} catch (InstantiationException e) {
 			log.error("No se pudo iniciar el proveedor de almacenamiento: {}",storeProviderClass.getName());

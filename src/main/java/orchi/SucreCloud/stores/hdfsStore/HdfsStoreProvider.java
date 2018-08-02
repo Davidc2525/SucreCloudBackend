@@ -13,6 +13,16 @@ import orchi.SucreCloud.store.Store;
 public class HdfsStoreProvider implements Store {
 		
 	public HdfsStoreProvider(){
+		
+	}
+	
+	@Override
+	public void init(){
+		
+	}
+	
+	@Override
+	public void start(){
 		HdfsManager.getInstance();
 	}
 

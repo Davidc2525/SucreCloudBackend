@@ -39,12 +39,12 @@ public class DbConnectionManager {
 		}
 	}
 
-	public static ConnectionProvider getConnectionProvider() {
+	public ConnectionProvider getConnectionProvider() {
 		Log.debug("obtener proveedor: {}", connectionProvider.getClass().getName());
 		return connectionProvider;
 	}
 
-	public static Connection getConnection() throws SQLException {
+	public Connection getConnection() throws SQLException {
 		Log.debug("Obtener conexion de proveedor: {}", connectionProvider.getClass().getName());
 		Integer currentRetryCount = 0;
 		Integer maxRetries = 10;
@@ -77,7 +77,7 @@ public class DbConnectionManager {
 						+ " retries. " + "The exception from the last attempt is as follows: " + lastException);
 	}
 
-	public static void setConnectionProvider(ConnectionProvider provider) {
+	public void setConnectionProvider(ConnectionProvider provider) {
 		synchronized (providerLock) {
 			if (connectionProvider != null) {
 				connectionProvider.destroy();
@@ -100,7 +100,7 @@ public class DbConnectionManager {
 
 	}
 
-	public static void closeConnection(Connection con) {
+	public void closeConnection(Connection con) {
 		if (con != null) {
 			try {
 				con.close();
@@ -110,7 +110,7 @@ public class DbConnectionManager {
 		}
 	}
 
-	public static void destroyConnectionProvider() {
+	public void destroyConnectionProvider() {
 		synchronized (providerLock) {
 			if (connectionProvider != null) {
 				connectionProvider.destroy();

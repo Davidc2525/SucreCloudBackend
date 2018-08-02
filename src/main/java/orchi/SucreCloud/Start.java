@@ -43,11 +43,7 @@ public class Start {
 			port = Integer.valueOf(args[1]);
 		}
 
-		log.info("{}",HdfsManager.getInstance().fs);;
-		//log.info("path {}",new Path("/mi_dfs/david").);
-		log.info("path {}",Path.getPathWithoutSchemeAndAuthority(new Path("/mi_dfs/david"))  );
-
-
+		
 
 		server = new Server();
 
@@ -91,6 +87,7 @@ public class Start {
 
 		log.info("Iniciando servidor");
 		server.start();
+
 		server.join();
 	}
 	

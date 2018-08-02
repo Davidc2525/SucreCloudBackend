@@ -3,6 +3,8 @@ package orchi.SucreCloud;
 import java.awt.List;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,6 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -21,17 +24,55 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import orchi.SucreCloud.stores.FsStore.FsStore;
 import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
 
 
 
 public class Main {
 	private static Logger log = LoggerFactory.getLogger(Main.class);
-	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException {
 
-		System.out.println("SucreCLoud!");
+		System.out.println("HHCloud pruebas!");
 		
 		
+		Connection con = Start.getDbConnectionManager().getConnection();
+		System.err.println(con);
+		/*con.createStatement().execute("create table users (name varchar(32) not null)");
+		PreparedStatement psInsert = con.prepareStatement("insert into users(name) values (?)");
+		psInsert.setString(1,"david");
+		psInsert.executeUpdate();
+		*/
+		ResultSet myWishes = con.createStatement().executeQuery("SELECT * FROM USERS where email='david25pcxtreme@gmail.com'");
+		
+		
+		while (myWishes.next()) {
+			log.info(" name {}",myWishes.getString("email"));
+			//System.out.println("On " + myWishes.getTimestamp(1) + " I wished for " + myWishes.getString(2));
+		}
+		if(true){
+			return;
+		}
+		
+		java.nio.file.Path p = Paths.get("/home/david/HHCloudFsStore/mi_dfs/david/document/asc/");
+		
+		String path = "/";
+		Boolean add = false;
+		Iterator<java.nio.file.Path> iter = p.iterator();
+		while(iter.hasNext()){
+			java.nio.file.Path part = iter.next();
+			
+			if(add){
+				path+="/"+part.toString();
+			}
+			
+			if(part.toString().equals("mi_dfs")){
+				add = true;	
+				iter.next();
+			}		
+			
+		}
+		System.err.println(Paths.get("/",path).normalize());
 		String driver = "org.apache.derby.jdbc.EmbeddedDriver";
 		Class.forName(driver).newInstance();
 		String protocol = "jdbc:derby:";
@@ -44,11 +85,13 @@ public class Main {
 		psInsert.setString(1,"david");
 		psInsert.executeUpdate();
 		*/
-		ResultSet myWishes = conn.createStatement().executeQuery("select * from users");
+		 myWishes = conn.createStatement().executeQuery("select * from users");
 		while (myWishes.next()) {
 			log.info(" name {}",myWishes.getString(1));
 			//System.out.println("On " + myWishes.getTimestamp(1) + " I wished for " + myWishes.getString(2));
 		}
+		
+		//new FsStore();
 		//log.info("{}",nc.toString());;
 		//FileSystem fs = HdfsManager.getInstance().fs;
 

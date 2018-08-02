@@ -244,11 +244,10 @@ public class Login extends HttpServlet {
 				}
 			} else {
 				User user = createUserLoginWithRequest();
-				System.err.println(user.toString());
 				// s = req.getSession(false);
 				try {
 					//user = UserManager.getInstance().getUserProvider().getUserById(CSDM.getUserBySessionId(s.getId()));
-					UserManager.getInstance().getUserProvider().getUserByEmail(user.getEmail());
+					UserManager.getInstance().getUserProvider().getUserById((String) s.getAttribute("uid"));
 				} catch (UserNotExistException e) {
 					//AppOrchi.hazelcastSessionManager.invalidateSession(s.getId());
 

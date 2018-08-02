@@ -10,6 +10,11 @@ import org.json.JSONObject;
 import orchi.SucreCloud.ParseParamsMultiPart;
 
 public interface Store {
+	
+	public void init();
+	
+	public void start();
+	
 	public JSONObject mkdir(JSONObject args);
 	
 	public JSONObject delete(JSONObject args);

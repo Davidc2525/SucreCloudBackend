@@ -19,8 +19,8 @@ public class EmbeddedConnectionProvider implements ConnectionProvider {
 
 	private Properties settings;
 
-	private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
-	private String protocol = "jdbc:derby:";
+	private String driver =  !true ? "org.hsqldb.jdbcDriver" : "org.apache.derby.jdbc.EmbeddedDriver";
+	private String protocol = !true ? "jdbc:hsqldb:file:" : "jdbc:derby:";
 
 	private Connection conn;
 
@@ -40,8 +40,8 @@ public class EmbeddedConnectionProvider implements ConnectionProvider {
 
 			if (conn == null) {
 				Class.forName(driver).newInstance();
-
-				conn = DriverManager.getConnection(protocol + "HHCloud;create=true");
+				
+				conn = DriverManager.getConnection(protocol + "db/HHCloud;create=false");
 			}
 
 		} catch (ClassNotFoundException e) {

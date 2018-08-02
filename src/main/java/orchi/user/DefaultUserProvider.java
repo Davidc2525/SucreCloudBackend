@@ -1,10 +1,13 @@
 package orchi.user;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import orchi.SucreCloud.Start;
+import orchi.SucreCloud.database.ConnectionProvider;
+import orchi.SucreCloud.database.DbConnectionManager;
 import orchi.user.Exceptions.UserException;
 import orchi.user.Exceptions.UserMutatorException;
 import orchi.user.Exceptions.UserMutatorPassword;
@@ -15,15 +18,12 @@ public class DefaultUserProvider implements UserProvider {
 	private Map<String,User> usersById = new HashMap<String,User>();
 	private Map<String,String> usersByEmail = new HashMap<String,String>();
 	private Map<String,String> usersByUsername = new HashMap<String,String>();
+	private ConnectionProvider provider;
+	private Connection conn;
 
 
 	public DefaultUserProvider() {
-		try {
-			Start.getDbConnectionManager().getInstance().getConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 		usersById.put("23034087", new BasicUser().bind("23034087", "david.c", "david@orchi.com", "2525"));
 		usersById.put("123", new BasicUser().bind("123", "luisa", "luisa@orchi.com", "2525"));
 		usersById.put("345", new BasicUser().bind("345", "juan", "juan@orchi.com", "2525"));
