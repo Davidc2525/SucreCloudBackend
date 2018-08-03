@@ -9,12 +9,15 @@ public class DataUser extends BasicUser {
 	private String firstName;
 	private String lastName;
 	private Long createAt;
+	private boolean emailVerified = false;
 
-	public User bind(String id, String username, String email, String password, String firstName, String lastName,Long createAt) {
+	public User bind(String id, String username, String email, boolean emailVerified,String password, String firstName, String lastName,Long createAt) {
+		
 		super.bind(id, username, email, password);
 		this.setFirstName(firstName);
 		this.setLastName(lastName);
 		this.setCreateAt(createAt);
+		this.setEmailVerified(emailVerified);
 		return this;
 	}
 
@@ -79,10 +82,27 @@ public class DataUser extends BasicUser {
 		this.lastName = lastName;
 	}
 
+
+	/**
+	 * @return the emailVerified
+	 */
+	public boolean isEmailVerified() {
+		return emailVerified;
+	}
+
+	/**
+	 * @param emailVerified the emailVerified to set
+	 */
+	public void setEmailVerified(boolean emailVerified) {
+		this.emailVerified = emailVerified;
+	}
+
 	@Override
 	public String toString() {
 		return "DataUser {id=" + id + ", username=" + username + ", email=" + email + ", password=" + password
-				+ ", firstName=" + getFirstName() + ", lastName=" + getLastName() + ", createAt=" + getCreateAt() + "}";
+				+ ", firstName=" + firstName + ", lastName=" + lastName + ", createAt=" + createAt + ", emailVerified="
+				+ emailVerified + "}";
 	}
+
 
 }

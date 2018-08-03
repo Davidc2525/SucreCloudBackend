@@ -85,4 +85,12 @@ public class DefaultUserProvider implements UserProvider {
 
 	}
 
+
+
+	@Override
+	public UserValidator getUserValidator() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -16,7 +16,7 @@ public interface Store {
 	
 	public void start();
 	
-	public void createStoreContextToUser(User user);
+	public void createStoreContextToUser(User user) throws IOException;
 	
 	public JSONObject mkdir(JSONObject args);
 	

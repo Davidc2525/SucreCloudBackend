@@ -5,7 +5,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import orchi.SucreCloud.Start;
-import orchi.SucreCloud.RestApi.App;
 import orchi.auth.Exceptions.AuthException;
 
 import orchi.user.User;
@@ -21,7 +20,7 @@ public class LogInAndOut implements LoginAndLogoutInterface {
 		Start.getAuthProvider().authenticate(user, (authUser) -> {
 
 			HttpSession session = ((HttpServletRequest) ctx.getRequest()).getSession(true);
-
+			
 			callback.call(new LoginDataSuccess(authUser, ctx));		
 			
 		});

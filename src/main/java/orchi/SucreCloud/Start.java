@@ -15,6 +15,7 @@ import orchi.SucreCloud.RestApi.App;
 import orchi.SucreCloud.RestApi.Login;
 import orchi.SucreCloud.RestApi.Logout;
 import orchi.SucreCloud.RestApi.Opener;
+import orchi.SucreCloud.RestApi.Users;
 import orchi.SucreCloud.database.DbConnectionManager;
 import orchi.SucreCloud.store.StoreManager;
 import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
@@ -24,7 +25,7 @@ import orchi.auth.logIO.LogInAndOut;
 import orchi.user.UserManager;
 
 /**
- *david
+ * @Author david
  */
 public class Start {
 	private static Logger log = LoggerFactory.getLogger(Start.class);
@@ -43,7 +44,7 @@ public class Start {
 			port = Integer.valueOf(args[1]);
 		}
 
-		
+
 
 		server = new Server();
 
@@ -64,20 +65,18 @@ public class Start {
 		http.setIdleTimeout(Long.MAX_VALUE);
 
 		server.addConnector(http);
-		
+
 		ServletContextHandler servletContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
 		servletContext.setContextPath("/api");
 
 		servletContext.addServlet(App.class, "/").setAsyncSupported(true);
 		servletContext.addServlet(Opener.class, "/opener").setAsyncSupported(true);
-
+		servletContext.addServlet(Users.class, "/user").setAsyncSupported(true);
 		servletContext.addServlet(Login.class, "/login").setAsyncSupported(true);
 		servletContext.addServlet(Logout.class, "/logout").setAsyncSupported(true);
-
 		servletContext.addServlet(TEST.class, "/test").setAsyncSupported(true);
-		
-		
+
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 
 		contexts.setHandlers(new Handler[] { servletContext });
@@ -90,7 +89,7 @@ public class Start {
 
 		server.join();
 	}
-	
+
 	public static UserManager getUserManager(){
 		return UserManager.getInstance();
 	}
@@ -102,11 +101,11 @@ public class Start {
 	public static LogInAndOut getLoginAndOut() {
 		return LogInAndOut.getInstance();
 	}
-	
+
 	public static StoreManager getStoreManager() {
 		return StoreManager.getInstance();
 	}
-	
+
 	public static DbConnectionManager getDbConnectionManager() {
 		return DbConnectionManager.getInstance();
 	}

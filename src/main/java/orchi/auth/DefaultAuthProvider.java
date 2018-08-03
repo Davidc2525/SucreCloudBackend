@@ -18,7 +18,7 @@ import orchi.user.Exceptions.UserNotExistException;
 
 /**
  * Proveedor de autentcacion
- * 
+ *
  * @author Colmenares David
  * @see OrchiAuthProvider
  */
@@ -30,14 +30,12 @@ public class DefaultAuthProvider implements AuthProvider {
 	public void init() {
 
 	}
-	
-	
-	
+
 	@Override
 	public void authenticate(User auser, WraperLoginCallback callback) throws AuthException {
 
 		commonValidation(auser.getUsername(), auser.getPassword());
-		
+
 		User user = null;
 		try {
 			user = UserManager.getInstance().getUserProvider().getUserByEmail(auser.getUsername());
@@ -62,7 +60,7 @@ public class DefaultAuthProvider implements AuthProvider {
 			usersAuthFails.put(auser.getUsername(), countFails);
 			if (countFails >= 50) {
 				throw new AuthExceededCountFaildException(
-						auser.getUsername() + " exeedec the count retry auth " + countFails + " > 4, its tube locket.");
+						auser.getUsername() + " exeedec the count retry auth " + countFails + " > 4, its locket.");
 			}
 
 			throw new AuthPasswordException(
@@ -99,7 +97,7 @@ public class DefaultAuthProvider implements AuthProvider {
 			}
 			++countFails;
 			usersAuthFails.put(username, countFails);
-			if (countFails >= 5) { 
+			if (countFails >= 5) {
 				throw new AuthExceededCountFaildException(
 						username + " exeedec the count retry auth " + countFails + " > 4, its tube locket.");
 
@@ -120,7 +118,7 @@ public class DefaultAuthProvider implements AuthProvider {
 		return instance;
 	}
 
-	
+
 
 	@Override
 	public void destroy() {

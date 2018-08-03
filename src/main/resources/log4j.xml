@@ -19,11 +19,11 @@
   -->
 
 
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="true">
 
    <appender name="CONS" class="org.apache.log4j.ConsoleAppender">
       <param name="Target" value="System.out"/>
-      <param name="Threshold" value="TRACE"/>
+      <param name="Threshold" value="DEBUG"/>
 
       <layout class="org.apache.log4j.PatternLayout">
          <!--<param name="ConversionPattern" value="%d{HH:mm:ss,SSS} | %-5p | %c | %m%n"/>-->
@@ -32,18 +32,18 @@
    </appender>
 
    <appender name="FILE" class="org.apache.log4j.RollingFileAppender">
-     <param name="File" value="log/vysper_server.log"/>
+     <param name="File" value="log/HHCloud.log"/>
      <param name="Append" value="true"/>
      <param name="MaxFileSize" value="5GB"/>
      <param name="MaxBackupIndex" value="1"/>
-     <param name="Threshold" value="INFO"/>
+     <param name="Threshold" value="DEBUG"/>
 
      <layout class="org.apache.log4j.PatternLayout">
        <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} | %-5p | %c | %m%n"/>
      </layout>
    </appender>
 
-   <appender name="STANZA" class="org.apache.log4j.RollingFileAppender">
+   <!--<appender name="STANZA" class="org.apache.log4j.RollingFileAppender">
      <param name="File" value="log/stanza.log"/>
      <param name="Append" value="true"/>
      <param name="MaxFileSize" value="5GB"/>
@@ -53,45 +53,21 @@
      <layout class="org.apache.log4j.PatternLayout">
        <param name="ConversionPattern" value="%-5p %d{HH:mm:ss,SSS} | %c{1} | %m%n"/>
      </layout>
-   </appender>
+   </appender>-->
 
-    <category name="orchi.SucreCloud">
+   <category name="orchi.SucreCloud">
      <priority value="DEBUG"/>
    </category>
 
-   <!-- limit logging for spring -->
-   <category name="org.springframework">
-     <priority value="INFO"/>
-   </category>
-
-   <!-- limit logging for mina -->
    <category name="org.apache.hadoop">
      <priority value="INFO"/>
    </category>
-   <category name="org.apache.vysper.mina">
-     <priority value="WARN"/>
-   </category>
 
-   <!-- limit logging for jackrabbit -->
-   <category name="org.apache.jackrabbit">
+   <category name="org.apache.tomcat">
      <priority value="INFO"/>
    </category>
 
-
-  <!-- <category name="org.apache.vysper">
-     <priority value="DEBUG"/>
-   </category>-->
-   <category name="org.apache.vysper">
-     <priority value="INFO"/>
-   </category>
-
-    <category name="org.apache.jasper">
-     <priority value="INFO"/>
-   </category>
-    <category name="org.apache.tomcat">
-     <priority value="INFO"/>
-   </category>
- <category name="org.apache.zookeeper">
+   <category name="org.apache.zookeeper">
      <priority value="INFO"/>
    </category>
    <!----><category name="org.eclipse.jetty">
@@ -103,12 +79,7 @@
    </category>
 
 
-   <category name="stanza">
-     <priority value="INFO"/>
-     <appender-ref ref="STANZA" />
-   </category>
-
-   <root >
+   <root>
      <appender-ref ref="CONS"/>
      <appender-ref ref="FILE"/>
    </root>

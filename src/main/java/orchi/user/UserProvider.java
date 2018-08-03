@@ -9,6 +9,7 @@ import orchi.user.Exceptions.UserNotExistException;
  * interface para proveedor de usuarios*/
 public interface UserProvider {
 	
+	public UserValidator getUserValidator();
 	/**obtener usuario por su id*/
 	public User getUserById(String userId) throws UserNotExistException,UserException;
 	/**obtener usuario por su correo (email)*/
@@ -21,7 +22,5 @@ public interface UserProvider {
 	public void deleteUser(User userId) throws UserException;
 	/**cambiar la clave de un usuario "esto tengo q hacerlo en otro lugar"*/
 	public void changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException,UserException;
-	
-	
-	
+
 }

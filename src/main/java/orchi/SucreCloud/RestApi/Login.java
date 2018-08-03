@@ -138,7 +138,7 @@ public class Login extends HttpServlet {
 		public String getPassword() {
 			return password;
 		}
-		
+
 		public String getStatus() {
 			return status;
 		}
@@ -148,12 +148,12 @@ public class Login extends HttpServlet {
 			return this;
 		}
 	}
-	
+
 
 	public static class Task implements Runnable {
 
 		private AsyncContext ctx;
-		
+
 		public Task(AsyncContext asyncCtx) {
 			this.ctx = asyncCtx;
 		}
@@ -162,7 +162,7 @@ public class Login extends HttpServlet {
 			try {
 				((HttpServletResponse) ctx.getResponse()).setHeader("Content-type", "application/json");
 				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Credentials", "true");
-				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin", "http://orchi:9090");
+				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin", "http://localhost:9090");
 				((HttpServletResponse) ctx.getResponse()).setHeader("Content-encoding", "gzip");
 
 				om.writeValue(new  GzipCompressorOutputStream(ctx.getResponse().getOutputStream()), data);
@@ -195,7 +195,7 @@ public class Login extends HttpServlet {
 			String password = req.getParameter("password");
 			String remember = req.getParameter("remember");
 			boolean isRemember = Boolean.valueOf(remember);
-			
+
 			return new LoginDataUser().bind(username, password, isRemember);
 		}
 
@@ -237,7 +237,7 @@ public class Login extends HttpServlet {
 						writeResponse(new AuthJsonResponse(e.getMessage(), false).setPasswordError(e.getMessage()).setStatus("error"));
 					} catch (AuthException e) {
 						writeResponse(new AuthJsonResponse(e.getMessage(), false).setStatus("error"));
-					} 
+					}
 
 				} else {
 					writeResponse(new AuthJsonResponse("you need send data", false)
@@ -246,9 +246,9 @@ public class Login extends HttpServlet {
 							.setStatus("error"));
 				}
 			} else {
-				User user = createUserLoginWithRequest();
+				User user = null;//= createUserLoginWithRequest();
 				try {
-					UserManager.getInstance().getUserProvider().getUserById((String) s.getAttribute("uid"));
+					user = UserManager.getInstance().getUserProvider().getUserById((String) s.getAttribute("uid"));
 				} catch (UserNotExistException e) {
 					e.printStackTrace();
 					writeResponse(new AuthJsonResponse(e.getMessage(), false)
@@ -263,7 +263,8 @@ public class Login extends HttpServlet {
 
 				writeResponse(new AuthJsonResponse("session aleardy create", false)
 						.setExist(true)
-						.setUserid(user.getId()).setSesId(s.getId()));
+						.setUserid(user.getId())
+						.setSesId(s.getId()));
 
 			}
 

@@ -24,9 +24,10 @@ public class EmbedUserProvider implements UserProvider {
 	private static final String SELECT_USERS_WHERE_USERNAME = "SELECT * FROM USERS where username=(?)";
 	private static final String SELECT_USERS_WHERE_EMAIL = "SELECT * FROM USERS where email=(?)";
 	private static final String SELECT_USERS_WHERE_ID = "SELECT * FROM USERS where id=(?)";
-	private static final String INSERT_INTO_USERS = "INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?, ?)";
+	private static final String INSERT_INTO_USERS = "INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 	private ConnectionProvider provider;
 	private Connection conn;
+	private UserValidator userValidator = new DefaultUserValidator();
 
 	public EmbedUserProvider() {
 		try {
@@ -88,7 +89,7 @@ public class EmbedUserProvider implements UserProvider {
 	}
 
 	@Override
-	public User getUserByUsername(String userName) throws UserNotExistException {
+	public User getUserByUsername(String userName) throws UserNotExistException,UserException {
 		User user = null;
 		ResultSet result;
 		try {
@@ -104,7 +105,7 @@ public class EmbedUserProvider implements UserProvider {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new UserNotExistException(e.getMessage());
+			throw new UserException(e.getMessage());
 
 		}
 		System.err.println("UserByEmail: " + user);
@@ -128,11 +129,12 @@ public class EmbedUserProvider implements UserProvider {
 
 					userInsert.setString(1, user.getId());
 					userInsert.setString(2, user.getEmail());
-					userInsert.setString(3, user.getUsername());
-					userInsert.setString(4, user.getFirstName());
-					userInsert.setString(5, user.getLastName());
-					userInsert.setBigDecimal(6, new BigDecimal(user.getCreateAt()));
-					userInsert.setString(7, user.getPassword());					
+					userInsert.setBoolean(3, user.isEmailVerified());
+					userInsert.setString(4, user.getUsername());
+					userInsert.setString(5, user.getFirstName());
+					userInsert.setString(6, user.getLastName());
+					userInsert.setBigDecimal(7, new BigDecimal(user.getCreateAt()));
+					userInsert.setString(8, user.getPassword());					
 					userInsert.executeUpdate();
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -161,11 +163,18 @@ public class EmbedUserProvider implements UserProvider {
 				result.getString("id"),
 				result.getString("username"),
 				result.getString("email"),
+				result.getBoolean("emailverified"),
 				result.getString("pass"), 
 				result.getString("firstname"),
 				result.getString("lastname"),
 				createAt);
 		return user;
+	}
+
+
+	@Override
+	public UserValidator getUserValidator() {
+		return userValidator;
 	}
 
 }

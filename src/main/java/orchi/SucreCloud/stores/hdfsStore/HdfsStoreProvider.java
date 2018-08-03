@@ -87,13 +87,9 @@ public class HdfsStoreProvider implements Store {
 	}
 
 	@Override
-	public void createStoreContextToUser(User user) {
+	public void createStoreContextToUser(User user) throws IOException {
 		Path pathRoot = HdfsManager.newPath(user.getId(),"");
-		try {
-			HdfsManager.getInstance().fs.mkdirs(pathRoot);			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}		
+		HdfsManager.getInstance().fs.mkdirs(pathRoot);			
 	}
 	
 	
