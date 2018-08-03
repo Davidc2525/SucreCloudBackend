@@ -103,7 +103,7 @@ public class Start {
 		return LogInAndOut.getInstance();
 	}
 	
-	public static StoreManager getStoreProvider() {
+	public static StoreManager getStoreManager() {
 		return StoreManager.getInstance();
 	}
 	

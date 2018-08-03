@@ -68,13 +68,13 @@ public class DefaultUserProvider implements UserProvider {
 	}
 
 	@Override
-	public void createUser(CreateUser newUser) throws UserException {
+	public void createUser(User newUser) throws UserException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void deleteUser(String userId) throws UserException {
+	public void deleteUser(User userId) throws UserException {
 		// TODO Auto-generated method stub
 
 	}

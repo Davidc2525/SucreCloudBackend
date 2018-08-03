@@ -5,10 +5,12 @@ import java.io.IOException;
 import javax.servlet.AsyncContext;
 
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.hadoop.fs.Path;
 import org.json.JSONObject;
 
 import orchi.SucreCloud.ParseParamsMultiPart;
 import orchi.SucreCloud.store.Store;
+import orchi.user.User;
 
 public class HdfsStoreProvider implements Store {
 		
@@ -82,6 +84,16 @@ public class HdfsStoreProvider implements Store {
 	public JSONObject upload(AsyncContext ctx, JSONObject arg, ParseParamsMultiPart params)
 			throws FileUploadException, IOException {
 		return new UploadOperation(ctx,arg,params).call();
+	}
+
+	@Override
+	public void createStoreContextToUser(User user) {
+		Path pathRoot = HdfsManager.newPath(user.getId(),"");
+		try {
+			HdfsManager.getInstance().fs.mkdirs(pathRoot);			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 	}
 	
 	

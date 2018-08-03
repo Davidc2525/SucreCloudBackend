@@ -10,17 +10,17 @@ import orchi.user.Exceptions.UserNotExistException;
 public interface UserProvider {
 	
 	/**obtener usuario por su id*/
-	public User getUserById(String userId) throws UserNotExistException;
+	public User getUserById(String userId) throws UserNotExistException,UserException;
 	/**obtener usuario por su correo (email)*/
-	public User getUserByEmail(String userEmail) throws UserNotExistException;
+	public User getUserByEmail(String userEmail) throws UserNotExistException,UserException;
 	/**obtener usuario por su username (nombre de usuario)*/
-	public User getUserByUsername(String userName) throws UserNotExistException;
+	public User getUserByUsername(String userName) throws UserNotExistException,UserException;
 	/**crear un nuevo usuario*/
-	public void createUser(CreateUser newUser) throws UserException;
+	public void createUser(User newUser) throws UserException;
 	/**eliminar un usuario*/
-	public void deleteUser(String userId) throws UserException;
+	public void deleteUser(User userId) throws UserException;
 	/**cambiar la clave de un usuario "esto tengo q hacerlo en otro lugar"*/
-	public void changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException;
+	public void changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException,UserException;
 	
 	
 	

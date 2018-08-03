@@ -8,12 +8,15 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.json.JSONObject;
 
 import orchi.SucreCloud.ParseParamsMultiPart;
+import orchi.user.User;
 
 public interface Store {
 	
 	public void init();
 	
 	public void start();
+	
+	public void createStoreContextToUser(User user);
 	
 	public JSONObject mkdir(JSONObject args);
 	

@@ -30,6 +30,7 @@ import orchi.auth.logIO.LoginDataSuccess;
 import orchi.user.LoginDataUser;
 import orchi.user.User;
 import orchi.user.UserManager;
+import orchi.user.Exceptions.UserException;
 import orchi.user.Exceptions.UserNotExistException;
 
 public class Login extends HttpServlet {
@@ -70,9 +71,7 @@ public class Login extends HttpServlet {
 	}
 
 	public static class AuthJsonResponse {
-
-
-
+		public String status = "ok";
 		public String sesid = null;
 		public String userid = null;
 		public boolean auth = false;
@@ -139,7 +138,17 @@ public class Login extends HttpServlet {
 		public String getPassword() {
 			return password;
 		}
+		
+		public String getStatus() {
+			return status;
+		}
+
+		public AuthJsonResponse setStatus(String status) {
+			this.status = status;
+			return this;
+		}
 	}
+	
 
 	public static class Task implements Runnable {
 
@@ -151,14 +160,11 @@ public class Login extends HttpServlet {
 
 		public void writeResponse(AuthJsonResponse data) {
 			try {
-
-
 				((HttpServletResponse) ctx.getResponse()).setHeader("Content-type", "application/json");
 				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Credentials", "true");
 				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin", "http://orchi:9090");
 				((HttpServletResponse) ctx.getResponse()).setHeader("Content-encoding", "gzip");
 
-				//ctx.getResponse().getWriter().print(om.writeValueAsString(data));
 				om.writeValue(new  GzipCompressorOutputStream(ctx.getResponse().getOutputStream()), data);
 				ctx.complete();
 			} catch (IOException e) {
@@ -174,16 +180,12 @@ public class Login extends HttpServlet {
 			try {
 				this.process();
 			} catch (JsonGenerationException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (JsonMappingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -226,36 +228,41 @@ public class Login extends HttpServlet {
 						});
 
 					} catch (AuthUsernameException e) {
-						writeResponse(new AuthJsonResponse(e.getMessage(), false).setUsernameError(e.getMessage()));
+						writeResponse(new AuthJsonResponse(e.getMessage(), false).setUsernameError(e.getMessage()).setStatus("error"));
 					} catch (AuthPasswordException e) {
-						writeResponse(new AuthJsonResponse(e.getMessage(), false).setPasswordError(e.getMessage()));
+						writeResponse(new AuthJsonResponse(e.getMessage(), false).setPasswordError(e.getMessage()).setStatus("error"));
 					} catch (AuthUserNotExistsException e) {
-						writeResponse(new AuthJsonResponse(e.getMessage(), false).setUsernameError(e.getMessage()));
+						writeResponse(new AuthJsonResponse(e.getMessage(), false).setUsernameError(e.getMessage()).setStatus("error"));
 					} catch (AuthExceededCountFaildException e) {
-						writeResponse(new AuthJsonResponse(e.getMessage(), false).setPasswordError(e.getMessage()));
+						writeResponse(new AuthJsonResponse(e.getMessage(), false).setPasswordError(e.getMessage()).setStatus("error"));
 					} catch (AuthException e) {
-						writeResponse(new AuthJsonResponse(e.getMessage(), false));
-					}
+						writeResponse(new AuthJsonResponse(e.getMessage(), false).setStatus("error"));
+					} 
 
 				} else {
 					writeResponse(new AuthJsonResponse("you need send data", false)
 							.setUsernameError("username is required")
-							.setPasswordError("password is required"));
+							.setPasswordError("password is required")
+							.setStatus("error"));
 				}
 			} else {
 				User user = createUserLoginWithRequest();
-				// s = req.getSession(false);
 				try {
-					//user = UserManager.getInstance().getUserProvider().getUserById(CSDM.getUserBySessionId(s.getId()));
 					UserManager.getInstance().getUserProvider().getUserById((String) s.getAttribute("uid"));
 				} catch (UserNotExistException e) {
-					//AppOrchi.hazelcastSessionManager.invalidateSession(s.getId());
-
 					e.printStackTrace();
-					writeResponse(new AuthJsonResponse(e.getMessage(), false).setUsernameError(e.getMessage()));
+					writeResponse(new AuthJsonResponse(e.getMessage(), false)
+							.setUsernameError(e.getMessage())
+							.setStatus("error"));
+				} catch (UserException e) {
+					e.printStackTrace();
+					writeResponse(new AuthJsonResponse(e.getMessage(), false)
+							.setExist(false)
+							.setStatus("error"));
 				}
 
-				writeResponse(new AuthJsonResponse("session aleardy create", false).setExist(true)
+				writeResponse(new AuthJsonResponse("session aleardy create", false)
+						.setExist(true)
 						.setUserid(user.getId()).setSesId(s.getId()));
 
 			}

@@ -22,8 +22,7 @@ public class LogInAndOut implements LoginAndLogoutInterface {
 
 			HttpSession session = ((HttpServletRequest) ctx.getRequest()).getSession(true);
 
-			callback.call(new LoginDataSuccess(authUser, ctx));
-			
+			callback.call(new LoginDataSuccess(authUser, ctx));		
 			
 		});
 	}

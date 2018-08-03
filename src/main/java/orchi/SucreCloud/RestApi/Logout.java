@@ -41,7 +41,9 @@ public class Logout extends HttpServlet {
 	}
 	
 	public static class JsonResponse {
+		private String status = "ok";
 		
+
 		private Boolean logout = false;
 		private String msg = "N/A";
 		
@@ -55,7 +57,15 @@ public class Logout extends HttpServlet {
 		}
 		
 		public String getMsg(){return msg;}
+		
+		public String getStatus() {
+			return status;
+		}
 
+		public JsonResponse setStatus(String status) {
+			this.status = status;
+			return this;
+		}
 		
 	}
 	
@@ -89,7 +99,7 @@ public class Logout extends HttpServlet {
 		@Override
 		public void run() { 
 			if(((HttpServletRequest)ctx.getRequest()).getSession(false) == null){
-				writeResponse(new JsonResponse(false,"no session create before"));
+				writeResponse(new JsonResponse(false,"no session create before").setStatus("error"));
 				return;
 			}
 			

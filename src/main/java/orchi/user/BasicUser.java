@@ -8,7 +8,6 @@ public class BasicUser extends User{
 	
 	@Override
 	public User bind(String id, String username, String email, String password) {
-		// TODO Auto-generated method stub
 		this.id = id == null ? "" : id;
 		this.username = username == null ? "" : username;
 		this.email = email == null ? "" : email;

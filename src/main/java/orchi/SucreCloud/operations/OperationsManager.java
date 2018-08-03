@@ -34,7 +34,7 @@ public class OperationsManager {
 	private Store store;
 
 	public OperationsManager() {
-		store = Start.getStoreProvider().getStoreProvider();
+		store = Start.getStoreManager().getStoreProvider();
 		setContentType("application/json");
 
 	}

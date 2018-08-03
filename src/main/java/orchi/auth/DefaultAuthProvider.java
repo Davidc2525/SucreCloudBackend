@@ -13,6 +13,7 @@ import orchi.auth.logIO.WraperLoginCallback;
 
 import orchi.user.User;
 import orchi.user.UserManager;
+import orchi.user.Exceptions.UserException;
 import orchi.user.Exceptions.UserNotExistException;
 
 /**
@@ -42,6 +43,8 @@ public class DefaultAuthProvider implements AuthProvider {
 			user = UserManager.getInstance().getUserProvider().getUserByEmail(auser.getUsername());
 		} catch (UserNotExistException e) {
 			throw new AuthUserNotExistsException(e.getMessage());
+		} catch (UserException  e){
+			throw new AuthException(e.getMessage());
 		}
 
 		String userPassword = user.getPassword();

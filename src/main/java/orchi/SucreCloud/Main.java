@@ -26,6 +26,9 @@ import org.slf4j.LoggerFactory;
 
 import orchi.SucreCloud.stores.FsStore.FsStore;
 import orchi.SucreCloud.stores.hdfsStore.HdfsManager;
+import orchi.user.DataUser;
+import orchi.user.User;
+import orchi.user.Exceptions.UserException;
 
 
 
@@ -37,13 +40,30 @@ public class Main {
 		
 		
 		Connection con = Start.getDbConnectionManager().getConnection();
-		System.err.println(con);
+		
+		DataUser user = new DataUser();
+		user.setId("904538689");
+		user.setEmail("karelis@gmail.com");
+		user.setUsername("karelis.c");
+		user.setFirstName("karelis");
+		user.setLastName("cerrado");
+		user.setCreateAt(System.currentTimeMillis());
+		user.setPassword("2525");
+		
+		try {
+			Start.getUserManager().getUserProvider().createUser(user);
+			Start.getStoreManager().getStoreProvider().createStoreContextToUser(user);
+		} catch (UserException e) {
+			
+			e.printStackTrace();
+		}
+		
 		/*con.createStatement().execute("create table users (name varchar(32) not null)");
 		PreparedStatement psInsert = con.prepareStatement("insert into users(name) values (?)");
 		psInsert.setString(1,"david");
 		psInsert.executeUpdate();
 		*/
-		ResultSet myWishes = con.createStatement().executeQuery("SELECT * FROM USERS where email='david25pcxtreme@gmail.com'");
+		ResultSet myWishes = con.createStatement().executeQuery("SELECT * FROM USERS");
 		
 		
 		while (myWishes.next()) {

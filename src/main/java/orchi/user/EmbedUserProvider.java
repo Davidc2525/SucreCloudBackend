@@ -9,13 +9,22 @@ import java.sql.SQLException;
 import orchi.SucreCloud.Start;
 import orchi.SucreCloud.database.ConnectionProvider;
 import orchi.SucreCloud.database.DbConnectionManager;
+import orchi.user.Exceptions.UserAleardyExistsException;
 import orchi.user.Exceptions.UserException;
 import orchi.user.Exceptions.UserMutatorException;
 import orchi.user.Exceptions.UserMutatorPassword;
 import orchi.user.Exceptions.UserNotExistException;
 
+/**
+ * @author Colmenares David
+ *
+ */
 public class EmbedUserProvider implements UserProvider {
 
+	private static final String SELECT_USERS_WHERE_USERNAME = "SELECT * FROM USERS where username=(?)";
+	private static final String SELECT_USERS_WHERE_EMAIL = "SELECT * FROM USERS where email=(?)";
+	private static final String SELECT_USERS_WHERE_ID = "SELECT * FROM USERS where id=(?)";
+	private static final String INSERT_INTO_USERS = "INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?, ?)";
 	private ConnectionProvider provider;
 	private Connection conn;
 
@@ -30,57 +39,51 @@ public class EmbedUserProvider implements UserProvider {
 		}
 	}
 
+	
 	@Override
-	public User getUserById(String userId) throws UserNotExistException {
+	public User getUserById(String userId) throws UserNotExistException ,UserException{
 		User user = null;
 		ResultSet result;
 		try {
-			PreparedStatement stm = conn.prepareStatement("SELECT * FROM USERS where id=(?)");
-			stm.setBigDecimal(1, new BigDecimal(userId));
+			PreparedStatement stm = conn.prepareStatement(SELECT_USERS_WHERE_ID);
+			stm.setString(1, (userId));
 			result = stm.executeQuery();
-			
-			if (result.next()) {
-				BigDecimal id = result.getBigDecimal("id");
 
-				user = new BasicUser().bind(id + "", result.getString("username"), result.getString("email"),
-						result.getString("pass"));
+			if (result.next()) {
+				user = buildUserFromResult(result);
 			} else {
 				throw new UserNotExistException("Usuario con " + userId + " no existe.");
 			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new UserNotExistException(e.getMessage());
+			throw new UserException(e.getMessage());
 
 		}
-		System.err.println("UserById "+user);
+		System.err.println("UserById " + user);
 		return user;
 	}
 
 	@Override
-	public User getUserByEmail(String userEmail) throws UserNotExistException {
+	public User getUserByEmail(String userEmail) throws UserNotExistException,UserException {
 		User user = null;
 		ResultSet result;
 		try {
-			PreparedStatement stm = conn.prepareStatement("SELECT * FROM USERS where email=(?)");
+			PreparedStatement stm = conn.prepareStatement(SELECT_USERS_WHERE_EMAIL);
 			stm.setString(1, (userEmail));
 			result = stm.executeQuery();
-			
-			if (result.next()) {
-				BigDecimal id = result.getBigDecimal("id");
 
-				user = new BasicUser().bind(id + "", result.getString("username"), result.getString("email"),
-						result.getString("pass"));
+			if (result.next()) {
+				user = buildUserFromResult(result);
 			} else {
 				throw new UserNotExistException("Usuario con " + userEmail + " no existe.");
 			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new UserNotExistException(e.getMessage());
-
+			throw new UserException(e.getMessage());
 		}
-		System.err.println("UserByEmail: "+user);
+		System.err.println("UserByEmail: " + user);
 		return user;
 	}
 
@@ -89,15 +92,12 @@ public class EmbedUserProvider implements UserProvider {
 		User user = null;
 		ResultSet result;
 		try {
-			PreparedStatement stm = conn.prepareStatement("SELECT * FROM USERS where username=(?)");
+			PreparedStatement stm = conn.prepareStatement(SELECT_USERS_WHERE_USERNAME);
 			stm.setString(1, (userName));
 			result = stm.executeQuery();
-			
-			if (result.next()) {
-				BigDecimal id = result.getBigDecimal("id");
 
-				user = new BasicUser().bind(id + "", result.getString("username"), result.getString("email"),
-						result.getString("pass"));
+			if (result.next()) {
+				user = buildUserFromResult(result);
 			} else {
 				throw new UserNotExistException("Usuario con " + userName + " no existe.");
 			}
@@ -107,25 +107,65 @@ public class EmbedUserProvider implements UserProvider {
 			throw new UserNotExistException(e.getMessage());
 
 		}
-		System.err.println("UserByEmail: "+user);
+		System.err.println("UserByEmail: " + user);
 		return user;
 	}
 
 	@Override
-	public void createUser(CreateUser newUser) throws UserException {
-		// TODO Auto-generated method stub
+	public void createUser(User newUser) throws UserException {
+		DataUser user = ((DataUser) newUser);
+		try {
+			getUserById(newUser.getId());
+			throw new UserAleardyExistsException("Ya existe un usuario registrado con ese id: " + user.getId());
+		} catch (UserNotExistException e1) {
+			try {
+				getUserByEmail(newUser.getEmail());
+				throw new UserAleardyExistsException("Ya existe un usuario registrado con ese email: " + user.getEmail());
+			} catch (UserNotExistException e2) {
+				try {
+					PreparedStatement userInsert = conn
+							.prepareStatement(INSERT_INTO_USERS);
+
+					userInsert.setString(1, user.getId());
+					userInsert.setString(2, user.getEmail());
+					userInsert.setString(3, user.getUsername());
+					userInsert.setString(4, user.getFirstName());
+					userInsert.setString(5, user.getLastName());
+					userInsert.setBigDecimal(6, new BigDecimal(user.getCreateAt()));
+					userInsert.setString(7, user.getPassword());					
+					userInsert.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+					throw new UserException(e.getMessage());
+				}
+			}
+
+		}
+
 	}
 
 	@Override
-	public void deleteUser(String userId) throws UserException {
-		// TODO Auto-generated method stub
-
+	public void deleteUser(User user) throws UserException {
+		//TODO
 	}
 
 	@Override
 	public void changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException {
-		// TODO Auto-generated method stub
-
+		//TODO
+	}
+	
+	private User buildUserFromResult(ResultSet result) throws SQLException{
+		BigDecimal createAtbi = result.getBigDecimal("createat");
+		Long createAt = Long.valueOf(createAtbi.toString());
+		User user = new DataUser().bind(
+				result.getString("id"),
+				result.getString("username"),
+				result.getString("email"),
+				result.getString("pass"), 
+				result.getString("firstname"),
+				result.getString("lastname"),
+				createAt);
+		return user;
 	}
 
 }
