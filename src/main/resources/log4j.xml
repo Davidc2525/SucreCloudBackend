@@ -55,7 +55,7 @@
      </layout>
    </appender>-->
 
-   <category name="orchi.SucreCloud">
+   <category name="orchi.HHCloud">
      <priority value="DEBUG"/>
    </category>
 
