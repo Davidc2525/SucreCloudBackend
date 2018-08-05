@@ -19,7 +19,7 @@ import orchi.HHCloud.Start;
 public class Logout extends HttpServlet {
 	
 
-
+	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private ThreadPoolExecutor executorw2;
 	private static ObjectMapper om;
 
@@ -80,7 +80,7 @@ public class Logout extends HttpServlet {
 		public void writeResponse(JsonResponse responseContent){
 			try {
 				
-				
+				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 				((HttpServletResponse) ctx.getResponse()).setHeader("Content-type", "application/json");
 				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin", "*");
 				((HttpServletResponse) ctx.getResponse()).setHeader("Content-encoding", "gzip");

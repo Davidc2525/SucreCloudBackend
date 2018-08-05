@@ -3,18 +3,26 @@ package orchi.HHCloud.user;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.jasper.tagplugins.jstl.core.Url;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.auth.Exceptions.TokenException;
 import orchi.HHCloud.database.ConnectionProvider;
 import orchi.HHCloud.database.DbConnectionManager;
+import orchi.HHCloud.mail.MailProvider;
+import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.user.Exceptions.UserAleardyExistsException;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Exceptions.UserMutatorException;
@@ -42,13 +50,20 @@ public class EmbedUserProvider implements UserProvider {
 											+ "WHERE ID=(?)";	
 	private static final String UPDATE_EMAIL_VERIFIED = ""
 											+ "UPDATE USERS SET "
-											+ "EMAILVERIFIED=(?),"
+											+ "EMAILVERIFIED=(?)"
 											+ "WHERE ID=(?)";	
 	private ConnectionProvider provider;
 	private Connection conn;
 	private UserValidator userValidator = new DefaultUserValidator();
+	private String templateEmailVerify;
 
 	public EmbedUserProvider() {
+		try {
+			templateEmailVerify = Streams.asString(EmbedUserProvider.class.getResourceAsStream("/templateVerifyEmail.html"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try {
 			Start.getDbConnectionManager();
 			provider = DbConnectionManager.getInstance().getConnectionProvider();
@@ -154,8 +169,16 @@ public class EmbedUserProvider implements UserProvider {
 					userInsert.setString(6, escape(user.getLastName()));
 					userInsert.setBigDecimal(7, new BigDecimal(user.getCreateAt()));
 					userInsert.setString(8, escape(user.getPassword()));					
-					userInsert.executeUpdate();
+					//userInsert.executeUpdate();
+					conn.commit();
+					
+					sendVerifyEmail(user);
 				} catch (SQLException e) {
+					try {
+						conn.rollback();
+					} catch (SQLException e3) {
+						e3.printStackTrace();
+					}
 					e.printStackTrace();
 					throw new UserException(e.getMessage());
 				}
@@ -268,6 +291,59 @@ public class EmbedUserProvider implements UserProvider {
 	
 	private boolean isEmailVerified(User user) throws UserNotExistException, UserException{
 		return ((DataUser) getUserById(user.getId())).isEmailVerified();
+	}
+	
+	
+	@Override
+	public User sendVerifyEmail(User user) throws UserException {
+		String idToken;
+		try {
+			idToken = Start.getAuthProvider().createTokenToVerifyEmail(user);
+		} catch (TokenException e) {
+			e.printStackTrace();
+			throw new UserException(e.getMessage());			
+		}
+		
+		DataUser dUser 	= (DataUser) user;
+		MailProvider mp = Start.getMailManager().getProvider();
+		String host 	= Start.conf.getString("api.host");
+		int port 		= Start.conf.getInt("api.port");
+		String appUrl		= "http://"+host+":"+port+"/";
+		String url		= "http://"+host+":"+port+"/api/auth?op=verifyemail&token="+idToken;
+		String appName 	= Start.conf.getString("app.name");;
+		String subject 	= "Verificar tu correo para "+appName;
+		
+		Map<String,String> values = new HashMap<String,String>();
+		values.put("uid", dUser.getId());
+		values.put("email", dUser.getEmail());
+		values.put("isverified", Boolean.toString(dUser.isEmailVerified()));
+		values.put("firstName", dUser.getFirstName());
+		values.put("lastName", dUser.getLastName());
+		values.put("appUrl", appUrl);
+		values.put("url", url);
+		values.put("appName", appName);
+		String templateBody = createBody(values);
+		
+		System.err.println(user.getEmail());
+		System.err.println(subject);
+		System.err.println(templateBody);
+		new Thread(()->{
+			System.err.println("enviado correo de verificacion.");
+			try {
+				mp.sendEmail("david25pcxtreme@gmailcom", user.getEmail()+"", subject, templateBody);
+			} catch (SendEmailException e) {
+				e.printStackTrace();
+				//throw new UserException(e.getMessage());				
+			}
+			System.err.println("Correo de verificacion enviado.");
+		}).start();
+		return user;
+	}
+	
+	private String createBody(Map<String, String> values){
+		 StrSubstitutor sub = new StrSubstitutor(values);
+		 String resolvedString = sub.replace(templateEmailVerify);
+		 return resolvedString;
 	}
 	
 	

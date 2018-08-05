@@ -19,19 +19,35 @@
 
 	<dependencies>
 
-	    <dependency>
-            <groupId>commons-validator</groupId>
-            <artifactId>commons-validator</artifactId>
-            <version>1.4.0</version>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.7</version>
         </dependency>
 
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-configuration2</artifactId>
+            <version>2.2</version>
+        </dependency>
+
+		<dependency>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<version>1.4.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<version>1.4</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.apache.derby</groupId>
@@ -44,7 +60,6 @@
 			<artifactId>derby</artifactId>
 			<version>10.14.2.0</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>com.google.firebase</groupId>
@@ -63,6 +78,7 @@
 			<artifactId>httpmime</artifactId>
 			<version>4.5.5</version>
 		</dependency>
+
 		<dependency>
 			<groupId>eu.medsea.mimeutil</groupId>
 			<artifactId>mime-util</artifactId>
@@ -76,16 +92,19 @@
 			<artifactId>jetty-webapp</artifactId>
 			<version>${jettyVersion}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-annotations</artifactId>
 			<version>${jettyVersion}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>apache-jsp</artifactId>
 			<version>${jettyVersion}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>apache-jstl</artifactId>
@@ -97,6 +116,7 @@
 			<artifactId>jetty-servlets</artifactId>
 			<version>${jettyVersion}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
@@ -107,7 +127,6 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.1.0</version>
-
 		</dependency>
 
 		<dependency>
@@ -136,15 +155,6 @@
 			<version>20180130</version>
 		</dependency>
 
-
-
-
-
-
-
-
-
-
 		<!-- Hadoop main client artifact -->
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
@@ -157,13 +167,12 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.5</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
 		</dependency>
-
-
 
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -171,13 +180,31 @@
 			<version>2.6</version>
 		</dependency>
 
+
+
+		  <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>1.24.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client-jetty</artifactId>
+            <version>1.24.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-gmail</artifactId>
+            <version>v1-rev92-1.24.1</version>
+        </dependency>
+
 	</dependencies>
 
 
 	<build>
 		<plugins>
-
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -193,7 +220,6 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-
 					<debug>true</debug>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -208,7 +234,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>orchi.HHCloud.Main</mainClass>
+							<mainClass>orchi.HHCloud.Start</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

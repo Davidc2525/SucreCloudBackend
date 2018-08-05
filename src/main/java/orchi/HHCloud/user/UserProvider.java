@@ -37,4 +37,6 @@ public interface UserProvider {
 	public User editUser(User userWithChanges) throws UserException;
 
 	public User verifyEmail(User user) throws UserException;
+	
+	public User sendVerifyEmail(User user) throws UserException;
 }

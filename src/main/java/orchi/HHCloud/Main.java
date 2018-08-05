@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -24,6 +25,10 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import orchi.HHCloud.auth.GenerateToken;
+import orchi.HHCloud.conf.ConfManager;
+import orchi.HHCloud.mail.MailProvider;
+import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.stores.FsStore.FsStore;
 import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 import orchi.HHCloud.user.DataUser;
@@ -34,10 +39,23 @@ import orchi.HHCloud.user.Exceptions.UserException;
 
 public class Main {
 	private static Logger log = LoggerFactory.getLogger(Main.class);
-	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException {
+	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException {
 
 		System.out.println("HHCloud pruebas!");
+		//Start.getConfManager();
+		System.err.println(GenerateToken.newToken());
 		
+		
+		MailProvider mp = Start.getMailManager().getProvider();
+		try {
+			mp.sendEmail("david25pcxtreme@gmail.com", "david25pcxtreme@gmail.com", "email provider 1", "hola con proveedor de correo 1");
+		} catch (SendEmailException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if(true){
+			return;
+		}
 		
 		Connection con = Start.getDbConnectionManager().getConnection();
 		
@@ -70,9 +88,7 @@ public class Main {
 			log.info("id {} name {}",myWishes.getString("id"),myWishes.getString("email"));
 			//System.out.println("On " + myWishes.getTimestamp(1) + " I wished for " + myWishes.getString(2));
 		}
-		if(true){
-			return;
-		}
+		
 		
 		java.nio.file.Path p = Paths.get("/home/david/HHCloudFsStore/mi_dfs/david/document/asc/");
 		

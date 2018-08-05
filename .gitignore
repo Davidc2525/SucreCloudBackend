@@ -8,3 +8,4 @@ target/*
 log/
 /db
 /derby.log
+tokens

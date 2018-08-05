@@ -41,6 +41,8 @@ public class Users extends HttpServlet {
 	/**
 	 * 
 	 */
+	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
+	
 	private static final long serialVersionUID = 3632921692211341012L;
 	private ThreadPoolExecutor executor;
 	private static UserProvider up;
@@ -232,7 +234,7 @@ public class Users extends HttpServlet {
 
 			HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
-			resp.setHeader("Access-Control-Allow-Origin", "http://localhost:9090");
+			resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 			resp.setHeader("Content-type", "application/json");
 			String op = req.getParameter("op");
 			op = op != null ? op : "none";

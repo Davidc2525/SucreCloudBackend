@@ -18,11 +18,13 @@ import org.json.JSONObject;
 import org.mortbay.log.Log;
 
 import orchi.HHCloud.ParseParamsMultiPart;
+import orchi.HHCloud.Start;
 import orchi.HHCloud.operations.OperationsManager;
 
 public class App extends HttpServlet {
-
+ 
 	private static String root = "/mi_dfs/";
+	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private ThreadPoolExecutor executor;
 
 	public static String getRoot() {
@@ -52,7 +54,7 @@ public class App extends HttpServlet {
 		
 		executor.execute(new Task(req.startAsync()));
 	}
-
+ 
 	public static class Task implements Runnable {
 
 		private AsyncContext ctx;
@@ -73,7 +75,7 @@ public class App extends HttpServlet {
 			HttpServletRequest reqs = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resps = (HttpServletResponse) ctx.getResponse();
 			HttpSession session = reqs.getSession(false);
-			resps.addHeader("Access-Control-Allow-Origin", "http://localhost:9090");
+			resps.addHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 			resps.addHeader("Access-Control-Allow-Credentials", "true");
 				
 			if(session==null){

@@ -3,10 +3,12 @@ package orchi.HHCloud.store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import orchi.HHCloud.Start;
+
 public class StoreManager {
 	private static Logger log = LoggerFactory.getLogger(StoreManager.class);
-	private static String propertyProviderStore = System.getProperty("StoreManager.storeProvider");
-	private static String defaultStore = propertyProviderStore != null ? propertyProviderStore : "orchi.HHCloud.stores.hdfsStore.HdfsStoreProvider";
+	//private static String propertyProviderStore = System.getProperty("StoreManager.storeProvider");
+	private static String defaultStore = Start.conf.getString("store.storemanager.storeprovider");
 	private static StoreManager instance = null;
 	private Store storeProvider = null;
 

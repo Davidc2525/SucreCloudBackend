@@ -1,5 +1,6 @@
 package orchi.HHCloud;
 
+import org.apache.commons.configuration2.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -16,10 +17,13 @@ import orchi.HHCloud.Api.Login;
 import orchi.HHCloud.Api.Logout;
 import orchi.HHCloud.Api.Opener;
 import orchi.HHCloud.Api.Users;
+import orchi.HHCloud.Api.Auth;
 import orchi.HHCloud.auth.AuthProvider;
 import orchi.HHCloud.auth.DefaultAuthProvider;
 import orchi.HHCloud.auth.logIO.LogInAndOut;
+import orchi.HHCloud.conf.ConfManager;
 import orchi.HHCloud.database.DbConnectionManager;
+import orchi.HHCloud.mail.MailManager;
 import orchi.HHCloud.store.StoreManager;
 import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 import orchi.HHCloud.user.UserManager;
@@ -29,12 +33,15 @@ import orchi.HHCloud.user.UserManager;
  */
 public class Start {
 	private static Logger log = LoggerFactory.getLogger(Start.class);
+	
 	public static Server server;
 
-	public static void main(String[] args) throws Exception {
+	public static Configuration conf = ConfManager.getInstance().getConfig();
 
-		int port = 8080;
-		String host = "orchi";
+	public static void main(String[] args) throws Exception {
+		
+		int port = conf.getInt("api.port");
+		String host = conf.getString("api.host");
 
 		if(args.length==1){
 			host = args[0];
@@ -76,6 +83,7 @@ public class Start {
 		servletContext.addServlet(Login.class, "/login").setAsyncSupported(true);
 		servletContext.addServlet(Logout.class, "/logout").setAsyncSupported(true);
 		servletContext.addServlet(TEST.class, "/test").setAsyncSupported(true);
+		servletContext.addServlet(Auth.class, "/auth").setAsyncSupported(true);;
 
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 
@@ -108,5 +116,9 @@ public class Start {
 
 	public static DbConnectionManager getDbConnectionManager() {
 		return DbConnectionManager.getInstance();
+	}
+	
+	public static MailManager getMailManager(){
+		return MailManager.getInstance();
 	}
 }

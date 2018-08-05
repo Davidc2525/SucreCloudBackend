@@ -25,10 +25,12 @@ import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
 public class Opener extends HttpServlet {
 	private Logger log = LoggerFactory.getLogger(Opener.class);
+	private static Long sizeRange = Start.conf.getLong("api.openner.range.size");
+	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private Long readedParts = 0L;
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.addHeader("Access-Control-Allow-Origin","http://localhost:9090");
+		resp.addHeader("Access-Control-Allow-Origin",ACCESS_CONTROL_ALLOW_ORIGIN);
 		HttpSession session = req.getSession(false);
 		if(session==null){
 			resp.getWriter().println("no tiene session activa");
@@ -125,6 +127,7 @@ public class Opener extends HttpServlet {
 	}
 
 	public static class Range {
+		
 		public Long[] range = { 0L, 0L };
 		private String reg = "(?:bytes)=(\\d+)-(\\d+)?";
 		private Pattern pattern = Pattern.compile(reg);
@@ -137,7 +140,7 @@ public class Opener extends HttpServlet {
 			if (m.matches()) {
 				range[0] = Long.valueOf(m.group(1));
 				if (m.group(2) == null) {
-					range[1] = (1024L * 1024L);
+					range[1] = (sizeRange);
 				}
 				if (m.group(2) != null) {
 					range[1] = Long.valueOf(m.group(2));

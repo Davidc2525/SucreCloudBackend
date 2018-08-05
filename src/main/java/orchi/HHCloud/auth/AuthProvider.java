@@ -3,6 +3,8 @@ package orchi.HHCloud.auth;
 import orchi.HHCloud.auth.Exceptions.AuthException;
 import orchi.HHCloud.auth.Exceptions.AuthPasswordException;
 import orchi.HHCloud.auth.Exceptions.AuthUsernameException;
+import orchi.HHCloud.auth.Exceptions.TokenException;
+import orchi.HHCloud.auth.Exceptions.VerifyException;
 import orchi.HHCloud.auth.logIO.WraperLoginCallback;
 import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.User;
@@ -54,6 +56,10 @@ public interface AuthProvider {
 	 */
 	public void authenticate(User user, WraperLoginCallback callback) throws AuthException;
 	
+	public void verifyEmail(String idtoken) throws VerifyException;
 	
+	public String createTokenToVerifyEmail(User user) throws TokenException;
+	
+	public String revokeToken(String idToken) throws TokenException;
 	
 }
