@@ -79,9 +79,13 @@ public interface AuthProvider {
 	public String revokeTokenToVerifyEmail(String idToken) throws TokenException;
 	
 	/**
-	 * @return ***********/
+	 * Crear token para recuperar cambiar contraseña por motivo de olvido por parte de el usuario.
+	 */
 	public String createTokenToRecoveryPassword(User user);
 	
-	public void revokeTokenToRecoveryPassword(String idToken) throws TokenException;
+	/**
+	 * Revocar token de recuperacion de contraseña, luego de crear y suministrar la nueva contraseña junto con el token generado, se debe revocar.
+	 * */
+	public void revokeTokenToRecoveryPassword(String idToken,User user) throws TokenException;
 
 }

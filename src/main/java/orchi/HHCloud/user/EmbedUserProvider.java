@@ -33,23 +33,27 @@ import orchi.HHCloud.user.Exceptions.UserMutatorPassword;
 import orchi.HHCloud.user.Exceptions.UserNotExistException;
 
 /**
+ * Proveedor de usuarios con base de datos empotrada
+ * tambien sirve para jdbc:mysql, modificando la configuracion, con el proveedor de base de dato 
  * @author Colmenares David
  *
  */
 public class EmbedUserProvider implements UserProvider {
 
+	private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.admin");
 	private static final String UPDATE_PASS_USER = "UPDATE USERS SET PASS=(?) WHERE ID=(?)";
 	private static final String DELETE_USERS_WHERE_ID = "DELETE FROM USERS WHERE ID=(?)";
 	private static final String SELECT_USERS_WHERE_USERNAME = "SELECT * FROM USERS where username=(?)";
 	private static final String SELECT_USERS_WHERE_EMAIL = "SELECT * FROM USERS where email=(?)";
 	private static final String SELECT_USERS_WHERE_ID = "SELECT * FROM USERS where id=(?)";
-	private static final String INSERT_INTO_USERS = "INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	private static final String INSERT_INTO_USERS = "INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	private static final String UPDATE_USER = "UPDATE USERS SET "
 											+ "EMAIL=(?),"
 											//+ "EMAILVERIFIED=(?),"
 											+ "USERNAME=(?),"
 											+ "FIRSTNAME=(?),"
-											+ "LASTNAME=(?)"
+											+ "LASTNAME=(?),"
+											+ "GENDER=(?)"
 											+ "WHERE ID=(?)";
 	private static final String UPDATE_EMAIL_VERIFIED = ""
 											+ "UPDATE USERS SET "
@@ -59,10 +63,12 @@ public class EmbedUserProvider implements UserProvider {
 	private Connection conn;
 	private UserValidator userValidator = new DefaultUserValidator();
 	private String templateEmailVerify;
+	private String templateRecoveryPassword;
 
 	public EmbedUserProvider() {
 		try {
 			templateEmailVerify = Streams.asString(EmbedUserProvider.class.getResourceAsStream("/templateVerifyEmail.html"));
+			templateRecoveryPassword = Streams.asString(EmbedUserProvider.class.getResourceAsStream("/templateRecoveryPasswordEmail.html"));
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -82,8 +88,9 @@ public class EmbedUserProvider implements UserProvider {
 	public User getUserById(String userId) throws UserNotExistException ,UserException{
 		User user = null;
 		ResultSet result;
+		PreparedStatement stm = null;
 		try {
-			PreparedStatement stm = conn.prepareStatement(SELECT_USERS_WHERE_ID);
+			stm = conn.prepareStatement(SELECT_USERS_WHERE_ID);
 			stm.setString(1, (userId));
 			result = stm.executeQuery();
 
@@ -97,6 +104,13 @@ public class EmbedUserProvider implements UserProvider {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
 
+		} finally {
+			try {
+				stm.close();
+			} catch (Exception e) {
+				
+				e.printStackTrace();
+			}
 		}
 		System.err.println("UserById " + user);
 		return user;
@@ -106,11 +120,12 @@ public class EmbedUserProvider implements UserProvider {
 	public User getUserByEmail(String userEmail) throws UserNotExistException,UserException {
 		User user = null;
 		ResultSet result;
+		PreparedStatement stm = null;
 		try {
-			PreparedStatement stm = conn.prepareStatement(SELECT_USERS_WHERE_EMAIL);
+			stm = conn.prepareStatement(SELECT_USERS_WHERE_EMAIL);
 			stm.setString(1, escape(userEmail));
 			result = stm.executeQuery();
-
+			
 			if (result.next()) {
 				user = buildUserFromResult(result);
 			} else {
@@ -120,6 +135,13 @@ public class EmbedUserProvider implements UserProvider {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
+		} finally {
+			try {
+				stm.close();
+			} catch (Exception e) {
+				
+				e.printStackTrace();
+			}
 		}
 		System.err.println("UserByEmail: " + user);
 		return user;
@@ -129,8 +151,9 @@ public class EmbedUserProvider implements UserProvider {
 	public User getUserByUsername(String userName) throws UserNotExistException,UserException {
 		User user = null;
 		ResultSet result;
+		PreparedStatement stm = null;
 		try {
-			PreparedStatement stm = conn.prepareStatement(SELECT_USERS_WHERE_USERNAME);
+			stm = conn.prepareStatement(SELECT_USERS_WHERE_USERNAME);
 			stm.setString(1, escape(userName));
 			result = stm.executeQuery();
 
@@ -144,6 +167,13 @@ public class EmbedUserProvider implements UserProvider {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
 
+		}  finally {
+			try {
+				stm.close();
+			} catch (Exception e) {
+				
+				e.printStackTrace();
+			}
 		}
 		System.err.println("UserByEmail: " + user);
 		return user;
@@ -160,8 +190,9 @@ public class EmbedUserProvider implements UserProvider {
 				getUserByEmail(newUser.getEmail());
 				throw new UserAleardyExistsException("Ya existe un usuario registrado con ese email: " + user.getEmail());
 			} catch (UserNotExistException e2) {
+				PreparedStatement userInsert = null;
 				try {
-					PreparedStatement userInsert = conn
+					userInsert = conn
 							.prepareStatement(INSERT_INTO_USERS);
 
 					userInsert.setString(1, escape(user.getId()));
@@ -170,13 +201,21 @@ public class EmbedUserProvider implements UserProvider {
 					userInsert.setString(4, escape(user.getUsername()));
 					userInsert.setString(5, escape(user.getFirstName()));
 					userInsert.setString(6, escape(user.getLastName()));
-					userInsert.setBigDecimal(7, new BigDecimal(user.getCreateAt()));
-					userInsert.setString(8, escape(user.getPassword()));
+					userInsert.setString(7, escape(user.getGender()));
+					userInsert.setBigDecimal(8, new BigDecimal(user.getCreateAt()));
+					userInsert.setString(9, escape(user.getPassword()));
 					userInsert.executeUpdate();
 					sendVerifyEmail(user);
 				} catch (SQLException e) {
 					e.printStackTrace();
 					throw new UserException(e.getMessage());
+				} finally {
+					try {
+						userInsert.close();
+					} catch (Exception e) {
+						
+						e.printStackTrace();
+					}
 				}
 			}
 
@@ -186,24 +225,33 @@ public class EmbedUserProvider implements UserProvider {
 
 	@Override
 	public void deleteUser(User user) throws UserException {
+		PreparedStatement userDelete = null;
 		try {
-			PreparedStatement userDelete = conn.prepareStatement(DELETE_USERS_WHERE_ID);
+			userDelete = conn.prepareStatement(DELETE_USERS_WHERE_ID);
 			userDelete.setString(1, escape(user.getId()));
 			userDelete.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
+		} finally {
+			try {
+				userDelete.close();
+			} catch (Exception e) {
+				
+				e.printStackTrace();
+			}
 		}
 
 	}
 
 	@Override
-	public User changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException,UserException {
+	public User changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException, UserException {
 		User user = userMutator.getUser();
 		String nPassword = userMutator.getPassword();
 
+		PreparedStatement updatePass = null;
 		try {
-			PreparedStatement updatePass = conn.prepareStatement(UPDATE_PASS_USER);
+			updatePass = conn.prepareStatement(UPDATE_PASS_USER);
 			updatePass.setString(1, nPassword);
 			updatePass.setString(2, user.getId());
 			updatePass.executeUpdate();
@@ -211,6 +259,13 @@ public class EmbedUserProvider implements UserProvider {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
 
+		} finally {
+			try {
+				updatePass.close();
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
 		}
 
 		return getUserById(user.getId());
@@ -220,22 +275,32 @@ public class EmbedUserProvider implements UserProvider {
 
 	@Override
 	public User editUser(User userWithChanges) throws UserException {
-
+		
 		DataUser editUser = (DataUser) userWithChanges;
 		DataUser oldUser = (DataUser)getUserById(editUser.getId());
+		System.out.println("editUser "+editUser);
+		PreparedStatement userUpdate = null;
 		try {
-			PreparedStatement userUpdate = conn.prepareStatement(UPDATE_USER);
+			userUpdate = conn.prepareStatement(UPDATE_USER);
 
 			userUpdate.setString(1, escape(editUser.getEmail()));
 			//userUpdate.setBoolean(2, editUser.isEmailVerified());
 			userUpdate.setString(2, escape(editUser.getUsername()));
 			userUpdate.setString(3, escape(editUser.getFirstName()));
 			userUpdate.setString(4, escape(editUser.getLastName()));
-			userUpdate.setString(5, escape(oldUser.getId()));
+			userUpdate.setString(5, escape(editUser.getGender()));
+			userUpdate.setString(6, escape(oldUser.getId()));
 			userUpdate.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
+		} finally {
+			try {
+				userUpdate.close();
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
 		}
 
 		return getUserById(oldUser.getId());
@@ -262,13 +327,14 @@ public class EmbedUserProvider implements UserProvider {
 				result.getString("firstname"),
 				result.getString("lastname"),
 				createAt);
+		((DataUser) user).setGender(result.getString("gender"));
 		return user;
 	}
 
 
 	@Override
 	public User setVerifyEmail(User user) throws UserException {
-		PreparedStatement verifyEmail;
+		PreparedStatement verifyEmail = null;;
 		if(isEmailVerified(user)){
 			return getUserById(user.getId());
 		}
@@ -280,6 +346,13 @@ public class EmbedUserProvider implements UserProvider {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException("No se pudo verificar el email. "+e.getMessage());
+		} finally {
+			try {
+				verifyEmail.close();
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
 		}
 
 		return getUserById(user.getId());
@@ -315,8 +388,8 @@ public class EmbedUserProvider implements UserProvider {
 		values.put("uid", 		dUser.getId());
 		values.put("email", 	dUser.getEmail());
 		values.put("isverified",Boolean.toString(dUser.isEmailVerified()));
-		values.put("firstName", dUser.getFirstName());
-		values.put("lastName", 	dUser.getLastName());
+		values.put("firstName", dUser.getFirstName().toUpperCase());
+		values.put("lastName", 	dUser.getLastName().toUpperCase());
 		values.put("appUrl", 	appUrl);
 		values.put("url", 		url);
 		values.put("appName", 	appName);
@@ -328,12 +401,12 @@ public class EmbedUserProvider implements UserProvider {
 		new Thread(()->{
 			System.out.println("enviado correo de verificacion.");
 			try {
-				mp.sendEmail("david25pcxtreme@gmailcom", user.getEmail()+"", subject, templateBody);
+				mp.sendEmail(APPLICATION_ADMIN, user.getEmail()+"", subject, templateBody);
 				System.out.println("Correo de verificacion enviado.");
 			} catch (SendEmailException e) {
 			    System.err.println("No se pudo enviar el correo de verificacion.");
+			    Start.getAuthProvider().revokeTokenToVerifyEmail(idToken);
 				e.printStackTrace();
-				//throw new UserException(e.getMessage());
 			}
 
 		}).start();
@@ -346,28 +419,31 @@ public class EmbedUserProvider implements UserProvider {
 		
 		String token = Start.getAuthProvider().createTokenToRecoveryPassword(user);
 		DataUser dUser = (DataUser) user;
-		Map<String,String> values = new HashMap<String,String>();		
+		MailProvider mp = Start.getMailManager().getProvider();
+		String host 	= Start.conf.getString("api.host");
+		int port 		= Start.conf.getInt("api.port");
+		String appUrl	= "http://"+host+":"+port+"/";
+		String appName 	= Start.conf.getString("app.name");;
+		String subject = "Codigo para recuperacion de contraseña.";
+
+		Map<String,String> values = new HashMap<String,String>();
 		values.put("uid", 		dUser.getId());
 		values.put("email", 	dUser.getEmail());
 		values.put("isverified",Boolean.toString(dUser.isEmailVerified()));
-		values.put("firstName", dUser.getFirstName());
-		values.put("lastName", 	dUser.getLastName());
+		values.put("firstName", dUser.getFirstName().toUpperCase());
+		values.put("lastName", 	dUser.getLastName().toUpperCase());
+		values.put("appUrl", 	appUrl);
+		values.put("appName", 	appName);
 		values.put("token",token);
-		MailProvider mp = Start.getMailManager().getProvider();
-		String subject = "Codigo para recuperacion de contraseña.";
-		String body = "Hola ${firstName}, Copia este Codigo para recuperar tu cuenta: ${token}, igresa el codigo y podras ingresar una nueva contraseña.";
-		String templateBody = createBody(values,body);
+		
+		String templateBody = createBody(values,templateRecoveryPassword);
 		System.out.println(subject);
 		System.out.println(templateBody);
 		System.out.println(user.getEmail());
 		try {
-			mp.sendEmail("david25pcxtreme@gmailcom", user.getEmail()+"", subject, templateBody);
+			mp.sendEmail(APPLICATION_ADMIN, user.getEmail()+"", subject, templateBody);
 		} catch (SendEmailException e) {
-			try {
-				Start.getAuthProvider().revokeTokenToRecoveryPassword(token);
-			} catch (TokenException e1) {
-				e1.printStackTrace();
-			}
+			Start.getAuthProvider().revokeTokenToRecoveryPassword(token,user);
 			e.printStackTrace();
 			throw new SendEmailException(e);
 		}
@@ -379,6 +455,4 @@ public class EmbedUserProvider implements UserProvider {
 		 String resolvedString = sub.replace(template);
 		 return resolvedString;
 	}
-
-
 }

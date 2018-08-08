@@ -5,6 +5,14 @@ import java.util.Comparator;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 
+/**
+ * Todas las clases tengan q ver con contenido de usuario deben heredar esta
+ * clase, para poder funcionar en el programa ya q en todo el programa se hace
+ * referencia a esta. Es abstracta asi q para poder hacer instancias puedes usar
+ * {@link BasicUser}, si se necesita algo mas espesifico, se puede espesialisar
+ * heredando esta.
+ * Todas las clases q herenden esta clase, tienen q ser serialisables
+ */
 public abstract class User implements Externalizable{
 
 	protected String id = "";
@@ -26,7 +34,6 @@ public abstract class User implements Externalizable{
 	}
 	
 	public String getId() {
-		// TODO Auto-generated method stub
 		return id;
 	}
 

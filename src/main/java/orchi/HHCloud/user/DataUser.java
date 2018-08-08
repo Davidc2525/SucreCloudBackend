@@ -8,15 +8,19 @@ public class DataUser extends BasicUser {
 
 	private String firstName;
 	private String lastName;
+	private String gender = "n";
 	private Long createAt;
 	private boolean emailVerified = false;
+	
 
 	public User bind(String id, String username, String email, boolean emailVerified,String password, String firstName, String lastName,Long createAt) {
+		
 		
 		super.bind(id, username, email, password);
 		this.setFirstName(firstName);
 		this.setLastName(lastName);
 		this.setCreateAt(createAt);
+		//this.setGender(gender);
 		this.setEmailVerified(emailVerified);
 		return this;
 	}
@@ -26,6 +30,7 @@ public class DataUser extends BasicUser {
 		super.writeExternal(out);
 		out.writeUTF(getFirstName());
 		out.writeUTF(getLastName());
+		out.writeUTF(getGender());
 		out.writeLong(getCreateAt());
 	}
 
@@ -34,6 +39,7 @@ public class DataUser extends BasicUser {
 		super.readExternal(in);
 		setFirstName(in.readUTF());
 		setLastName(in.readUTF());
+		setGender(in.readUTF());
 		setCreateAt(in.readLong());
 	}
 
@@ -75,6 +81,20 @@ public class DataUser extends BasicUser {
 	}
 
 	/**
+	 * @return the gender
+	 */
+	public String getGender() {
+		return gender;
+	}
+
+	/**
+	 * @param gender the gender to set
+	 */
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	/**
 	 * @param lastName
 	 *            the lastName to set
 	 */
@@ -100,9 +120,7 @@ public class DataUser extends BasicUser {
 	@Override
 	public String toString() {
 		return "DataUser {id=" + id + ", username=" + username + ", email=" + email + ", password=" + password
-				+ ", firstName=" + firstName + ", lastName=" + lastName + ", createAt=" + createAt + ", emailVerified="
-				+ emailVerified + "}";
+				+ ", firstName=" + firstName + ", lastName=" + lastName + ", gender=" + gender + ", createAt="
+				+ createAt + ", emailVerified=" + emailVerified + "}";
 	}
-
-
 }

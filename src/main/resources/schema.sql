@@ -7,6 +7,7 @@ CREATE TABLE USERS
     USERNAME varchar(100)  NOT NULL,
     FIRSTNAME varchar(100) NOT NULL,
     LASTNAME varchar(100) NOT NULL,
+    GENDER varchar (1) NOT NULL, --f,m,n
     CREATEAT BIGINT NOT NULL,
     PASS varchar(100)  NOT NULL);
 
@@ -17,8 +18,8 @@ CREATE UNIQUE INDEX email ON USERS (EMAIL);
 CREATE UNIQUE INDEX username ON USERS (USERNAME);
 
 INSERT INTO USERS VALUES
-('123', 'luisa@gmail.com', true, 'luisa.s','luisa','gomes', 1533252085955,'2525'),
-('1234', 'david@gmail.com', true, 'david.c', 'david','colmenares',1533252085955,'2525');
+('123', 'luisa@gmail.com', true, 'luisa.s','luisa','gomes','f', 1533252085955,'2525'),
+('1234', 'david@gmail.com', true, 'david.c', 'david','colmenares','m',1533252085955,'2525');
 
 CREATE TABLE SHAREBYUSER
     (IDUSER VARCHAR(100) NOT NULL,

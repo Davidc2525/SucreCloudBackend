@@ -5,7 +5,10 @@ import java.util.Iterator;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
+import org.apache.commons.configuration2.builder.combined.MultiFileBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.combined.MultiFileConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
@@ -19,7 +22,7 @@ public class ConfManager {
 		Configurations configs = new Configurations();
 		try {
 			setConfig(configs.properties(new File("./application.properties")));
-			
+			//prepare();
 			Iterator<String> iter = config.getKeys();
 			while(iter.hasNext()){
 				String key = iter.next();
@@ -35,13 +38,14 @@ public class ConfManager {
 	
 	public void prepare() throws ConfigurationException{
 		Parameters params = new Parameters();
-		BasicConfigurationBuilder<PropertiesConfiguration> builder =
-		        new BasicConfigurationBuilder<PropertiesConfiguration>(
-		                PropertiesConfiguration.class)
-		                .configure(params.properties()
-		                		.setFile(new File("./application.properties"))
-		                        .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
-		                        .setThrowExceptionOnMissing(true));
+	
+		
+		MultiFileConfigurationBuilder<PropertiesConfiguration> builder =
+		    new MultiFileConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
+		    .configure(params.multiFile()
+		        .setFilePattern("./application.properties")
+		        .setManagedBuilderParameters(params.properties())
+		    );
 		Configuration config = builder.getConfiguration();
 		setConfig(config);
 	}

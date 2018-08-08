@@ -6,6 +6,7 @@ import org.apache.commons.validator.routines.RegexValidator;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.user.Exceptions.EmailValidationException;
 import orchi.HHCloud.user.Exceptions.FirstNameValidationException;
+import orchi.HHCloud.user.Exceptions.GenderValidationException;
 import orchi.HHCloud.user.Exceptions.LastNameValidationException;
 import orchi.HHCloud.user.Exceptions.PasswordValidationException;
 import orchi.HHCloud.user.Exceptions.UserException;
@@ -118,6 +119,26 @@ public class DefaultUserValidator implements UserValidator {
 		
 		if(!FirstAndLastNameValidator.isValid(u.getLastName())){
 			throw new LastNameValidationException("El apellido no es valido.");
+		}
+	}
+	
+	public void validateGender(User user) throws ValidationException {
+		DataUser u = (DataUser) user;
+		String gender = u.getGender();
+		System.out.println(u);
+		if (!gender.equals("")) {
+			switch (gender) {
+			case "f"://femenino
+			case "m"://masculino
+			case "n"://no desea espesificar
+				break;
+
+			default:
+				throw new GenderValidationException("El genero solo puede ser (f) ó (m), si no desea espesificar, (n)");
+			}
+
+		}else{
+			throw new GenderValidationException("El genero solo puede ser (f) ó (m), si no desea espesificar, (n)");
 		}
 	}
 

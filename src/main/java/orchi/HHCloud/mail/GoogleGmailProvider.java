@@ -62,7 +62,8 @@ public class GoogleGmailProvider implements MailProvider {
 		try {
 			final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 			service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-					.setApplicationName(APPLICATION_NAME).build();
+					.setApplicationName(APPLICATION_NAME)
+					.build();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -73,7 +74,7 @@ public class GoogleGmailProvider implements MailProvider {
 
 	}
 
-	public static MimeMessage createEmail(String from, String to, String subject, String bodyText)
+	private static MimeMessage createEmail(String from, String to, String subject, String bodyText)
 			throws MessagingException {
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance(props, null);
@@ -87,7 +88,7 @@ public class GoogleGmailProvider implements MailProvider {
 		return email;
 	}
 
-	public static Message createMessageWithEmail(MimeMessage emailContent) throws MessagingException, IOException {
+	private static Message createMessageWithEmail(MimeMessage emailContent) throws MessagingException, IOException {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		emailContent.writeTo(buffer);
 		byte[] bytes = buffer.toByteArray();
@@ -97,7 +98,7 @@ public class GoogleGmailProvider implements MailProvider {
 		return message;
 	}
 
-	public static Message sendMessage(Gmail service, String userId, MimeMessage emailContent)
+	private static Message sendMessage(Gmail service, String userId, MimeMessage emailContent)
 			throws MessagingException, IOException {
 		Message message = createMessageWithEmail(emailContent);
 		message = service.users().messages().send(userId, message).execute();
