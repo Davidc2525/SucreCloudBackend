@@ -16,6 +16,9 @@ import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.jasper.tagplugins.jstl.core.Url;
+import org.json.JSONObject;
+
+import com.google.api.client.util.Base64;
 
 import orchi.HHCloud.Start;
 import orchi.HHCloud.auth.Exceptions.TokenException;
@@ -47,11 +50,11 @@ public class EmbedUserProvider implements UserProvider {
 											+ "USERNAME=(?),"
 											+ "FIRSTNAME=(?),"
 											+ "LASTNAME=(?)"
-											+ "WHERE ID=(?)";	
+											+ "WHERE ID=(?)";
 	private static final String UPDATE_EMAIL_VERIFIED = ""
 											+ "UPDATE USERS SET "
 											+ "EMAILVERIFIED=(?)"
-											+ "WHERE ID=(?)";	
+											+ "WHERE ID=(?)";
 	private ConnectionProvider provider;
 	private Connection conn;
 	private UserValidator userValidator = new DefaultUserValidator();
@@ -74,7 +77,7 @@ public class EmbedUserProvider implements UserProvider {
 		}
 	}
 
-	
+
 	@Override
 	public User getUserById(String userId) throws UserNotExistException ,UserException{
 		User user = null;
@@ -168,17 +171,10 @@ public class EmbedUserProvider implements UserProvider {
 					userInsert.setString(5, escape(user.getFirstName()));
 					userInsert.setString(6, escape(user.getLastName()));
 					userInsert.setBigDecimal(7, new BigDecimal(user.getCreateAt()));
-					userInsert.setString(8, escape(user.getPassword()));					
-					//userInsert.executeUpdate();
-					conn.commit();
-					
+					userInsert.setString(8, escape(user.getPassword()));
+					userInsert.executeUpdate();
 					sendVerifyEmail(user);
 				} catch (SQLException e) {
-					try {
-						conn.rollback();
-					} catch (SQLException e3) {
-						e3.printStackTrace();
-					}
 					e.printStackTrace();
 					throw new UserException(e.getMessage());
 				}
@@ -196,16 +192,16 @@ public class EmbedUserProvider implements UserProvider {
 			userDelete.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new UserException(e.getMessage());			
+			throw new UserException(e.getMessage());
 		}
-		
+
 	}
 
 	@Override
 	public User changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException,UserException {
 		User user = userMutator.getUser();
 		String nPassword = userMutator.getPassword();
-		
+
 		try {
 			PreparedStatement updatePass = conn.prepareStatement(UPDATE_PASS_USER);
 			updatePass.setString(1, nPassword);
@@ -214,22 +210,22 @@ public class EmbedUserProvider implements UserProvider {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
-			
+
 		}
-		
+
 		return getUserById(user.getId());
-		
+
 	}
-	
+
 
 	@Override
 	public User editUser(User userWithChanges) throws UserException {
 
 		DataUser editUser = (DataUser) userWithChanges;
-		DataUser oldUser = (DataUser)getUserById(editUser.getId());			
+		DataUser oldUser = (DataUser)getUserById(editUser.getId());
 		try {
 			PreparedStatement userUpdate = conn.prepareStatement(UPDATE_USER);
-			
+
 			userUpdate.setString(1, escape(editUser.getEmail()));
 			//userUpdate.setBoolean(2, editUser.isEmailVerified());
 			userUpdate.setString(2, escape(editUser.getUsername()));
@@ -237,23 +233,23 @@ public class EmbedUserProvider implements UserProvider {
 			userUpdate.setString(4, escape(editUser.getLastName()));
 			userUpdate.setString(5, escape(oldUser.getId()));
 			userUpdate.executeUpdate();
-		} catch (SQLException e) {			
+		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
 		}
-		
+
 		return getUserById(oldUser.getId());
 	}
-	
+
 	@Override
 	public UserValidator getValidator() {
 		return userValidator;
 	}
-	
+
 	public String escape(String in){
 		return StringEscapeUtils.escapeSql(in);
 	}
-	
+
 	private User buildUserFromResult(ResultSet result) throws SQLException{
 		BigDecimal createAtbi = result.getBigDecimal("createat");
 		Long createAt = Long.valueOf(createAtbi.toString());
@@ -262,7 +258,7 @@ public class EmbedUserProvider implements UserProvider {
 				result.getString("username"),
 				result.getString("email"),
 				result.getBoolean("emailverified"),
-				result.getString("pass"), 
+				result.getString("pass"),
 				result.getString("firstname"),
 				result.getString("lastname"),
 				createAt);
@@ -271,7 +267,7 @@ public class EmbedUserProvider implements UserProvider {
 
 
 	@Override
-	public User verifyEmail(User user) throws UserException {
+	public User setVerifyEmail(User user) throws UserException {
 		PreparedStatement verifyEmail;
 		if(isEmailVerified(user)){
 			return getUserById(user.getId());
@@ -283,17 +279,17 @@ public class EmbedUserProvider implements UserProvider {
 			verifyEmail.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new UserException("No se pudo verificar el email. "+e.getMessage());			
+			throw new UserException("No se pudo verificar el email. "+e.getMessage());
 		}
-		
+
 		return getUserById(user.getId());
 	}
-	
+
 	private boolean isEmailVerified(User user) throws UserNotExistException, UserException{
 		return ((DataUser) getUserById(user.getId())).isEmailVerified();
 	}
-	
-	
+
+
 	@Override
 	public User sendVerifyEmail(User user) throws UserException {
 		String idToken;
@@ -301,50 +297,88 @@ public class EmbedUserProvider implements UserProvider {
 			idToken = Start.getAuthProvider().createTokenToVerifyEmail(user);
 		} catch (TokenException e) {
 			e.printStackTrace();
-			throw new UserException(e.getMessage());			
+			throw new UserException(e.getMessage());
 		}
-		
+
 		DataUser dUser 	= (DataUser) user;
 		MailProvider mp = Start.getMailManager().getProvider();
 		String host 	= Start.conf.getString("api.host");
 		int port 		= Start.conf.getInt("api.port");
-		String appUrl		= "http://"+host+":"+port+"/";
-		String url		= "http://"+host+":"+port+"/api/auth?op=verifyemail&token="+idToken;
+		String appUrl	= "http://"+host+":"+port+"/";
+		String args 	= new JSONObject().put("op", "verifyemail").put("token", idToken).toString();
+			   args 	= Base64.encodeBase64String(args.getBytes());
+		String url		= "http://"+host+":"+port+"/api/auth?args="+args;
 		String appName 	= Start.conf.getString("app.name");;
 		String subject 	= "Verificar tu correo para "+appName;
-		
+
 		Map<String,String> values = new HashMap<String,String>();
-		values.put("uid", dUser.getId());
-		values.put("email", dUser.getEmail());
-		values.put("isverified", Boolean.toString(dUser.isEmailVerified()));
+		values.put("uid", 		dUser.getId());
+		values.put("email", 	dUser.getEmail());
+		values.put("isverified",Boolean.toString(dUser.isEmailVerified()));
 		values.put("firstName", dUser.getFirstName());
-		values.put("lastName", dUser.getLastName());
-		values.put("appUrl", appUrl);
-		values.put("url", url);
-		values.put("appName", appName);
-		String templateBody = createBody(values);
-		
+		values.put("lastName", 	dUser.getLastName());
+		values.put("appUrl", 	appUrl);
+		values.put("url", 		url);
+		values.put("appName", 	appName);
+		String templateBody = createBody(values,templateEmailVerify);
+
 		System.err.println(user.getEmail());
 		System.err.println(subject);
 		System.err.println(templateBody);
 		new Thread(()->{
-			System.err.println("enviado correo de verificacion.");
+			System.out.println("enviado correo de verificacion.");
 			try {
 				mp.sendEmail("david25pcxtreme@gmailcom", user.getEmail()+"", subject, templateBody);
+				System.out.println("Correo de verificacion enviado.");
 			} catch (SendEmailException e) {
+			    System.err.println("No se pudo enviar el correo de verificacion.");
 				e.printStackTrace();
-				//throw new UserException(e.getMessage());				
+				//throw new UserException(e.getMessage());
 			}
-			System.err.println("Correo de verificacion enviado.");
+
 		}).start();
 		return user;
 	}
-	
-	private String createBody(Map<String, String> values){
+
+
+	@Override
+	public User sendRecoveryPasswordEmail(User user) throws UserException, SendEmailException {
+		
+		String token = Start.getAuthProvider().createTokenToRecoveryPassword(user);
+		DataUser dUser = (DataUser) user;
+		Map<String,String> values = new HashMap<String,String>();		
+		values.put("uid", 		dUser.getId());
+		values.put("email", 	dUser.getEmail());
+		values.put("isverified",Boolean.toString(dUser.isEmailVerified()));
+		values.put("firstName", dUser.getFirstName());
+		values.put("lastName", 	dUser.getLastName());
+		values.put("token",token);
+		MailProvider mp = Start.getMailManager().getProvider();
+		String subject = "Codigo para recuperacion de contraseña.";
+		String body = "Hola ${firstName}, Copia este Codigo para recuperar tu cuenta: ${token}, igresa el codigo y podras ingresar una nueva contraseña.";
+		String templateBody = createBody(values,body);
+		System.out.println(subject);
+		System.out.println(templateBody);
+		System.out.println(user.getEmail());
+		try {
+			mp.sendEmail("david25pcxtreme@gmailcom", user.getEmail()+"", subject, templateBody);
+		} catch (SendEmailException e) {
+			try {
+				Start.getAuthProvider().revokeTokenToRecoveryPassword(token);
+			} catch (TokenException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+			throw new SendEmailException(e);
+		}
+		return user;
+	}
+
+	private String createBody(Map<String, String> values,String template){
 		 StrSubstitutor sub = new StrSubstitutor(values);
-		 String resolvedString = sub.replace(templateEmailVerify);
+		 String resolvedString = sub.replace(template);
 		 return resolvedString;
 	}
-	
-	
+
+
 }

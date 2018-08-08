@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +15,6 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
-//import org.mortbay.log.Log;
 
 public class ParseParamsMultiPart {
 	private Map<String, FileItemStream> paramsMap = new HashMap<String, FileItemStream>();
@@ -25,7 +23,7 @@ public class ParseParamsMultiPart {
 		boolean isMultipart = ServletFileUpload.isMultipartContent(req);
 
 		if(!isMultipart){
-			throw new Exception("los parametros no son multipar/data-form");
+			throw new Exception("los parametros no son multipar/form-data");
 		}
 		ServletFileUpload upload = new ServletFileUpload();
 		try {
@@ -45,7 +43,6 @@ public class ParseParamsMultiPart {
 
 			}
 		} catch (FileUploadException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -142,9 +139,6 @@ public class ParseParamsMultiPart {
 			// TODO Auto-generated method stub
 			return inputStream;
 		}
-
-
-
 	}
 
 }

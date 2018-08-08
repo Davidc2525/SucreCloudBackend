@@ -13,8 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONObject;
+import org.mortbay.log.Log;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.Util;
 import orchi.HHCloud.auth.Exceptions.VerifyException;
 
 public class Auth extends HttpServlet {
@@ -114,9 +117,11 @@ public class Auth extends HttpServlet {
 		public void run() {
 
 			HttpServletRequest req = ((HttpServletRequest) ctx.getRequest());
-			String op = req.getParameter("op");
-			op = op != null ? op : "none";
+			JSONObject jsonArgs = Util.parseParams(req);
+			Log.info("{}", jsonArgs.toString(2));
 
+			String op = jsonArgs.has("op") ? jsonArgs.getString("op") : "none";
+			
 			switch (op) {
 			case "login":
 				ctx.dispatch("/login");
@@ -126,7 +131,7 @@ public class Auth extends HttpServlet {
 				break;
 
 			case "verifyemail":
-				String idVeryfy = req.getParameter("token");
+				String idVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
 				if (idVeryfy == null) {
 					writeResponse(new JsonResponse(false, "No se ha resivido ningun token")
 							.setError("token_missing")

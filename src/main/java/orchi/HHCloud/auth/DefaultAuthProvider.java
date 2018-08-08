@@ -31,6 +31,9 @@ public class DefaultAuthProvider implements AuthProvider {
 	private Map<String, Integer> usersAuthFails = new HashMap<String, Integer>();
 	private Map<String, User> tokensToVeryfyEmail = new HashMap<String, User>();
 	private Map<String, TimeBasedToken> tokensTimeBaseById = new HashMap<String, TimeBasedToken>();
+	
+	private Map<String,User> tokesToRecoveryPassword = new HashMap<String, User>();
+	private Map<String, TimeBasedToken> tokensTimeBaseByIdToRecoveryPassword = new HashMap<String, TimeBasedToken>();
 	private UserProvider up;
 	private static DefaultAuthProvider instance = null;
 
@@ -48,7 +51,23 @@ public class DefaultAuthProvider implements AuthProvider {
 				if(currentTime > timebasetoken.getTimeExpire()){
 					try {
 						log.debug("tiempo de vida agotado para token: {}",idtoken);
-						revokeToken(idtoken);
+						revokeTokenToVerifyEmail(idtoken);
+						log.debug("token revokado: {}",idtoken);
+					} catch (TokenException e) {
+						e.printStackTrace();
+					}
+				}
+			});
+		}, 0, 10, TimeUnit.SECONDS);
+		
+		Executors.newScheduledThreadPool(10).scheduleWithFixedDelay(()->{
+			log.debug("recoriendo tokens (password) para verificar tiempo de vida. {} tokens activos",tokesToRecoveryPassword.size());
+			tokensTimeBaseByIdToRecoveryPassword.forEach((idtoken,timebasetoken)->{
+				Long currentTime = System.currentTimeMillis();
+				if(currentTime > timebasetoken.getTimeExpire()){
+					try {
+						log.debug("tiempo de vida agotado para token: {}",idtoken);
+						revokeTokenToVerifyEmail(idtoken);
 						log.debug("token revokado: {}",idtoken);
 					} catch (TokenException e) {
 						e.printStackTrace();
@@ -116,8 +135,8 @@ public class DefaultAuthProvider implements AuthProvider {
 		User user = tokensToVeryfyEmail.get(idToken);
 		try {
 			System.err.println(user + " " + idToken);
-			revokeToken(idToken);
-			up.verifyEmail(user);
+			revokeTokenToVerifyEmail(idToken);
+			up.setVerifyEmail(user);
 		} catch (UserException e) {
 			e.printStackTrace();
 			throw new VerifyException(e.getMessage());
@@ -136,7 +155,7 @@ public class DefaultAuthProvider implements AuthProvider {
 	}
 
 	@Override
-	public String revokeToken(String idToken) throws TokenException {
+	public String revokeTokenToVerifyEmail(String idToken) throws TokenException {
 		if (!tokensToVeryfyEmail.containsKey(idToken)) {
 			tokensTimeBaseById.remove(idToken);
 			throw new TokenException("El token no existe, ya fue usado o revocado.");
@@ -144,6 +163,26 @@ public class DefaultAuthProvider implements AuthProvider {
 		tokensToVeryfyEmail.remove(idToken);
 		tokensTimeBaseById.remove(idToken);
 		return idToken;
+	}
+	
+	
+	@Override
+	public String createTokenToRecoveryPassword(User user) {
+		String token = GenerateToken.newToken(10,"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");	
+		tokesToRecoveryPassword.put(token, user);
+		tokensTimeBaseByIdToRecoveryPassword.put(token, new TimeBasedToken(token));
+		
+		return token;
+	}
+
+	@Override
+	public void revokeTokenToRecoveryPassword(String idToken) throws TokenException {
+		if (!tokesToRecoveryPassword.containsKey(idToken)) {
+			tokesToRecoveryPassword.remove(idToken);
+			throw new TokenException("El token no existe, ya fue usado o revocado.");
+		}
+		tokesToRecoveryPassword.remove(idToken);
+		tokensTimeBaseByIdToRecoveryPassword.remove(idToken);
 	}
 
 }

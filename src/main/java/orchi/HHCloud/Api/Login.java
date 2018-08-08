@@ -17,8 +17,11 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONObject;
+import org.mortbay.log.Log;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.Util;
 import orchi.HHCloud.auth.DefaultAuthProvider;
 import orchi.HHCloud.auth.Exceptions.AuthExceededCountFaildException;
 import orchi.HHCloud.auth.Exceptions.AuthException;
@@ -190,12 +193,13 @@ public class Login extends HttpServlet {
 				e.printStackTrace();
 			}
 		}
-		public LoginDataUser  createUserLoginWithRequest(){
-			HttpServletRequest req = ((HttpServletRequest) ctx.getRequest());
-			String username = req.getParameter("username");
-			String password = req.getParameter("password");
-			String remember = req.getParameter("remember");
-			boolean isRemember = Boolean.valueOf(remember);
+
+		public LoginDataUser createUserLoginWithRequest(JSONObject jsonArgs) {
+			//HttpServletRequest req = ((HttpServletRequest) ctx.getRequest());
+			String username		= jsonArgs.has("username") ? jsonArgs.getString("username") : "";
+			String password		= jsonArgs.has("password") ? jsonArgs.getString("password") : "";
+			boolean isRemember	= jsonArgs.has("remember") ? jsonArgs.getBoolean("remember") : false;
+			 
 
 			return new LoginDataUser().bind(username, password, isRemember);
 		}
@@ -203,14 +207,16 @@ public class Login extends HttpServlet {
 		public void process() throws JsonGenerationException, JsonMappingException, IOException, InterruptedException {
 			HttpServletRequest req = ((HttpServletRequest) ctx.getRequest());
 			HttpSession s = req.getSession(false);
+			JSONObject jsonArgs = Util.parseParams(req);
+			Log.info("{}", jsonArgs.toString(2));
 			System.err.println("Dentro: " + Thread.currentThread());
 			//Thread.sleep(10000);
 			if (s == null) {
 
-				if (req.getParameter("username") != null && req.getParameter("password") != null) {
+				if (jsonArgs.has("username") && jsonArgs.has("password")) {
 
 					try {
-						LoginDataUser newUser = createUserLoginWithRequest();
+						LoginDataUser newUser = createUserLoginWithRequest(jsonArgs);
 
 						Start.getLoginAndOut().logInCallBack(ctx, newUser, (/** LoginDataSuccess */ loginData) -> {
 							HttpSession session = ((HttpServletRequest) loginData.getCtx().getRequest())

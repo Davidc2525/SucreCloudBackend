@@ -45,9 +45,6 @@ public class ListOperation implements IOperation {
 	public JSONObject call() {
 		JSONObject json = new JSONObject();
 
-
-
-
 		try {
 			if(!fs.exists(opath)){
 				json.put("status", "error");

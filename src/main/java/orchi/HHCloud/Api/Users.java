@@ -14,11 +14,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONObject;
+import org.mortbay.log.Log;
 
+import orchi.HHCloud.ParseParamsMultiPart;
 import orchi.HHCloud.Start;
+import orchi.HHCloud.Util;
+import orchi.HHCloud.auth.Exceptions.TokenException;
+import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.store.Store;
 import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.DataUser;
@@ -39,10 +46,10 @@ import orchi.HHCloud.user.Exceptions.ValidationException;
 public class Users extends HttpServlet {
 
 	/**
-	 * 
+	 *
 	 */
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
-	
+
 	private static final long serialVersionUID = 3632921692211341012L;
 	private ThreadPoolExecutor executor;
 	private static UserProvider up;
@@ -58,6 +65,11 @@ public class Users extends HttpServlet {
 		om.getJsonFactory();
 		executor = new ThreadPoolExecutor(10, 1000000, 10L, TimeUnit.SECONDS,
 				new LinkedBlockingQueue<Runnable>(1000000));
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		executor.execute(new Task(req.startAsync()));
 	}
 
 	@Override
@@ -206,6 +218,90 @@ public class Users extends HttpServlet {
 		}
 
 	}
+	
+	public static void changePasswordOperation(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
+		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
+		JsonResponse response = new JsonResponse();
+		UserValidator validator = up.getValidator();
+		User user 			= null;
+		boolean hasError 	= false;
+		String id 			= jsonArgs.has("id") ? jsonArgs.getString("id"):"";
+		String nPassword 	= jsonArgs.has("password") ? jsonArgs.getString("password"):"";
+		nPassword = nPassword != null ? nPassword : "";
+		BasicUser tmpPassUser = new BasicUser();
+		tmpPassUser.setPassword(nPassword);
+
+		try {
+			validator.validatePassword(tmpPassUser);
+		} catch (PasswordValidationException e) {
+			hasError = true;
+			response.setStatus("error");
+			response.setError("password_validation");
+			response.setMsg(e.getMessage());
+			e.printStackTrace();
+		} catch (ValidationException e1) {
+			hasError = true;
+			response.setStatus("error");
+			response.setError("validation_exception");
+			response.setMsg(e1.getMessage());
+			e1.printStackTrace();
+		}
+
+		if (id != null) {
+			try {
+				user = up.getUserById(id);
+			} catch (UserNotExistException e) {
+				hasError = true;
+				response.setStatus("error");
+				response.setError("user_not_exist");
+				response.setMsg(e.getMessage());
+				e.printStackTrace();
+			} catch (UserException e) {
+				hasError = true;
+				response.setStatus("error");
+				response.setError("user_exception");
+				response.setMsg(e.getMessage());
+				e.printStackTrace();
+			}
+
+		} else {
+			hasError = true;
+			response.setStatus("error");
+			response.setError("uid");
+			response.setMsg("El id no puede estar vacio o ser nulo.");
+
+		}
+
+		if (!hasError) {
+			try {
+				user = up.changePasswordUser(new UserMutatorPassword(user, nPassword));
+			} catch (UserMutatorException e) {
+				hasError = true;
+				response.setStatus("error");
+				response.setError("user_mutator");
+				response.setMsg(e.getMessage());
+			} catch (UserException e) {
+				hasError = true;
+				response.setStatus("error");
+				response.setError("user_exception");
+				response.setMsg(e.getMessage());
+				e.printStackTrace();
+			}
+		}
+
+		if (hasError) {
+
+			resp.getWriter().println(om.writeValueAsString(response));
+
+		} else {
+			response.setStatus("ok");
+			response.setMsg("Contraseña cambiada satisfactoriamente.");
+			response.setPayload(user);
+			resp.getWriter().println(om.writeValueAsString(response));
+
+		}
+		ctx.complete();
+	}
 
 	public static class Task implements Runnable {
 		private AsyncContext ctx;
@@ -214,19 +310,38 @@ public class Users extends HttpServlet {
 			this.ctx = ctx;
 		}
 
+		public void sendError(Exception e2){
+			JsonResponse response = new JsonResponse();
+			response.setStatus("error");
+			response.setError("server_error");
+			response.setMsg(e2.getMessage());
+			
+			try {
+				ctx.getResponse().getWriter().println(om.writeValueAsString(response));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ctx.complete();
+			
+		}
+
 		@Override
 		public void run() {
 			try {
 				process();
 			} catch (JsonGenerationException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				sendError(e);
 			} catch (JsonMappingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				sendError(e);
+			} catch (org.json.JSONException e) {
+				e.printStackTrace();
+				sendError(e);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				sendError(e);
 			}
 		}
 
@@ -235,9 +350,15 @@ public class Users extends HttpServlet {
 			HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
 			resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+			resp.addHeader("Access-Control-Allow-Credentials", "true");
 			resp.setHeader("Content-type", "application/json");
-			String op = req.getParameter("op");
-			op = op != null ? op : "none";
+
+
+
+			JSONObject jsonArgs = Util.parseParams(req);
+			Log.info("{}", jsonArgs.toString(2));
+
+			String op = jsonArgs.has("op")?jsonArgs.getString("op"):"none";
 
 			if (op.equalsIgnoreCase("none")) {
 				JsonResponse response = new JsonResponse();
@@ -250,8 +371,8 @@ public class Users extends HttpServlet {
 			}
 
 			if (op.equalsIgnoreCase("get")) {
-				String by = req.getParameter("by");
-				String identifier = req.getParameter("id");
+				String by = jsonArgs.has("by") ? jsonArgs.getString("by"):"none";
+				String identifier = jsonArgs.has("id")?jsonArgs.getString("id"):"none";
 
 				JsonResponse response = new JsonResponse();
 
@@ -338,20 +459,87 @@ public class Users extends HttpServlet {
 
 				ctx.complete();
 			}
-
-			if (op.equalsIgnoreCase("changepassword")) {
-				JsonResponse response = new JsonResponse();
-				UserValidator validator = up.getValidator();
-				User user = null;
+			
+			if(op.equalsIgnoreCase("sendVeryfyEmail")){
+				//TODO
+			}
+			
+			if (op.equalsIgnoreCase("sendRecoveyEmail")) {
 				boolean hasError = false;
-				String id = req.getParameter("id");
-				String nPassword = req.getParameter("password");
-				nPassword = nPassword != null ? nPassword : "";
-				BasicUser tmpPassUser = new BasicUser();
-				tmpPassUser.setPassword(nPassword);
+				JsonResponse response = new JsonResponse();
+				String email = jsonArgs.has("email") ? jsonArgs.getString("email") : null;
+				User user = null;
+				if (email == null) {
+					hasError = true;
+					response.setStatus("error");
+					response.setError("email_missing");
+					response.setMsg("Debe suministrar su email");
+				}
 
+				if (!hasError) {
+					try {
+						user = up.getUserByEmail(email);
+					} catch (UserNotExistException e) {
+						hasError = true;
+						response.setStatus("error");
+						response.setError("user_no_exists");
+						response.setMsg(e.getMessage());
+					} catch (UserException e) {
+						hasError = true;
+						response.setStatus("error");
+						response.setError("user_exception");
+						response.setMsg(e.getMessage());
+						// e.printStackTrace();
+					}
+				}
+
+				if (!hasError) {
+					try {
+						up.sendRecoveryPasswordEmail(user);
+					} catch (UserException e) {
+						hasError = true;
+						response.setStatus("error");
+						response.setError("user_exception");
+						response.setMsg(e.getMessage());
+
+					} catch (SendEmailException e) {
+						hasError = true;
+						response.setStatus("error");
+						response.setError("email_exception");
+						response.setMsg("Error al enviar email de recuperacion: " + e.getMessage());
+						e.printStackTrace();
+					}
+				}
+
+				if (!hasError) {
+					response.setStatus("ok");
+					response.setMsg("Se envio un codigo a tu cuenta de email para poder cambiar tu contraseña.");
+					resp.getWriter().println(om.writeValueAsString(response));
+				} else {
+					resp.getWriter().println(om.writeValueAsString(response));
+				}
+				ctx.complete();
+			}
+
+			if(op.equalsIgnoreCase("changePasswordByRecover")){		
+				boolean hasError = false;
+				UserValidator validator = up.getValidator();
+				JsonResponse response = new JsonResponse();
+				String email = jsonArgs.has("email") ? jsonArgs.getString("email") : null;
+				String token = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
+				String npassword = jsonArgs.has("password") ? jsonArgs.getString("password") : null;
+				User user = null;
+				
+				if (email == null) {
+					hasError = true;
+					response.setStatus("error");
+					response.setError("email_missing");
+					response.setMsg("Debe suministrar su email");
+				}
 				try {
-					validator.validatePassword(tmpPassUser);
+					User tmpUser = new BasicUser();
+					tmpUser.setPassword(npassword);
+					validator.validatePassword(tmpUser);
 				} catch (PasswordValidationException e) {
 					hasError = true;
 					response.setStatus("error");
@@ -365,72 +553,68 @@ public class Users extends HttpServlet {
 					response.setMsg(e1.getMessage());
 					e1.printStackTrace();
 				}
-
-				if (id != null) {
+				if (!hasError) {
 					try {
-						user = up.getUserById(id);
+						user = up.getUserByEmail(email);
 					} catch (UserNotExistException e) {
 						hasError = true;
 						response.setStatus("error");
-						response.setError("user_not_exist");
-						response.setMsg(e.getMessage());
-						e.printStackTrace();
-					} catch (UserException e) {
-						hasError = true;
-						response.setStatus("error");
-						response.setError("user_exception");
-						response.setMsg(e.getMessage());
-						e.printStackTrace();
-					}
-
-				} else {
-					hasError = true;
-					response.setStatus("error");
-					response.setError("uid");
-					response.setMsg("El id no puede estar vacio o ser nulo.");
-
-				}
-
-				if (!hasError) {
-					try {
-						user = up.changePasswordUser(new UserMutatorPassword(user, nPassword));
-					} catch (UserMutatorException e) {
-						hasError = true;
-						response.setStatus("error");
-						response.setError("user_mutator");
+						response.setError("user_no_exists");
 						response.setMsg(e.getMessage());
 					} catch (UserException e) {
 						hasError = true;
 						response.setStatus("error");
 						response.setError("user_exception");
 						response.setMsg(e.getMessage());
-						e.printStackTrace();
+						// e.printStackTrace();
 					}
 				}
 
-				if (hasError) {
-
-					resp.getWriter().println(om.writeValueAsString(response));
-
-				} else {
-					response.setStatus("ok");
-					response.setMsg("Contraseña cambiada satisfactoriamente.");
-					response.setPayload(user);
-					resp.getWriter().println(om.writeValueAsString(response));
-
+				if(!hasError){
+					if(token!=null){
+						try {
+							Start.getAuthProvider().revokeTokenToRecoveryPassword(token);
+						} catch (TokenException e) {
+							hasError = true;
+							response.setStatus("error");
+							response.setError("token_exception");
+							response.setMsg(e.getMessage());
+							e.printStackTrace();
+						}
+					}else{					
+						hasError = true;
+						response.setStatus("error");
+						response.setError("token_missing");
+						response.setMsg("Debe suministrar el codigo enviado a su correo para poder continuar el cambio  de contraseña.");
+					}
 				}
-				ctx.complete();
+				
+				
+				if(!hasError){
+					jsonArgs.put("id", user.getId());
+					changePasswordOperation(ctx,jsonArgs);
+				}else{
+					resp.getWriter().println(om.writeValueAsString(response));
+					ctx.complete();
+				}
+				
+				
+			}
+			
+			if (op.equalsIgnoreCase("changepassword")) {
+				
+				changePasswordOperation(ctx,jsonArgs);
 
 			}
 			if (op.equalsIgnoreCase("create")) {
 				boolean hasError = false;
 				OpCreateJsonResponse response = new OpCreateJsonResponse();
 				UserValidator validator = up.getValidator();
-				String email = req.getParameter("email");
-				String username = req.getParameter("username");
-				String firstName = req.getParameter("fname");
-				String lastName = req.getParameter("lname");
-				String password = req.getParameter("password");
+				String email		= jsonArgs.has("email") ? jsonArgs.getString("email"):"";
+				String username 	= jsonArgs.has("username") ? jsonArgs.getString("username"):"";
+				String firstName 	= jsonArgs.has("firstname") ? jsonArgs.getString("firstname"):"";
+				String lastName 	= jsonArgs.has("lastname") ? jsonArgs.getString("lastname"):"";
+				String password 	= jsonArgs.has("password") ? jsonArgs.getString("password"):"";
 
 				email = email != null ? email : "";
 				username = username != null ? username : "";
@@ -541,12 +725,12 @@ public class Users extends HttpServlet {
 				boolean hasError = false;
 				OpUpdateJsonResponse response = new OpUpdateJsonResponse();
 				UserValidator validator = up.getValidator();
-				String id = req.getParameter("id");
-				String email = req.getParameter("email");
-				String username = req.getParameter("username");
-				String firstName = req.getParameter("fname");
-				String lastName = req.getParameter("lname");
-				// String password = req.getParameter("password");
+				String id 			= jsonArgs.has("id") ? jsonArgs.getString("id"):"";
+				String email		= jsonArgs.has("email") ? jsonArgs.getString("email"):null;
+				String username 	= jsonArgs.has("username") ? jsonArgs.getString("username"):null;
+				String firstName 	= jsonArgs.has("firstname") ? jsonArgs.getString("firstname"):null;
+				String lastName 	= jsonArgs.has("lastname") ? jsonArgs.getString("lastname"):null;
+				//String password 	= jsonArgs.has("password") ? jsonArgs.getString("password"):"";
 
 				id = id != null ? id : "";
 
@@ -679,7 +863,7 @@ public class Users extends HttpServlet {
 			if (op.equalsIgnoreCase("delete")) {
 				boolean hasError = false;
 				OpUpdateJsonResponse response = new OpUpdateJsonResponse();
-				String id = req.getParameter("id");
+				String id = jsonArgs.has("id") ? jsonArgs.getString("id") : "";
 
 				id = id != null ? id : "";
 

@@ -1,5 +1,6 @@
 package orchi.HHCloud.user;
 
+import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Exceptions.UserMutatorException;
 import orchi.HHCloud.user.Exceptions.UserMutatorPassword;
@@ -36,7 +37,20 @@ public interface UserProvider {
 
 	public User editUser(User userWithChanges) throws UserException;
 
-	public User verifyEmail(User user) throws UserException;
+	/**
+	 * configurar verificacion de usuario, para esto se tiene q crear un token de verificacion con {@link orchi.HHCloud.auth.AuthProvider.createTokenToVerifyEmail}
+	 * 
+	 * */
+	public User setVerifyEmail(User user) throws UserException;
 	
-	public User sendVerifyEmail(User user) throws UserException;
+	/**
+	 * Envia un menssa al correo de el usuario con un enlace q contiene un token de, ese token permite verificar la cuenta de el usuario. 
+	 * */
+	public User sendVerifyEmail(User user) throws UserException,SendEmailException;
+	
+	/**
+	 * <h1>tengo q crear la plantilla para este mensaje</h1>
+	 * Envia un menssa al correo de el usuario con un token de, ese token le permite cambiar la contraseña de su cuenta por si se le olvido
+	 * */
+	public User sendRecoveryPasswordEmail(User user) throws UserException,SendEmailException;
 }

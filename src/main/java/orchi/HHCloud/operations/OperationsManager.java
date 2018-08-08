@@ -121,7 +121,7 @@ public class OperationsManager {
 
 		try {
 			ctx.getResponse().setContentType(getContentType());
-			ctx.getResponse().getWriter().println(response.toString());
+			ctx.getResponse().getWriter().println(response.toString(2));
 			response = null;
 			arg = null;
 			params = null;

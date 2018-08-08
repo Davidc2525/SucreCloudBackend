@@ -34,7 +34,7 @@ public interface AuthProvider {
 	/**
 	 * autenticacion de session, si no es valido, devuelve un throw si no lansa
 	 * el throw, es por q se autentico bien, y logea el usuario
-	 * 
+	 *
 	 * @deprecated en cambio tengo q usar
 	 *             <strong>orchi.HHCloud.auth.AuthProvider.authenticate(User,
 	 *             WraperLoginCallback)</strong> que recibe un lambda como
@@ -52,14 +52,36 @@ public interface AuthProvider {
 	 * el throw, es por q se autentico bien, y logea el usuario,
 	 * {@link WraperLoginCallback} primero hace la logica de negocio, antes de
 	 * pasar el control quien llamo el metodo
-	 * 
+	 *
 	 */
 	public void authenticate(User user, WraperLoginCallback callback) throws AuthException;
-	
+
+	/**
+    * Resibe como parametro el id token generado anteriormente, si aun es valido el token
+    * edita el usuario binculado a ese token, validando el correo, cambiano su estado, emailVirefied a (true) con {@link orchi.HHCloud.user.UserProviderr.setVerifyEmail},
+    * con eso el usuario queda verificado, si por alguna razon no se puede verificar, se debe lanzar una excepsion
+    * de verificacion.
+	*
+	* @param idtoken token q se desea verificar
+	* @throws VerifyException
+	**/
 	public void verifyEmail(String idtoken) throws VerifyException;
-	
+
+    /**
+    * Crea un token de verificacion para el usuario pasado por parametro.
+    **/
 	public String createTokenToVerifyEmail(User user) throws TokenException;
+
+    /**
+    * Revoca el token pasado por parametro
+    *
+    */
+	public String revokeTokenToVerifyEmail(String idToken) throws TokenException;
 	
-	public String revokeToken(String idToken) throws TokenException;
+	/**
+	 * @return ***********/
+	public String createTokenToRecoveryPassword(User user);
 	
+	public void revokeTokenToRecoveryPassword(String idToken) throws TokenException;
+
 }
