@@ -1,4 +1,4 @@
-package orchi.HHCloud.Api;
+package orchi.HHCloud.Api.Auth;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -13,20 +13,31 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.mortbay.log.Log;
 
+import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Util;
+import orchi.HHCloud.Api.annotations.Operation;
+import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.auth.Exceptions.VerifyException;
+
 
 public class Auth extends HttpServlet {
 
+	
+	
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
-	private ThreadPoolExecutor executorw2;
+	private static ThreadPoolExecutor executorw2;
+	private static Logout logout;
+	private static Login login;
 	private static ObjectMapper om;
 
 	public Auth() {
+		login = new Login();
+		logout = new Logout();
 		executorw2 = new ThreadPoolExecutor(10, 100, 50000L, TimeUnit.MILLISECONDS,
 				new LinkedBlockingQueue<Runnable>(100));
 		om = new ObjectMapper();
@@ -35,7 +46,19 @@ public class Auth extends HttpServlet {
 	}
 
 	@Override
+	public void init() throws ServletException {
+		login.init();
+		logout.init();
+	}
+	
+	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+		doPost(req,resp);
+
+	}
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
 		executorw2.execute(new Task(req.startAsync()));
 		System.err.println("tarea en proceso " + Thread.currentThread());
@@ -84,16 +107,19 @@ public class Auth extends HttpServlet {
 		}
 
 	}
+	public Task getTask(){
+		return new Task(null);
+	}
 
 	public static class Task implements Runnable {
 
-		private AsyncContext ctx;
+		private static AsyncContext ctx;
 
 		public Task(AsyncContext ctx) {
 			this.ctx = ctx;
 		}
 
-		public void writeResponse(JsonResponse responseContent) {
+		public static void writeResponse(JsonResponse responseContent) {
 			try {
 
 				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin",
@@ -117,40 +143,33 @@ public class Auth extends HttpServlet {
 		public void run() {
 
 			HttpServletRequest req = ((HttpServletRequest) ctx.getRequest());
-			JSONObject jsonArgs = Util.parseParams(req);
+			HttpServletResponse resp = ((HttpServletResponse) ctx.getResponse());
+			ParseParamsMultiPart2  p =(ParseParamsMultiPart2) req.getAttribute("params");
+
+			JSONObject jsonArgs = null;;
+			try {
+				jsonArgs = new JSONObject(p.getString("args"));
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
 			Log.info("{}", jsonArgs.toString(2));
 
-			String op = jsonArgs.has("op") ? jsonArgs.getString("op") : "none";
+			String op = null;
+			op = p.getString("op");
+			op = op != null ? op :"none";
 			
 			switch (op) {
 			case "login":
-				ctx.dispatch("/login");
+				;
+				executorw2.execute(new orchi.HHCloud.Api.Auth.Login.Task(ctx));
+				
 				break;
 			case "logout":
-				ctx.dispatch("/logout");
+				executorw2.execute(new orchi.HHCloud.Api.Auth.Logout.Task(ctx));
 				break;
 
 			case "verifyemail":
-				String idVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
-				if (idVeryfy == null) {
-					writeResponse(new JsonResponse(false, "No se ha resivido ningun token")
-							.setError("token_missing")
-							.setStatus("error"));
-					return;
-				}
-
-				try {
-					Start.getAuthProvider().verifyEmail(idVeryfy);
-					writeResponse(new JsonResponse(true, "email verificado"));
-				} catch (VerifyException e) {
-
-					writeResponse(
-							new JsonResponse(false, e.getMessage())
-							.setError("verify_exception")
-							.setStatus("error"));
-
-					e.printStackTrace();
-				}
+				verifyEmailOperation(jsonArgs);				
 				break;
 
 			default:
@@ -163,5 +182,41 @@ public class Auth extends HttpServlet {
 
 		}
 
+		
 	}
+	@Operation(name = "login")
+	private static void loginOperation(JSONObject jsonArgs){
+		
+	}
+	
+	@Operation(name = "logout")
+	@SessionRequired
+	private static void logoutOperation(JSONObject jsonArgs){
+		
+	}
+	
+	@Operation(name = "verifyemail")
+	private static void verifyEmailOperation(JSONObject jsonArgs) {
+		String idVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
+		if (idVeryfy == null) {
+			Task.writeResponse(new JsonResponse(false, "No se ha resivido ningun token")
+					.setError("token_missing")
+					.setStatus("error"));
+			return;
+		}
+
+		try {
+			Start.getAuthProvider().verifyEmail(idVeryfy);
+			Task.writeResponse(new JsonResponse(true, "email verificado"));
+		} catch (VerifyException e) {
+
+			Task.writeResponse(
+					new JsonResponse(false, e.getMessage())
+					.setError("verify_exception")
+					.setStatus("error"));
+
+			e.printStackTrace();
+		}
+	}
+	
 }

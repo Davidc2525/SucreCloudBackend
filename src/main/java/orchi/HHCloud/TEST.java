@@ -17,11 +17,22 @@ import org.json.JSONObject;
 public class TEST extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		
-		resp.addHeader("Access-Control-Allow-Origin", "http://localhost:9090");
-		resp.addHeader("Access-Control-Allow-Credentials", "true");
-		
+
+		doPost(req,resp);
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		//resp.addHeader("Access-Control-Allow-Origin", "http://orchi:9090");
+		//resp.addHeader("Access-Control-Allow-Credentials", "true");
+
+		Object error = req.getAttribute("error");
+		Object errorMsg = req.getAttribute("errorMsg");
+
 		JSONObject json = new JSONObject();
-		resp.getWriter().println(json.put("name", "david").put("token",req.getParameter("t")));
+		json.put("status", "error");
+		json.put("error",error+"");
+		json.put("errorMsg",errorMsg+"");
+		resp.getWriter().println(json);
 	}
 }

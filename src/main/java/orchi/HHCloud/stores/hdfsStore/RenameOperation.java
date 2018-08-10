@@ -7,7 +7,7 @@ import org.apache.hadoop.fs.Path;
 import org.json.JSONObject;
 import org.slf4j.*;
 
-import orchi.HHCloud.operations.IOperation;
+import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
 public class RenameOperation implements IOperation {

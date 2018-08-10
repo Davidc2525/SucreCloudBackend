@@ -1,4 +1,4 @@
-package orchi.HHCloud.operations;
+package orchi.HHCloud.Api.Fs.operations;
 
 public enum Operation {
 	LIST("list"), 

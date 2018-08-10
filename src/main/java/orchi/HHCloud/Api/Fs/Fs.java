@@ -1,4 +1,4 @@
-package orchi.HHCloud.Api;
+package orchi.HHCloud.Api.Fs;
 
 import java.io.IOException;
 
@@ -13,16 +13,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.codec.binary.Base64;
+import org.json.JSONException;
 import org.json.JSONObject;
-import org.mortbay.log.Log;
-
-import orchi.HHCloud.ParseParamsMultiPart;
+import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
-import orchi.HHCloud.operations.OperationsManager;
+import orchi.HHCloud.Api.Fs.operations.OperationsManager;
+import orchi.HHCloud.Api.annotations.Operation;
 
-public class App extends HttpServlet {
- 
+
+@Operation(name = "list", isRequired = true)
+@Operation(name = "getstatus", isRequired = true)
+@Operation(name = "mkdir", isRequired = true)
+@Operation(name = "delete", isRequired = true)
+@Operation(name = "move", isRequired = true)
+@Operation(name = "copy", isRequired = true)
+@Operation(name = "rename", isRequired = true)
+@Operation(name = "download", isRequired = true)
+public class Fs extends HttpServlet {
+
+
 	private static String root = "/mi_dfs/";
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private ThreadPoolExecutor executor;
@@ -51,10 +60,10 @@ public class App extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		
+
 		executor.execute(new Task(req.startAsync()));
 	}
- 
+
 	public static class Task implements Runnable {
 
 		private AsyncContext ctx;
@@ -75,10 +84,10 @@ public class App extends HttpServlet {
 			HttpServletRequest reqs = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resps = (HttpServletResponse) ctx.getResponse();
 			HttpSession session = reqs.getSession(false);
-			resps.addHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
-			resps.addHeader("Access-Control-Allow-Credentials", "true");
-				
-			if(session==null){
+			//resps.addHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+			//resps.addHeader("Access-Control-Allow-Credentials", "true");
+
+			/*if(session==null){
 				try {
 					JSONObject response = new JSONObject();
 					response.put("status","error");
@@ -90,55 +99,33 @@ public class App extends HttpServlet {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}
-			
-			ParseParamsMultiPart params = null;
+			}*/
+
+
+
+
+			ParseParamsMultiPart2  p = (ParseParamsMultiPart2) reqs.getAttribute("params");
+
+			JSONObject JsonArgs = null;
 			try {
-				params = new ParseParamsMultiPart(reqs);
-			} catch (Exception e1) {
+				JsonArgs = new JSONObject(p.getString("args"));
+			} catch (JSONException e) {
 				// TODO Auto-generated catch block
-
-				/*
-				 * try { ctx.getResponse().setContentType("application/json");
-				 * ctx.getResponse().getWriter().println( new
-				 * JSONObject().put("error","invalid_method").put("status",
-				 * "error").put("errorMsg","nada")); ctx.complete(); } catch
-				 * (JSONException | IOException e) {
-				 * 
-				 * e.printStackTrace(); }
-				 */
-				e1.printStackTrace();
+				e.printStackTrace();
 			}
-			String args = null;
-			if (reqs.getMethod().equalsIgnoreCase("post")) {
-				try {
-					args = params.getAsString("args");
-				} catch (IOException | NullPointerException e) {
 
-					e.printStackTrace();
-				}
-			} else if (reqs.getMethod().equalsIgnoreCase("get")) {
-				args = new String(Base64.decodeBase64(reqs.getParameter("args")));
-			}
-			// reqs.getParameter("args");
-
-			// Log.info("params {}",params);
-
-			// String args = reqs.getParameter("args");
-
-			Log.info("{}", args);
-			JSONObject JsonArgs = new JSONObject(args);
-
-			
-			
 			if(session!=null){
 				JsonArgs.put("rootSession", getRoot((String)session.getAttribute("uid")));
+				JsonArgs.put("root", getRoot((String)session.getAttribute("uid")));
+			}else{
+				JsonArgs.put("rootSession", getRoot("1234"));
+				JsonArgs.put("root", getRoot("1234"));
 			}
-			JsonArgs.put("root", getRoot((String)session.getAttribute("uid")));
-			String path = JsonArgs.getString("path");
-			String operation = JsonArgs.getString("op");
 
-			OperationsManager.getInstance().processOperation(ctx, JsonArgs, params);
+			String path = JsonArgs.getString("path");
+			String operation = reqs.getParameter("op");
+			JsonArgs.put("op",p.getString("op"));
+			OperationsManager.getInstance().processOperation(ctx, JsonArgs);
 
 		}
 

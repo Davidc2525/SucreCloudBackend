@@ -378,9 +378,9 @@ public class EmbedUserProvider implements UserProvider {
 		String host 	= Start.conf.getString("api.host");
 		int port 		= Start.conf.getInt("api.port");
 		String appUrl	= "http://"+host+":"+port+"/";
-		String args 	= new JSONObject().put("op", "verifyemail").put("token", idToken).toString();
+		String args 	= new JSONObject().put("token", idToken).toString();
 			   args 	= Base64.encodeBase64String(args.getBytes());
-		String url		= "http://"+host+":"+port+"/api/auth?args="+args;
+		String url		= "http://"+host+":"+port+"/api/auth?op=verifyemail&args="+args;
 		String appName 	= Start.conf.getString("app.name");;
 		String subject 	= "Verificar tu correo para "+appName;
 

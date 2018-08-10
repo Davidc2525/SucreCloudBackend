@@ -1,4 +1,4 @@
-package orchi.HHCloud.Api;
+package orchi.HHCloud.Api.User;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,8 +20,11 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.mortbay.log.Log;
 
+import orchi.HHCloud.ParseParamsMultiPart;
+import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Util;
+import orchi.HHCloud.Api.annotations.Operation;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.auth.Exceptions.TokenException;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
@@ -84,7 +87,7 @@ public class Users extends HttpServlet {
 
 	}
 
-	
+
 
 	public static class Task implements Runnable {
 		private AsyncContext ctx;
@@ -98,7 +101,7 @@ public class Users extends HttpServlet {
 			response.setStatus("error");
 			response.setError("server_error");
 			response.setMsg(e2.getMessage());
-			
+
 			try {
 				ctx.getResponse().getWriter().println(om.writeValueAsString(response));
 			} catch (IOException e) {
@@ -133,18 +136,21 @@ public class Users extends HttpServlet {
 
 			HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
-			resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
-			resp.addHeader("Access-Control-Allow-Credentials", "true");
+			//resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+			//resp.addHeader("Access-Control-Allow-Credentials", "true");
 			resp.setHeader("Content-type", "application/json");
 
+			ParseParamsMultiPart2  p = (ParseParamsMultiPart2) req.getAttribute("params");
 
-
-			JSONObject jsonArgs = Util.parseParams(req);
+			JSONObject jsonArgs = new JSONObject(p.getString("args"));
 			Log.info("{}", jsonArgs.toString(2));
 
-			String op = jsonArgs.has("op")?jsonArgs.getString("op"):"none";
+			String op = p.getString("op");//jsonArgs.has("op")?jsonArgs.getString("op"):null;
+			if(op == null){
+				op = "none";
+			}
 			op = op.toLowerCase();
-			
+
 			switch (op) {
 			case "get"://session
 				getOperation(ctx, jsonArgs);
@@ -187,8 +193,8 @@ public class Users extends HttpServlet {
 			}
 		}
 	}
-	
-	
+
+
 	/**--------------------------------OPERACIONES------------------------**/
 	public static class JsonResponse {
 		public String status = "ok";
@@ -329,12 +335,13 @@ public class Users extends HttpServlet {
 		}
 
 	}
-	
-	
+
+
+	@Operation(name = "changepasswordbyrecover")
 	public static void changePasswordByRecover(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
 		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
 		//HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
-		
+
 		boolean hasError = false;
 		UserValidator validator = up.getValidator();
 		JsonResponse response = new JsonResponse();
@@ -342,7 +349,7 @@ public class Users extends HttpServlet {
 		String token = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
 		String npassword = jsonArgs.has("password") ? jsonArgs.getString("password") : null;
 		User user = null;
-		
+
 		if (email == null) {
 			hasError = true;
 			response.setStatus("error");
@@ -394,15 +401,15 @@ public class Users extends HttpServlet {
 					response.setMsg(e.getMessage());
 					e.printStackTrace();
 				}
-			}else{					
+			}else{
 				hasError = true;
 				response.setStatus("error");
 				response.setError("token_missing");
 				response.setMsg("Debe suministrar el codigo enviado a su correo para poder continuar el cambio  de contraseña.");
 			}
 		}
-		
-		
+
+
 		if(!hasError){
 			jsonArgs.put("id", user.getId());
 			changePasswordOperation(ctx,jsonArgs);
@@ -410,14 +417,21 @@ public class Users extends HttpServlet {
 			resp.getWriter().println(om.writeValueAsString(response));
 			ctx.complete();
 		}
-		
+
 	}
-	
-	
+
+	@Operation(name = "sendveryfyemail")
+	@SessionRequired
+	public static void sendVerifyEmailOperation(AsyncContext ctx,JSONObject jsonArgs){
+
+	}
+
+	@Operation(name="sendrecoveryemail")
+	@SessionRequired
 	public static void sendRecoveryEmailOperation(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
 		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
 		//HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
-		
+
 		boolean hasError = false;
 		JsonResponse response = new JsonResponse();
 		String email = jsonArgs.has("email") ? jsonArgs.getString("email") : null;
@@ -473,12 +487,14 @@ public class Users extends HttpServlet {
 		}
 		ctx.complete();
 	}
-	
+
+	@Operation(name="get")
 	@SessionRequired
 	public static void getOperation(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
 		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
-		//HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
-		
+
+		HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
+
 		String by = jsonArgs.has("by") ? jsonArgs.getString("by"):"none";
 		String identifier = jsonArgs.has("id")?jsonArgs.getString("id"):"none";
 
@@ -567,12 +583,13 @@ public class Users extends HttpServlet {
 
 		ctx.complete();
 	}
-	
+
+	@Operation(name = "delete")
 	@SessionRequired
 	public static void deleteUserOperation(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
 		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
 		//HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
-		
+
 		boolean hasError = false;
 		OpUpdateJsonResponse response = new OpUpdateJsonResponse();
 		String id = jsonArgs.has("id") ? jsonArgs.getString("id") : "";
@@ -628,12 +645,13 @@ public class Users extends HttpServlet {
 		}
 		ctx.complete();
 	}
-	
+
+	@Operation(name = "update")
 	@SessionRequired
 	public static void updateUserOperation(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
 		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
 		//HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
-		
+
 		boolean hasError = false;
 		OpUpdateJsonResponse response = new OpUpdateJsonResponse();
 		UserValidator validator = up.getValidator();
@@ -679,7 +697,7 @@ public class Users extends HttpServlet {
 		firstName = firstName != null ? firstName : oldUser.getFirstName();
 		lastName = lastName != null ? lastName : oldUser.getLastName();
 		gender = gender != null ? gender : oldUser.getGender();
-		
+
 		DataUser userParam = new DataUser();
 		userParam.setId(id);
 		userParam.setEmail(email);
@@ -689,7 +707,7 @@ public class Users extends HttpServlet {
 		userParam.setGender(gender);
 
 		if (oldUser != null) {
-				
+
 			if(!gender.equalsIgnoreCase(oldUser.getGender())){
 				try {
 					validator.validateGender(userParam);
@@ -704,7 +722,7 @@ public class Users extends HttpServlet {
 					hasError = true;
 				}
 			}
-			
+
 			if (!email.equalsIgnoreCase(oldUser.getEmail())) {
 				try {
 					validator.validateEmail(userParam);
@@ -790,12 +808,12 @@ public class Users extends HttpServlet {
 
 		ctx.complete();
 	}
-	
-	
+
+	@Operation(name = "create")
 	public static void createUserOperation(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
 		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
 		//HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
-		
+
 		boolean hasError = false;
 		OpCreateJsonResponse response = new OpCreateJsonResponse();
 		UserValidator validator = up.getValidator();
@@ -812,7 +830,7 @@ public class Users extends HttpServlet {
 		lastName = lastName != null ? lastName : "";
 		gender = gender != null ? gender : "n";
 		password = password != null ? password : "";
-		
+
 
 		DataUser user = new DataUser();
 		user.setId(System.currentTimeMillis() + "");
@@ -823,7 +841,7 @@ public class Users extends HttpServlet {
 		user.setPassword(password);
 		user.setGender(gender);
 		user.setCreateAt(System.currentTimeMillis());
-		
+
 		try {
 			validator.validateGender(user);
 		} catch (GenderValidationException maile) {
@@ -836,7 +854,7 @@ public class Users extends HttpServlet {
 
 			hasError = true;
 		}
-		
+
 		try {
 			validator.validateEmail(user);
 		} catch (EmailValidationException maile) {
@@ -925,7 +943,8 @@ public class Users extends HttpServlet {
 
 		ctx.complete();
 	}
-	
+
+	@Operation(name = "changepassword")
 	@SessionRequired
 	public static void changePasswordOperation(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
 		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();

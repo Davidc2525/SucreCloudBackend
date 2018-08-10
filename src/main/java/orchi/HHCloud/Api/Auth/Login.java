@@ -1,4 +1,4 @@
-package orchi.HHCloud.Api;
+package orchi.HHCloud.Api.Auth;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -43,7 +43,7 @@ public class Login extends HttpServlet {
 	 */
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private static final long serialVersionUID = 1L;
-	private static ObjectMapper om;
+	private static ObjectMapper om = new ObjectMapper();;
 	/** proveedor de auttenticacion */
 	private static DefaultAuthProvider authProvider;
 	public static ThreadPoolExecutor executorw2;
@@ -55,7 +55,7 @@ public class Login extends HttpServlet {
 		executorw2 = new ThreadPoolExecutor(10, 1000, 50000L, TimeUnit.MILLISECONDS,
 				new LinkedBlockingQueue<Runnable>(100000));
 
-		om = new ObjectMapper();
+		//om = new ObjectMapper();
 		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);
 		om.getJsonFactory();
 	}
@@ -69,9 +69,7 @@ public class Login extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		// delegate long running process to an "async" thread
-		executorw2.execute(new Task(req.startAsync()));
-
-
+		executorw2.execute(new Task(req.getAsyncContext()));
 	}
 
 	public static class AuthJsonResponse {

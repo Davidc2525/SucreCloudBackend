@@ -1,4 +1,4 @@
-package orchi.HHCloud.Api;
+package orchi.HHCloud.Api.Auth;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,12 +21,12 @@ public class Logout extends HttpServlet {
 
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private ThreadPoolExecutor executorw2;
-	private static ObjectMapper om;
+	private static ObjectMapper om = new ObjectMapper();;
 
 	public Logout(){
 		executorw2 = new ThreadPoolExecutor(10, 100, 50000L, TimeUnit.MILLISECONDS,
 				new LinkedBlockingQueue<Runnable>(100));
-		om = new ObjectMapper();
+		//om = new ObjectMapper();
 		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);
 		om.getJsonFactory();
 	}
@@ -34,7 +34,15 @@ public class Logout extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 	
-		executorw2.execute(new Task(req.startAsync()));
+		doPost(req,resp);
+
+	}
+	
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	
+		executorw2.execute(new Task(req.getAsyncContext()));
 		System.err.println("tarea en proceso "+Thread.currentThread());
 		
 

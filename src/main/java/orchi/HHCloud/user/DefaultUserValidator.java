@@ -28,17 +28,17 @@ public class DefaultUserValidator implements UserValidator {
 		//String regex2 = "^([A-Z]*)$";
 		String regex3 = "^([-_A-Za-z0-9]){5,25}$";
 		String[] regexs = new String[] {regex3};
-		
+
 		//Validador de username
-		Stringvalidator = new RegexValidator(regexs, caseSensitive);		
-		
-		
+		Stringvalidator = new RegexValidator(regexs, caseSensitive);
+
+
 		String regexPass = "^([A-Za-z0-9_.,&%€@#~]){8,}$";
 		String[] regexsPass = new String[] {regexPass};
 		//validador para claves
 		passValidator = new RegexValidator(regexsPass, caseSensitive);
-		
-		String regexFirstAndLastName = "^([-_A-Za-z0-9]){2,15}$";		
+
+		String regexFirstAndLastName = "^([-_A-Za-z0-9]){2,15}$";
 		FirstAndLastNameValidator = new RegexValidator(regexFirstAndLastName);
 
 	}
@@ -70,11 +70,11 @@ public class DefaultUserValidator implements UserValidator {
 		if (username.equalsIgnoreCase("")) {
 			throw new UsernameValidationException("El username no puede estar vacio.");
 		}
-		
+
 		if(!Stringvalidator.isValid(username)){
 			throw new UsernameValidationException("El username no es valido. !(isValid)");
 		}
-		
+
 
 		try {
 			Start.getUserManager().getUserProvider().getUserByUsername(username);
@@ -88,10 +88,10 @@ public class DefaultUserValidator implements UserValidator {
 
 	@Override
 	public void validatePassword(User user) throws ValidationException {
-		if (user.getPassword().equalsIgnoreCase("")) {
+		if (user.getPassword().equalsIgnoreCase("")||user.getPassword()==null) {
 			throw new PasswordValidationException("La clave no puede estar vacia.");
 		}
-		
+
 		if(!passValidator.isValid(user.getPassword())){
 			throw new PasswordValidationException("La clave es invalida.");
 		}
@@ -103,7 +103,7 @@ public class DefaultUserValidator implements UserValidator {
 		if (u.getFirstName().equalsIgnoreCase("")) {
 			throw new FirstNameValidationException("El nombre no puede estar vacio.");
 		}
-		
+
 		if(!FirstAndLastNameValidator.isValid(u.getFirstName())){
 			throw new FirstNameValidationException("El nombre no es valido.");
 		}
@@ -116,12 +116,12 @@ public class DefaultUserValidator implements UserValidator {
 		if (u.getLastName().equalsIgnoreCase("")) {
 			throw new LastNameValidationException("El apellido no puede estar vacio.");
 		}
-		
+
 		if(!FirstAndLastNameValidator.isValid(u.getLastName())){
 			throw new LastNameValidationException("El apellido no es valido.");
 		}
 	}
-	
+
 	public void validateGender(User user) throws ValidationException {
 		DataUser u = (DataUser) user;
 		String gender = u.getGender();

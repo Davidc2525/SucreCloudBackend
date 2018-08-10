@@ -19,7 +19,7 @@ import org.json.JSONObject;
 import org.slf4j.*;
 
 import orchi.HHCloud.Util;
-import orchi.HHCloud.operations.IOperation;
+import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 import orchi.HHCloud.stores.hdfsStore.ZipFiles;
 

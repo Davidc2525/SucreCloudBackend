@@ -1,13 +1,13 @@
 package orchi.HHCloud.store;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.servlet.AsyncContext;
 
-import org.apache.commons.fileupload.FileUploadException;
+import org.apache.hadoop.fs.Path;
 import org.json.JSONObject;
 
-import orchi.HHCloud.ParseParamsMultiPart;
 import orchi.HHCloud.user.User;
 
 public interface Store {
@@ -35,10 +35,14 @@ public interface Store {
 	public void download(AsyncContext ctx, JSONObject arg);
 	
 	public JSONObject download(JSONObject args);
-	
-	public JSONObject upload(JSONObject args);
 
-	public JSONObject upload(AsyncContext ctx, JSONObject arg, ParseParamsMultiPart params) throws FileUploadException, IOException;
-
+	public void create(Path path, InputStream in);
 	
+	public void touch(Path path);
+	
+	//public JSONObject upload(JSONObject args);
+
+	//public JSONObject upload(AsyncContext ctx, JSONObject arg, ParseParamsMultiPart params) throws FileUploadException, IOException;
+
+	//pulic void writeFile(InputStream in, JSONObject arg);
 }

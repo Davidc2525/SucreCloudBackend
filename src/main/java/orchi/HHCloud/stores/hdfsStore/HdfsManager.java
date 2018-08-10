@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Start;
-import orchi.HHCloud.Api.Opener.Range;
+import orchi.HHCloud.Api.Opener.Opener.Range;
 
 public class HdfsManager {
 	private static Logger log = LoggerFactory.getLogger(HdfsManager.class);

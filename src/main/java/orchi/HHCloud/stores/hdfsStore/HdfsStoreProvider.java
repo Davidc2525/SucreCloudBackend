@@ -1,6 +1,7 @@
 package orchi.HHCloud.stores.hdfsStore;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.servlet.AsyncContext;
 
@@ -74,13 +75,7 @@ public class HdfsStoreProvider implements Store {
 		return null;
 	}
 
-	@Override
-	public JSONObject upload(JSONObject args) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
+	
 	public JSONObject upload(AsyncContext ctx, JSONObject arg, ParseParamsMultiPart params)
 			throws FileUploadException, IOException {
 		return new UploadOperation(ctx,arg,params).call();
@@ -90,6 +85,22 @@ public class HdfsStoreProvider implements Store {
 	public void createStoreContextToUser(User user) throws IOException {
 		Path pathRoot = HdfsManager.newPath(user.getId(),"");
 		HdfsManager.getInstance().fs.mkdirs(pathRoot);			
+	}
+
+	@Override
+	public void create(Path path, InputStream in) {
+		try {
+			HdfsManager.getInstance().writeFile(path, in);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void touch(Path path) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

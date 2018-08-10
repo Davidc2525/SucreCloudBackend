@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Util;
-import orchi.HHCloud.operations.IOperation;
+import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
 public class ListOperation implements IOperation {

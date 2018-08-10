@@ -1,4 +1,4 @@
-package orchi.HHCloud.Api;
+package orchi.HHCloud.Api.Opener;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,10 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.Api.annotations.Ignore;
+import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
 
-
+@Ignore
+@SessionRequired
 public class Opener extends HttpServlet {
 	private Logger log = LoggerFactory.getLogger(Opener.class);
 	private static Long sizeRange = Start.conf.getLong("api.openner.range.size");
@@ -30,13 +33,13 @@ public class Opener extends HttpServlet {
 	private Long readedParts = 0L;
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.addHeader("Access-Control-Allow-Origin",ACCESS_CONTROL_ALLOW_ORIGIN);
+		//resp.addHeader("Access-Control-Allow-Origin",ACCESS_CONTROL_ALLOW_ORIGIN);
 		HttpSession session = req.getSession(false);
 		if(session==null){
 			resp.getWriter().println("no tiene session activa");
 			return;
 		};
-		resp.addHeader("Access-Control-Allow-Credentials", "true");
+		//resp.addHeader("Access-Control-Allow-Credentials", "true");
 		log.debug("Abrir contenido de archivo.");
 		Path p;
 		try {
@@ -48,11 +51,11 @@ public class Opener extends HttpServlet {
 				Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
 				Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
 				String mime = Files.probeContentType(Paths.get(path.toString()));
-				
+
 				Range range = new Range(hRange,fileSize);
 				Long[] ranges = range.range;
 				long contentLength = range.getContentLength();
-				
+
 				log.debug("contenido parcial");
 				log.debug("cabesera {}",hRange);
 				log.debug("ruta decodificada {}",decodePath);
@@ -62,8 +65,8 @@ public class Opener extends HttpServlet {
 				log.debug("tipo de mime {}",mime);
 				log.debug("------------- {}",++readedParts);
 
-				
-				
+
+
 				resp.setStatus(206);
 				resp.setHeader("Accept-Ranges", "bytes");
 				resp.setHeader("Content-Length", contentLength + "");
@@ -78,19 +81,19 @@ public class Opener extends HttpServlet {
 				Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
 				String mime = Files.probeContentType(Paths.get(path.toString()));
 				Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
-				
+
 				log.debug("contenido total");
 				log.debug("ruta decodificada {}",decodePath);
 				log.debug("tamaño del contenido total {}",fileSize);
 				log.debug("tipo de mime {}",mime);
 				log.debug("------------- {}",++readedParts);
-				
+
 				resp.setHeader("Content-Length", fileSize + "");
 				resp.setHeader("Content-Type", mime);
 				HdfsManager.getInstance().readFile(path, resp.getOutputStream());
 			}
 		} catch (Exception e1) {
-			
+
 			e1.printStackTrace();
 		}
 
@@ -127,7 +130,7 @@ public class Opener extends HttpServlet {
 	}
 
 	public static class Range {
-		
+
 		public Long[] range = { 0L, 0L };
 		private String reg = "(?:bytes)=(\\d+)-(\\d+)?";
 		private Pattern pattern = Pattern.compile(reg);
@@ -148,11 +151,11 @@ public class Opener extends HttpServlet {
 				if (range[0] > range[1]) {
 					range[1] = range[0] + range[1];
 				}
-				
+
 				if(range[1]>fileSize){
 					range[1] = fileSize-1;
 				}
-				
+
 				setContentLength(range[1] - range[0] + 1);
 
 			}

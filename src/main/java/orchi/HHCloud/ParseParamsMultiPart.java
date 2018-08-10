@@ -23,7 +23,20 @@ public class ParseParamsMultiPart {
 		boolean isMultipart = ServletFileUpload.isMultipartContent(req);
 
 		if(!isMultipart){
-			throw new Exception("los parametros no son multipar/form-data");
+			req.getParameterMap().forEach( (name,value)->{
+				System.out.println(" 	p: "+name+" -> "+value[0]);
+				paramsMap.put(name,
+						new Param(
+							name,
+							null,
+							null,
+							false,
+							null,
+							new ByteArrayInputStream(value[0].getBytes()))
+				);
+			} );
+			//throw new Exception("los parametros no son multipar/form-data");
+			return;
 		}
 		ServletFileUpload upload = new ServletFileUpload();
 		try {
@@ -64,7 +77,8 @@ public class ParseParamsMultiPart {
 		if (item == null) {
 			return null;
 		}
-		return Streams.asString(item.openStream());
+		
+		return Streams.asString((item.openStream()));
 	}
 
 	private static InputStream copyInputStream(InputStream input) throws IOException {
@@ -139,6 +153,12 @@ public class ParseParamsMultiPart {
 			// TODO Auto-generated method stub
 			return inputStream;
 		}
+		
+		public InputStream setStream(InputStream newStream){
+			this.inputStream = newStream;
+			return newStream;
+		}
+		
 	}
 
 }

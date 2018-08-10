@@ -86,29 +86,17 @@ public abstract class Util {
 	}
 	
 	public static JSONObject parseParams(HttpServletRequest req){
-		ParseParamsMultiPart params = null;
+		ParseParamsMultiPart2 params = null;
 		try {
-			params = new ParseParamsMultiPart(req);
+			params = new ParseParamsMultiPart2(req);
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-
-			/*
-			 * try { ctx.getResponse().setContentType("application/json");
-			 * ctx.getResponse().getWriter().println( new
-			 * JSONObject().put("error","invalid_method").put("status",
-			 * "error").put("errorMsg","nada")); ctx.complete(); } catch
-			 * (JSONException | IOException e) {
-			 * 
-			 * e.printStackTrace(); }
-			 */
-			
 			System.err.println(e1.getMessage());
 		}
 		String args = null;
 		if (req.getMethod().equalsIgnoreCase("post")) {
 			try {
-				args = params.getAsString("args");
-			} catch (IOException | NullPointerException e) {
+				args = params.getString("args");
+			} catch (NullPointerException e) {
 				e.printStackTrace();
 			}
 		} else if (req.getMethod().equalsIgnoreCase("get")) {

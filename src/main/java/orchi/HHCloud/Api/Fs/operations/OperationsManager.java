@@ -1,4 +1,4 @@
-package orchi.HHCloud.operations;
+package orchi.HHCloud.Api.Fs.operations;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -55,7 +55,7 @@ public class OperationsManager {
 	 * @author david
 	 * @param params
 	 */
-	public JSONObject processOperation(AsyncContext ctx, JSONObject arg, ParseParamsMultiPart params) {
+	public JSONObject processOperation(AsyncContext ctx, JSONObject arg) {
 		setContentType("application/json");
 		HttpServletRequest r = ((HttpServletRequest) ctx.getRequest());
 
@@ -111,12 +111,6 @@ public class OperationsManager {
 			if (r.getMethod().equalsIgnoreCase("get")) {
 				return new JSONObject().put("error", "invalid method");
 			}
-			try {
-				response = store.upload(ctx,arg,params);
-				//response = new UploadOperation(ctx,arg,params).call();
-			} catch (FileUploadException | IOException e) {
-				e.printStackTrace();
-			}
 		}
 
 		try {
@@ -124,7 +118,7 @@ public class OperationsManager {
 			ctx.getResponse().getWriter().println(response.toString(2));
 			response = null;
 			arg = null;
-			params = null;
+			//params = null;
 		} catch (JSONException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
