@@ -31,8 +31,7 @@ import orchi.HHCloud.Api.annotations.Operation;
 @Operation(name = "download", isRequired = true)
 public class Fs extends HttpServlet {
 
-
-	private static String root = "/mi_dfs/";
+	private static final long serialVersionUID = -7283584531584394004L;
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private ThreadPoolExecutor executor;
 
@@ -86,23 +85,6 @@ public class Fs extends HttpServlet {
 			HttpSession session = reqs.getSession(false);
 			//resps.addHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 			//resps.addHeader("Access-Control-Allow-Credentials", "true");
-
-			/*if(session==null){
-				try {
-					JSONObject response = new JSONObject();
-					response.put("status","error");
-					response.put("error","auth");
-					response.put("errorMsg", "No ha iniciado sesion.");
-					resps.getWriter().println(response.toString(2));
-					ctx.complete();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}*/
-
-
-
 
 			ParseParamsMultiPart2  p = (ParseParamsMultiPart2) reqs.getAttribute("params");
 

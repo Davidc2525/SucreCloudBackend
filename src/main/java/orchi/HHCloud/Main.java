@@ -29,6 +29,7 @@ import orchi.HHCloud.auth.GenerateToken;
 import orchi.HHCloud.conf.ConfManager;
 import orchi.HHCloud.mail.MailProvider;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
+import orchi.HHCloud.store.ContextStore;
 import orchi.HHCloud.stores.FsStore.FsStore;
 import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 import orchi.HHCloud.user.DataUser;
@@ -43,6 +44,18 @@ public class Main {
 
 		System.out.println("HHCloud pruebas!");
 		//Start.getConfManager();
+		DataUser u = new DataUser();
+		u.setId("TEST");
+		
+		ContextStore.createUserContext(u);
+		
+		if(true){
+			return;
+		}
+		System.out.println(Paths.get("/mi_dfs/","/user/","files",Paths.get(
+				"/hola","//files/","1","2","../../../../../"
+				).normalize().toString()));
+		
 		System.err.println(GenerateToken.newToken());
 		
 		
@@ -53,9 +66,7 @@ public class Main {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		if(true){
-			return;
-		}
+		
 		
 		Connection con = Start.getDbConnectionManager().getConnection();
 		
@@ -70,7 +81,7 @@ public class Main {
 		
 		try {
 			Start.getUserManager().getUserProvider().createUser(user);
-			Start.getStoreManager().getStoreProvider().createStoreContextToUser(user);
+			//Start.getStoreManager().getStoreProvider().createStoreContextToUser(user);
 		} catch (UserException e) {
 			
 			e.printStackTrace();

@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Api.Opener.Opener.Range;
+import orchi.HHCloud.store.ContextStore;
 
 public class HdfsManager {
 	private static Logger log = LoggerFactory.getLogger(HdfsManager.class);
@@ -213,17 +214,18 @@ public class HdfsManager {
 	 * </pre>
 	 * 
 	 * 
-	 * @param pRoot
+	 * @param userId
 	 *            contiene la ruta root del sistema mas la id del usuario
 	 * @param contiene
 	 *            la rruta a la q quiere acceder el usuario
 	 */
-	public static Path newPath(String pRoot, String path) {
-		Path p = new Path(Paths.get("/", path).normalize().toString());
+	public static Path newPath(String userId, String path) {
+		//Path p = new Path(Paths.get("/", path).normalize().toString());
 
-		p = Path.mergePaths(new Path(getRoot(pRoot)), p);
-		System.err.println("newPath " + p.toString());
-		return p = new Path(Paths.get(p.toString()).normalize().toString());
+		//p = Path.mergePaths(new Path(getRoot(pRoot)), p);
+		java.nio.file.Path p = Paths.get(root,ContextStore.toUserContext(userId, path).toString());
+		System.err.println("newPath " +p);
+		return new Path(p.normalize().toString());
 	}
 
 	/**

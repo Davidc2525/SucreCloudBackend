@@ -58,7 +58,7 @@ public abstract class Util {
 	 * 
 	 * */
 	public static String getPathWithoutRootPath(String in) {
-
+		String contentFiles = Start.conf.getString("store.contextstore.root.path.store.fs.user.files", "files");
 		java.nio.file.Path p = null;
 		Path p2 = new Path(in);
 
@@ -74,10 +74,10 @@ public abstract class Util {
 				path += "/" + part.toString();
 			}
 
-			if (part.toString().equals("mi_dfs")) {
+			if (part.toString().equals(contentFiles)) {
 				add = true;
-				iter.next();// to /user/
-				iter.next();// to /user/files/
+				//iter.next();// to /user/
+				//iter.next();// to /user/files/
 			}
 
 		}

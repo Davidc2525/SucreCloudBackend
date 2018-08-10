@@ -55,7 +55,10 @@ public class ApiManager {
 					log.info("	   |-session is required");
 					op.sr = true;
 					apid.addOperation(o.name(), op);
+				}else{
+					apid.addOperation(o.name(), op);
 				}
+				
 			}
 			for (Method m : clazz.getDeclaredMethods()) {
 				orchi.HHCloud.Api.annotations.Operation[] ops = m

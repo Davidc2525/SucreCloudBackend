@@ -1,5 +1,6 @@
 package orchi.HHCloud.stores.hdfsStore;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -10,6 +11,7 @@ import org.apache.hadoop.fs.Path;
 import org.json.JSONObject;
 
 import orchi.HHCloud.ParseParamsMultiPart;
+import orchi.HHCloud.Start;
 import orchi.HHCloud.store.Store;
 import orchi.HHCloud.user.User;
 
@@ -84,7 +86,11 @@ public class HdfsStoreProvider implements Store {
 	@Override
 	public void createStoreContextToUser(User user) throws IOException {
 		Path pathRoot = HdfsManager.newPath(user.getId(),"");
-		HdfsManager.getInstance().fs.mkdirs(pathRoot);			
+		HdfsManager.getInstance().fs.mkdirs(pathRoot);	
+		String appName = Start.conf.getString("app.name");
+		
+		Path p = new Path(pathRoot,"BIENVENIDO A "+appName);
+		create(p,new ByteArrayInputStream(("Biencenido a "+appName).getBytes()));
 	}
 
 	@Override
@@ -99,8 +105,13 @@ public class HdfsStoreProvider implements Store {
 
 	@Override
 	public void touch(Path path) {
-		// TODO Auto-generated method stub
-		
+		try {
+			if(!HdfsManager.getInstance().fs.exists(path))
+				create(path,new ByteArrayInputStream("".getBytes()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	

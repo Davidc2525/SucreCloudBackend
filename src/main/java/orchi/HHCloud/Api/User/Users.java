@@ -20,14 +20,13 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.mortbay.log.Log;
 
-import orchi.HHCloud.ParseParamsMultiPart;
 import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
-import orchi.HHCloud.Util;
 import orchi.HHCloud.Api.annotations.Operation;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.auth.Exceptions.TokenException;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
+import orchi.HHCloud.store.ContextStore;
 import orchi.HHCloud.store.Store;
 import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.DataUser;
@@ -52,11 +51,8 @@ import orchi.HHCloud.user.Exceptions.ValidationException;
  * */
 public class Users extends HttpServlet {
 
-	/**
-	 *
-	 */
+	
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
-
 	private static final long serialVersionUID = 3632921692211341012L;
 	private ThreadPoolExecutor executor;
 	private static UserProvider up;
@@ -914,9 +910,9 @@ public class Users extends HttpServlet {
 
 		if (!hasError) {
 			try {
-				sp.createStoreContextToUser(user);
+				ContextStore.createUserContext(user);
 				up.createUser(user);
-			} catch (UserException | IOException e) {
+			} catch (UserException e) {
 				response.setStatus("error");
 				response.setError("create_exception");
 				response.setMsg(e.getMessage());
