@@ -80,13 +80,13 @@ public class DefaultAuthProvider implements AuthProvider {
 	}
 
 	@Override
-	public void authenticate(User auser, WraperLoginCallback callback) throws AuthException {
+	public void authenticate(User authUser, WraperLoginCallback callback) throws AuthException {
 
-		commonValidation(auser.getUsername(), auser.getPassword());
+		commonValidation(authUser.getUsername(), authUser.getPassword());
 
 		User user = null;
 		try {
-			user = up.getUserByEmail(auser.getUsername());
+			user = up.getUserByEmail(authUser.getUsername());
 		} catch (UserNotExistException e) {
 			throw new AuthUserNotExistsException(e.getMessage());
 		} catch (UserException e) {
@@ -96,23 +96,23 @@ public class DefaultAuthProvider implements AuthProvider {
 		String userPassword = user.getPassword();
 
 		if (userPassword == null) {
-			throw new AuthUserNotExistsException(auser.getUsername() + " no exist");
+			throw new AuthUserNotExistsException(authUser.getUsername() + " no exist");
 		}
 
-		if (!userPassword.equals(auser.getPassword())) {
-			Integer countFails = usersAuthFails.get(auser.getUsername());
+		if (!userPassword.equals(authUser.getPassword())) {
+			Integer countFails = usersAuthFails.get(authUser.getUsername());
 			if (countFails == null) {
 				countFails = 0;
 			}
 			++countFails;
-			usersAuthFails.put(auser.getUsername(), countFails);
+			usersAuthFails.put(authUser.getUsername(), countFails);
 			if (countFails >= 50) {
 				throw new AuthExceededCountFaildException(
-						auser.getUsername() + " exeedec the count retry auth " + countFails + " > 4, its locket.");
+						authUser.getUsername() + " exeedec the count retry auth " + countFails + " > 4, its locket.");
 			}
 
 			throw new AuthPasswordException(
-					"password: " + auser.getPassword() + ", for " + auser.getUsername() + " is incorrect");
+					"password: " + authUser.getPassword() + ", for " + authUser.getUsername() + " is incorrect");
 
 		}
 

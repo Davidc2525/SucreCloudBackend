@@ -10,3 +10,5 @@ log/
 /derby.log
 tokens
 HHCloudFsStore
+HHCloud.ipr
+HHCloud.iws

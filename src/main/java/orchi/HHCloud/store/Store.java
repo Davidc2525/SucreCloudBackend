@@ -12,9 +12,9 @@ import orchi.HHCloud.user.User;
 
 public interface Store {
 
-	default public void init(){} ;
+	public void init() ;
 
-	default public void start(){};
+	public void start();
 
 	/**metodos genericos*/
 	public void createStoreContextToUser(User user) throws IOException;

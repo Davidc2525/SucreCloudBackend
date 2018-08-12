@@ -1,4 +1,4 @@
-connect 'jdbc:derby:db/HHCloud;create=true';
+connect 'jdbc:derby:db/HHCloud;create=true';  --comentar esta linea si no es se ejecutara en la base de datos embebida
 
 CREATE TABLE USERS
     (ID varchar(100) NOT NULL,
@@ -26,14 +26,16 @@ CREATE TABLE SHAREBYUSER
     IDSHARE VARCHAR(100) NOT NULL);
 
 CREATE TABLE SHAREBYPATH
-    (PATH BLOB(500K) NOT NULL,
+    (PATH VARCHAR(10000) NOT NULL,
     IDSHARE VARCHAR(100) NOT NULL);
 
 CREATE TABLE SHARE
     (ID VARCHAR(100) NOT NULL,
-    PATH BLOB(500K) NOT NULL,
+    PATH VARCHAR(10000) NOT NULL,
     OWNERUSER VARCHAR(100) NOT NULL,
     CREATEAT BIGINT NOT NULL);
+
+
 
 
 
