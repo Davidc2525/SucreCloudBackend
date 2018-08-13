@@ -19,6 +19,7 @@ import com.google.crypto.tink.aead.AeadKeyTemplates;
 public class DefaultCipherProvider implements CipherProvider {
 
 	private Aead aead;
+	private byte[] associatedData = "DATA".getBytes();
 
 	@Override
 	public void init() {
@@ -37,7 +38,6 @@ public class DefaultCipherProvider implements CipherProvider {
 
 			}
 
-			String plaintext = "David23030487";
 			// 2. Obtener primitiva
 			aead = AeadFactory.getPrimitive(keysetHandle);
 
@@ -49,11 +49,11 @@ public class DefaultCipherProvider implements CipherProvider {
 	}
 
 	@Override
-	public String encryptString(String plainString) {
+	public String encrypt(String plainString) {
 
 		byte[] ciphertext = null;
 		try {
-			ciphertext = aead.encrypt(plainString.getBytes(), "pass".getBytes());
+			ciphertext = aead.encrypt(plainString.getBytes(), associatedData);
 		} catch (GeneralSecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -63,10 +63,10 @@ public class DefaultCipherProvider implements CipherProvider {
 	}
 
 	@Override
-	public String decryptPassword(String encrtpStrint) {
+	public String decrypt(String encrtpStrint) {
 		byte[] decrypted = null;
 		try {
-			decrypted = aead.decrypt(Base64.decodeBase64(encrtpStrint), "pass".getBytes());
+			decrypted = aead.decrypt(Base64.decodeBase64(encrtpStrint), associatedData);
 		} catch (GeneralSecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

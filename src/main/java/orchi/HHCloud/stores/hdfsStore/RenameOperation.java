@@ -22,7 +22,6 @@ public class RenameOperation implements IOperation {
 
 	public  RenameOperation(JSONObject arg){
 		this.arg = arg;
-		
 	
 		srcPath = new Path((arg.getString("path")));
 		dstPath = new Path(Paths.get(arg.getString("dstPath")).normalize().toString());

@@ -28,6 +28,8 @@ import orchi.HHCloud.Api.User.Users;
 import orchi.HHCloud.auth.AuthProvider;
 import orchi.HHCloud.auth.DefaultAuthProvider;
 import orchi.HHCloud.auth.logIO.LogInAndOut;
+import orchi.HHCloud.cipher.CipherManager;
+import orchi.HHCloud.cipher.CipherProvider;
 import orchi.HHCloud.conf.ConfManager;
 import orchi.HHCloud.database.DbConnectionManager;
 import orchi.HHCloud.mail.MailManager;
@@ -130,5 +132,9 @@ public class Start {
 
 	public static MailManager getMailManager(){
 		return MailManager.getInstance();
+	}
+	
+	public static CipherManager getCipherManager(){
+		return CipherManager.getInstance();
 	}
 }

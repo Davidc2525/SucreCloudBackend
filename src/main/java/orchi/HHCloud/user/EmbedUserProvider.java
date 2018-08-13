@@ -22,6 +22,7 @@ import com.google.api.client.util.Base64;
 
 import orchi.HHCloud.Start;
 import orchi.HHCloud.auth.Exceptions.TokenException;
+import orchi.HHCloud.cipher.CipherProvider;
 import orchi.HHCloud.database.ConnectionProvider;
 import orchi.HHCloud.database.DbConnectionManager;
 import orchi.HHCloud.mail.MailProvider;
@@ -59,6 +60,7 @@ public class EmbedUserProvider implements UserProvider {
 											+ "UPDATE USERS SET "
 											+ "EMAILVERIFIED=(?)"
 											+ "WHERE ID=(?)";
+	private CipherProvider ciplherProvider = Start.getCipherManager().getCipherProvider();
 	private ConnectionProvider provider;
 	private Connection conn;
 	private UserValidator userValidator = new DefaultUserValidator();
@@ -192,8 +194,7 @@ public class EmbedUserProvider implements UserProvider {
 			} catch (UserNotExistException e2) {
 				PreparedStatement userInsert = null;
 				try {
-					userInsert = conn
-							.prepareStatement(INSERT_INTO_USERS);
+					userInsert = conn.prepareStatement(INSERT_INTO_USERS);
 
 					userInsert.setString(1, escape(user.getId()));
 					userInsert.setString(2, escape(user.getEmail()));
@@ -203,7 +204,7 @@ public class EmbedUserProvider implements UserProvider {
 					userInsert.setString(6, escape(user.getLastName()));
 					userInsert.setString(7, escape(user.getGender()));
 					userInsert.setBigDecimal(8, new BigDecimal(user.getCreateAt()));
-					userInsert.setString(9, escape(user.getPassword()));
+					userInsert.setString(9, ciplherProvider.encrypt(user.getPassword()));
 					userInsert.executeUpdate();
 					sendVerifyEmail(user);
 				} catch (SQLException e) {
@@ -248,11 +249,11 @@ public class EmbedUserProvider implements UserProvider {
 	public User changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException, UserException {
 		User user = userMutator.getUser();
 		String nPassword = userMutator.getPassword();
-
+		String nPasswordEncrypt = ciplherProvider.encrypt(nPassword);
 		PreparedStatement updatePass = null;
 		try {
 			updatePass = conn.prepareStatement(UPDATE_PASS_USER);
-			updatePass.setString(1, nPassword);
+			updatePass.setString(1, nPasswordEncrypt);
 			updatePass.setString(2, user.getId());
 			updatePass.executeUpdate();
 		} catch (SQLException e) {

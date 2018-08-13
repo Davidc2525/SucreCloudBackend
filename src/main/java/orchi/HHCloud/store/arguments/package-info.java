@@ -5,4 +5,4 @@
  * @author david
  *
  */
-package orchi.HHCloud.stores.hdfsStore;
+package orchi.HHCloud.store.arguments;

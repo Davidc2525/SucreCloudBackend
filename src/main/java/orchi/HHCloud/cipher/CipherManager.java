@@ -3,6 +3,7 @@ package orchi.HHCloud.cipher;
 import orchi.HHCloud.Start;
 
 public class CipherManager {
+	
 	private String cipherClassName = Start.conf.getString("cipher.provider");
 	private CipherProvider cipherProvider;
 	

@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +35,16 @@ import orchi.HHCloud.conf.ConfManager;
 import orchi.HHCloud.mail.MailProvider;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.store.ContextStore;
+import orchi.HHCloud.store.arguments.DeleteArguments;
+import orchi.HHCloud.store.arguments.GetStatusArguments;
+import orchi.HHCloud.store.arguments.ListArguments;
+import orchi.HHCloud.store.arguments.MkDirArguments;
+import orchi.HHCloud.store.arguments.MoveOrCopyArguments;
+import orchi.HHCloud.store.arguments.RenameArguments;
 import orchi.HHCloud.stores.FsStore.FsStore;
+import orchi.HHCloud.stores.HdfsStore.HdfsStoreProvider;
 import orchi.HHCloud.stores.hdfsStore.HdfsManager;
+import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
 import orchi.HHCloud.user.Exceptions.UserException;
@@ -57,13 +66,64 @@ public class Main {
 	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException {
 
 	System.out.println("HHCloud pruebas!");
-	String en = CipherManager.getInstance().getCipherProvider().encryptString("Test de sifrado");
-	String des = CipherManager.getInstance().getCipherProvider().decryptPassword(en);
-	log.info("{}\n{}",en,des);
+	HdfsManager.getInstance(true);
+		ObjectMapper om = new ObjectMapper();
+		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);
+		om.getJsonFactory();
+		BasicUser us = new BasicUser();
+		us.setId("1234");
 		
+		RenameArguments ar = new RenameArguments(Paths.get("me lleva/3"), Paths.get("me lleva/3 nueva"));
+		ar.setUser(us);;
+		
+		System.err.println(om.writeValueAsString(new HdfsStoreProvider().rename(ar)));
+		if(true){
+			return;
+		}	
+		
+		
+		MoveOrCopyArguments amoc = new MoveOrCopyArguments( Paths.get("me lleva/2"), Paths.get("me lleva/3"));
+		amoc.setUser(us);
+		System.err.println(om.writeValueAsString(new HdfsStoreProvider().move(amoc)));
+		
+		
+		DeleteArguments adelete = new DeleteArguments(Paths.get("me lleva/"));
+		adelete.setPaths(Arrays.asList(Paths.get("me lleva/1"),Paths.get("me lleva/3")));
+		adelete.setUser(us);
+		System.err.println(om.writeValueAsString(new HdfsStoreProvider().delete(adelete)));
+		
+		
+		
+		MkDirArguments amkd = new MkDirArguments(Paths.get("me lleva"));
+		amkd.setUser(us);
+		//System.err.println(om.writeValueAsString(new HdfsStoreProvider().mkdir(amkd)));
+		
+		
+		ListArguments a = new ListArguments();
+		a.setUser(us);
+		a.setPath(Paths.get("/musica/Of Mice & Men - Unbreakable (Official Music Video).mp4"));
+		System.err.println(om.writeValueAsString(new HdfsStoreProvider().list(a)));
+		 
+		GetStatusArguments gsa = new GetStatusArguments();
+		gsa.setPath(Paths.get("/"));
+		gsa.setPaths(Arrays.asList(Paths.get("/asc"),Paths.get("/"),Paths.get("/musica/Heart Of A Coward - Severance (full album) HD 320kbps.mp4")));
+		gsa.setUser(us);
+		System.err.println(om.writeValueAsString(new HdfsStoreProvider().status(gsa)));
 	if(true){
 		return;
+	}	
+	
+	String en = CipherManager.getInstance().getCipherProvider().encrypt("Test de sífrado");
+	String des = CipherManager.getInstance().getCipherProvider().decrypt(en);
+	log.info("{}\n{}",en,des);
+	int x = 0;
+	while(x<1){
+		en = CipherManager.getInstance().getCipherProvider().encrypt("TEST-"+x);
+		des = CipherManager.getInstance().getCipherProvider().decrypt(en);
+		log.info("{}\n{}",en,des);
+		x++;
 	}
+	
 	
 	AeadConfig.register();
     String keysetFilename = Thread.class.getResource("/").getPath()+"keyset.json";

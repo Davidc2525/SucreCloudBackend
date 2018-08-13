@@ -15,6 +15,7 @@ import orchi.HHCloud.auth.Exceptions.AuthUserNotExistsException;
 import orchi.HHCloud.auth.Exceptions.TokenException;
 import orchi.HHCloud.auth.Exceptions.VerifyException;
 import orchi.HHCloud.auth.logIO.WraperLoginCallback;
+import orchi.HHCloud.cipher.CipherProvider;
 import orchi.HHCloud.user.User;
 import orchi.HHCloud.user.UserProvider;
 import orchi.HHCloud.user.Exceptions.UserException;
@@ -35,6 +36,7 @@ public class DefaultAuthProvider implements AuthProvider {
 	private Map<String, User> tokesToRecoveryPassword = new HashMap<String, User>();
 	private Map<String, TimeBasedToken> tokensTimeBaseByIdToRecoveryPassword = new HashMap<String, TimeBasedToken>();
 	private UserProvider up;
+	private CipherProvider cipherProvider = Start.getCipherManager().getCipherProvider();
 	private static DefaultAuthProvider instance = null;
 
 	@Override
@@ -93,13 +95,22 @@ public class DefaultAuthProvider implements AuthProvider {
 			throw new AuthException(e.getMessage());
 		}
 
-		String userPassword = user.getPassword();
+		checkPassword(user,authUser);
+
+		callback.call(user);
+
+	}
+	
+	private void checkPassword(User userStore,User authUser) throws AuthException, AuthExceededCountFaildException, AuthPasswordException{
+		String userPassword = userStore.getPassword();
 
 		if (userPassword == null) {
 			throw new AuthUserNotExistsException(authUser.getUsername() + " no exist");
 		}
-
-		if (!userPassword.equals(authUser.getPassword())) {
+		
+		String userStorePasswordDecrypt = cipherProvider.decrypt(userPassword);
+		
+		if (!userStorePasswordDecrypt.equals(authUser.getPassword())) {
 			Integer countFails = usersAuthFails.get(authUser.getUsername());
 			if (countFails == null) {
 				countFails = 0;
@@ -115,9 +126,6 @@ public class DefaultAuthProvider implements AuthProvider {
 					"password: " + authUser.getPassword() + ", for " + authUser.getUsername() + " is incorrect");
 
 		}
-
-		callback.call(user);
-
 	}
 
 	public static DefaultAuthProvider getInstance() {

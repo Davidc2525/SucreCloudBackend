@@ -62,7 +62,7 @@ public class OperationsManager {
 
 		JSONObject response = null;
 		String operation = arg.getString("op");
-
+		
 		/**Operacion de listar directorio*/
 		if (Operation.LIST.equalsName(operation)) {//TODO hacer multiple
 			response = store.ls(arg);

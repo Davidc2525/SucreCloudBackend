@@ -21,7 +21,7 @@ import orchi.HHCloud.Api.Fs.operations.OperationsManager;
 import orchi.HHCloud.Api.annotations.Operation;
 
 
-@Operation(name = "list", isRequired = true)
+@Operation(name = "list", isRequired = false)
 @Operation(name = "getstatus", isRequired = true)
 @Operation(name = "mkdir", isRequired = true)
 @Operation(name = "delete", isRequired = true)
@@ -107,6 +107,7 @@ public class Fs extends HttpServlet {
 			String path = JsonArgs.getString("path");
 			String operation = reqs.getParameter("op");
 			JsonArgs.put("op",p.getString("op"));
+			
 			OperationsManager.getInstance().processOperation(ctx, JsonArgs);
 
 		}
