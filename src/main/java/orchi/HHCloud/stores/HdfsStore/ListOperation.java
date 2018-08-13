@@ -15,14 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Util;
+import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.store.Status;
 import orchi.HHCloud.store.arguments.GetStatusArguments;
 import orchi.HHCloud.store.arguments.ListArguments;
 import orchi.HHCloud.store.response.GetStatusResponse;
 import orchi.HHCloud.store.response.ListResponse;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
-public class ListOperation {
+public class ListOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(ListOperation.class);
 	private FileSystem fs;
 	private String root;
@@ -35,7 +35,7 @@ public class ListOperation {
 	public ListOperation(ListArguments args) {
 		this.args = args;
 		response = new ListResponse();
-		fs = HdfsManager.getInstance(true).fs;
+		fs = HdfsManager.getInstance().fs;
 		root = args.getUserId();
 		path = args.getPath().toString();
 		opath = new Path(HdfsManager.newPath(root, path).toString());
@@ -73,13 +73,14 @@ public class ListOperation {
 						status.setReplication(Long.valueOf(x.getReplication()));
 						status.setPermission(x.getPermission() + "");
 						status.setModificacionTime(x.getModificationTime());
-
+						status.setAccessTime(x.getAccessTime());
 						log.debug("\t{} in path", x.getPath().getName());
 
 						if (x.isFile()) {
 							status.setSize(x.getLen());
 						} else {
 							ContentSummary contentSumary = fs.getContentSummary(x.getPath());
+							status.setFileCount(contentSumary.getFileCount());
 							status.setDirectoryCount(contentSumary.getDirectoryCount());
 							status.setSize(contentSumary.getLength());
 							status.setElements(Long.valueOf(fs.listStatus(x.getPath()).length));
@@ -122,7 +123,7 @@ public class ListOperation {
 				lr.setPath(gs.getPath());
 				lr.setFile(gs.isFile());
 				lr.setSize(gs.getSize());
-				
+
 				return lr;// new GetStatusOperation(args).call();
 			}
 

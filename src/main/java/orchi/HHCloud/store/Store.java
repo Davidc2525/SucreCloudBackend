@@ -10,6 +10,9 @@ import org.json.JSONObject;
 
 import orchi.HHCloud.user.User;
 
+/**
+ * @deprecated
+ * @see StoreProvider*/
 public interface Store {
 
 	public void init() ;

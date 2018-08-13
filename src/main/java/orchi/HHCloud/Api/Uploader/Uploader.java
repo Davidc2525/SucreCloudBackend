@@ -19,13 +19,15 @@ import org.apache.hadoop.fs.Path;
 import org.json.JSONObject;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
+import orchi.HHCloud.stores.HdfsStore.HdfsManager;
 
 @Ignore
 @SessionRequired
-public class Uploader extends HttpServlet {
+public class Uploader extends API {
+	public static String apiName = "/uploader";
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 
 
@@ -98,7 +100,7 @@ public class Uploader extends HttpServlet {
 				java.nio.file.Path p = Paths.get(pathArgs,path);
 				String root = (String) session.getAttribute("uid");
 				Path opath = new Path(HdfsManager.newPath(root, p.toString()).toString());
-				Start.getStoreManager().getStoreProvider().create(opath,in);
+				Start.getStoreManager().getStoreProvider().create(Paths.get(opath.toString()),in);
 			}
 		}
 

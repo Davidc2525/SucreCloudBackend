@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.Servlet;
-import org.json.JSONObject;
+
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.slf4j.*;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
@@ -26,14 +28,14 @@ public class ApiManager {
 		return api.get(name);
 	}
 
-	public static ServletHolder addApi(Class<?> clazz, String name) {
+	public static ServletHolder addApi(Class<? extends API> clazz, String name) {
 
 		ServletHolder context = null;
 		try {
 			ApiDescriptor apid = new ApiDescriptor(name);
 			context = new ServletHolder((Servlet) clazz.newInstance());
 			context.setAsyncSupported(true);
-			log.debug("Add api: {} {}", name, context.getName());
+			log.debug("Add api: {} {}",name, context.getName());
 			log.info("- {}", name);
 			
 			SessionRequired gsr = clazz.getDeclaredAnnotation(SessionRequired.class);

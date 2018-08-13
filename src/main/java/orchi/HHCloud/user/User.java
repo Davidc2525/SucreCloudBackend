@@ -1,9 +1,6 @@
 package orchi.HHCloud.user;
 
 import java.io.Externalizable;
-import java.util.Comparator;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * Todas las clases tengan q ver con contenido de usuario deben heredar esta

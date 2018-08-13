@@ -7,17 +7,15 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.json.JSONObject;
-
 import orchi.HHCloud.Start;
 import orchi.HHCloud.store.Range;
 import orchi.HHCloud.store.StoreProvider;
-import orchi.HHCloud.store.arguments.MoveOrCopyArguments;
 import orchi.HHCloud.store.arguments.DeleteArguments;
 import orchi.HHCloud.store.arguments.DownloadArguments;
 import orchi.HHCloud.store.arguments.GetStatusArguments;
 import orchi.HHCloud.store.arguments.ListArguments;
 import orchi.HHCloud.store.arguments.MkDirArguments;
+import orchi.HHCloud.store.arguments.MoveOrCopyArguments;
 import orchi.HHCloud.store.arguments.RenameArguments;
 import orchi.HHCloud.store.response.CreateDirectoryResponse;
 import orchi.HHCloud.store.response.DeleteResponse;
@@ -25,19 +23,18 @@ import orchi.HHCloud.store.response.GetStatusResponse;
 import orchi.HHCloud.store.response.ListResponse;
 import orchi.HHCloud.store.response.MoveOrCopyResponse;
 import orchi.HHCloud.store.response.RenameResponse;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 import orchi.HHCloud.user.User;
 
 public class HdfsStoreProvider implements StoreProvider {
-		
-	public HdfsStoreProvider(){
-		
+
+	public HdfsStoreProvider() {
+
 	}
 
 	@Override
 	public void init() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -45,11 +42,9 @@ public class HdfsStoreProvider implements StoreProvider {
 		HdfsManager.getInstance();
 	}
 
-	
-
 	@Override
 	public CreateDirectoryResponse mkdir(MkDirArguments args) {
-		
+
 		return new CreateDirectoryOperation(args).call();
 	}
 
@@ -60,7 +55,7 @@ public class HdfsStoreProvider implements StoreProvider {
 
 	@Override
 	public ListResponse list(ListArguments args) {
-		
+
 		return new ListOperation(args).call();
 	}
 
@@ -88,25 +83,33 @@ public class HdfsStoreProvider implements StoreProvider {
 
 	@Override
 	public void read(Path path, OutputStream out) {
-		// TODO Auto-generated method stub
-		
+		try {
+			HdfsManager.getInstance().readFile(new org.apache.hadoop.fs.Path(path.toString()), out);
+		} catch (IllegalArgumentException | IOException e) {
+
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void read(Path path, Range range, OutputStream out) {
-		// TODO Auto-generated method stub
-		
+		try {
+			HdfsManager.getInstance().readFile(new org.apache.hadoop.fs.Path(path.toString()), out, range);
+		} catch (IllegalArgumentException | IOException e) {
+
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void createStoreContextToUser(User user) throws IOException {
-		org.apache.hadoop.fs.Path pathRoot = HdfsManager.newPath(user.getId(),"");
-		HdfsManager.getInstance().fs.mkdirs(pathRoot);	
+		org.apache.hadoop.fs.Path pathRoot = HdfsManager.newPath(user.getId(), "");
+		HdfsManager.getInstance().fs.mkdirs(pathRoot);
 		String appName = Start.conf.getString("app.name");
-		
-		org.apache.hadoop.fs.Path  p = new org.apache.hadoop.fs.Path (pathRoot,"BIENVENIDO A "+appName);
-		
-		create(Paths.get(p.toString()),new ByteArrayInputStream(("Biencenido a "+appName).getBytes()));
+
+		org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pathRoot, "BIENVENIDO A " + appName);
+
+		create(Paths.get(p.toString()), new ByteArrayInputStream(("Biencenido a " + appName).getBytes()));
 	}
 
 	@Override
@@ -122,8 +125,8 @@ public class HdfsStoreProvider implements StoreProvider {
 	@Override
 	public void touch(Path path) {
 		try {
-			if(!HdfsManager.getInstance().fs.exists(new org.apache.hadoop.fs.Path(path.toString())))
-				create(path,new ByteArrayInputStream("".getBytes()));
+			if (!HdfsManager.getInstance().fs.exists(new org.apache.hadoop.fs.Path(path.toString())))
+				create(path, new ByteArrayInputStream("".getBytes()));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -134,7 +137,5 @@ public class HdfsStoreProvider implements StoreProvider {
 	public void download(DownloadArguments args) {
 		new DownloadOperation(args).call();
 	}
-	
-	
 
 }

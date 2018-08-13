@@ -1,29 +1,23 @@
 package orchi.HHCloud.stores.HdfsStore;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import org.apache.hadoop.fs.Path;
-import org.json.JSONObject;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.store.arguments.RenameArguments;
 import orchi.HHCloud.store.response.RenameResponse;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
-public class RenameOperation {
+public class RenameOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(RenameOperation.class);
-
 	private Path srcPath;
 	private Path dstPath;
 	private String root;
-
 	private Path srcpathWithRoot;
 	private Path dstpathWithRoot;
-
 	private RenameArguments arg;
-
 	private RenameResponse response;
 
 	public RenameOperation(RenameArguments arg) {

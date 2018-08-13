@@ -1,6 +1,5 @@
 package orchi.HHCloud;
 
-import java.awt.List;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -10,12 +9,10 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,9 +26,15 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.crypto.tink.Aead;
+import com.google.crypto.tink.CleartextKeysetHandle;
+import com.google.crypto.tink.JsonKeysetReader;
+import com.google.crypto.tink.KeysetHandle;
+import com.google.crypto.tink.aead.AeadConfig;
+import com.google.crypto.tink.aead.AeadFactory;
+
 import orchi.HHCloud.auth.GenerateToken;
 import orchi.HHCloud.cipher.CipherManager;
-import orchi.HHCloud.conf.ConfManager;
 import orchi.HHCloud.mail.MailProvider;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.store.ContextStore;
@@ -41,23 +44,11 @@ import orchi.HHCloud.store.arguments.ListArguments;
 import orchi.HHCloud.store.arguments.MkDirArguments;
 import orchi.HHCloud.store.arguments.MoveOrCopyArguments;
 import orchi.HHCloud.store.arguments.RenameArguments;
-import orchi.HHCloud.stores.FsStore.FsStore;
+import orchi.HHCloud.stores.HdfsStore.HdfsManager;
 import orchi.HHCloud.stores.HdfsStore.HdfsStoreProvider;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.DataUser;
-import orchi.HHCloud.user.User;
 import orchi.HHCloud.user.Exceptions.UserException;
-
-    import com.google.crypto.tink.Aead;
-import com.google.crypto.tink.CleartextKeysetHandle;
-import com.google.crypto.tink.JsonKeysetReader;
-import com.google.crypto.tink.JsonKeysetWriter;
-import com.google.crypto.tink.KeysetHandle;
-import com.google.crypto.tink.aead.AeadConfig;
-import com.google.crypto.tink.aead.AeadFactory;
-    import com.google.crypto.tink.aead.AeadKeyTemplates;
-import com.google.crypto.tink.integration.awskms.AwsKmsClient;
 
 
  

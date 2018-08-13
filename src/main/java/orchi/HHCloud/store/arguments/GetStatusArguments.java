@@ -6,7 +6,7 @@ import java.util.List;
 public class GetStatusArguments extends Arguments{
 	private Path path;
 	private List<Path> paths;
-
+	
 	public GetStatusArguments() {
 	}
 

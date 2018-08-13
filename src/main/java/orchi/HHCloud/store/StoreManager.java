@@ -7,10 +7,9 @@ import orchi.HHCloud.Start;
 
 public class StoreManager {
 	private static Logger log = LoggerFactory.getLogger(StoreManager.class);
-	//private static String propertyProviderStore = System.getProperty("StoreManager.storeProvider");
 	private static String defaultStore = Start.conf.getString("store.storemanager.storeprovider");
 	private static StoreManager instance = null;
-	private Store storeProvider = null;
+	private StoreProvider storeProvider = null;
 
 	public StoreManager() {		
 		this(defaultStore);
@@ -20,7 +19,7 @@ public class StoreManager {
 		log.debug("Creando proveedor de almacenamiento: {}",storeProviderClassName);
 		try {			
 			@SuppressWarnings("unchecked")
-			Class<? extends Store> ClassStore = (Class<? extends Store>) Class.forName(storeProviderClassName);
+			Class<? extends StoreProvider> ClassStore = (Class<? extends StoreProvider>) Class.forName(storeProviderClassName);
 
 			storeProvider = ClassStore.newInstance();
 			storeProvider.init();
@@ -38,10 +37,10 @@ public class StoreManager {
 		}
 	}
 
-	public StoreManager(Class<? extends Store> storeProviderClass) {
+	public StoreManager(Class<? extends StoreProvider> storeProviderClass) {
 		log.debug("Creando proveedor de almacenamiento: {}",storeProviderClass.getName());		
 		try {
-			Class<? extends Store> ClassStore = storeProviderClass;
+			Class<? extends StoreProvider> ClassStore = storeProviderClass;
 
 			storeProvider = ClassStore.newInstance();
 			storeProvider.init();
@@ -56,15 +55,15 @@ public class StoreManager {
 		}
 	}
 	
-	public Store getStoreProvider(){
+	public StoreProvider getStoreProvider(){
 		log.debug("Obtener proveedor de almacenamiento: {}",storeProvider.getClass().getName());
 		return storeProvider;
 	}
 
 	public static StoreManager getInstance() {
-		log.debug("Obtener de StoreManager");
+		log.debug("Obtener de StoreManager_DEPRECATED");
 		if (instance == null) {
-			log.warn("Creando nueva instancia de StoreManager con proveedor de almacenamiento por defecto: {}",defaultStore);
+			log.warn("Creando nueva instancia de StoreManager_DEPRECATED con proveedor de almacenamiento por defecto: {}",defaultStore);
 			instance = new StoreManager();
 		}
 

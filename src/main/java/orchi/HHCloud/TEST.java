@@ -1,16 +1,11 @@
 package orchi.HHCloud;
 
 import java.io.IOException;
-import java.util.Enumeration;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
 
 import org.json.JSONObject;
 
@@ -33,6 +28,7 @@ public class TEST extends HttpServlet {
 		json.put("status", "error");
 		json.put("error",error+"");
 		json.put("errorMsg",errorMsg+"");
+		json.put("msg",errorMsg+"");
 		resp.getWriter().println(json);
 	}
 }

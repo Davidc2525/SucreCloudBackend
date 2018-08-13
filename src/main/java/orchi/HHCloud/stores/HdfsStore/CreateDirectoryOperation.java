@@ -5,18 +5,15 @@ import java.nio.file.Paths;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.store.arguments.MkDirArguments;
 import orchi.HHCloud.store.response.CreateDirectoryResponse;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
-public class CreateDirectoryOperation {
+public class CreateDirectoryOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(CreateDirectoryOperation.class);
-
 	private String root;
 	private Path pathWithRoot;
 	private FileSystem fs;
@@ -29,8 +26,8 @@ public class CreateDirectoryOperation {
 	public CreateDirectoryOperation(MkDirArguments args) {
 		this.args = args;
 		response = new CreateDirectoryResponse();
-		fs = HdfsManager.getInstance(true).fs;
-		root = args.getUserId();// args.getString("root");
+		fs = HdfsManager.getInstance().fs;
+		root = args.getUserId();
 		path = args.getPath().toString();
 		pathWithRoot = new Path(HdfsManager.newPath(root, path).toString());
 
@@ -38,7 +35,7 @@ public class CreateDirectoryOperation {
 	}
 
 	public CreateDirectoryResponse call() {
-		
+
 		try {
 			if (fs.exists(pathWithRoot)) {
 				response.setStatus("error");
@@ -50,7 +47,7 @@ public class CreateDirectoryOperation {
 				fs.mkdirs(pathWithRoot);
 				response.setStatus("ok");
 				response.setPath(Paths.get(path));
-				
+
 				log.debug("	nuevo directorio creado {} {}", path.toString(), pathWithRoot.toString());
 			}
 		} catch (IOException e) {

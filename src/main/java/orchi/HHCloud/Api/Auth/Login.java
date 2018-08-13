@@ -28,8 +28,6 @@ import orchi.HHCloud.auth.Exceptions.AuthException;
 import orchi.HHCloud.auth.Exceptions.AuthPasswordException;
 import orchi.HHCloud.auth.Exceptions.AuthUserNotExistsException;
 import orchi.HHCloud.auth.Exceptions.AuthUsernameException;
-import orchi.HHCloud.auth.logIO.LoginCallback;
-import orchi.HHCloud.auth.logIO.LoginDataSuccess;
 import orchi.HHCloud.user.LoginDataUser;
 import orchi.HHCloud.user.User;
 import orchi.HHCloud.user.UserManager;
@@ -62,13 +60,12 @@ public class Login extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		// TODO Auto-generated method stub
 		doPost(req, resp);
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		// delegate long running process to an "async" thread
+		
 		executorw2.execute(new Task(req.getAsyncContext()));
 	}
 

@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,9 +13,8 @@ import orchi.HHCloud.Util;
 import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.store.arguments.MoveOrCopyArguments;
 import orchi.HHCloud.store.response.MoveOrCopyResponse;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
-public class MoveOrCopyOperation {
+public class MoveOrCopyOperation implements IOperation {
 	private static Logger log = LoggerFactory.getLogger(MoveOrCopyOperation.class);
 	private boolean move;
 	private Path srcPath;
@@ -32,7 +30,7 @@ public class MoveOrCopyOperation {
 		response = new MoveOrCopyResponse();
 		this.args = arg;
 		this.move = arg.isMove();
-		fs = HdfsManager.getInstance(true).fs;
+		fs = HdfsManager.getInstance().fs;
 		srcPath = new Path(args.getSrcPath().toString());
 		dstPath = new Path(args.getDstPath().normalize().toString());
 		root = args.getUserId();

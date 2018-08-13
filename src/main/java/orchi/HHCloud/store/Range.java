@@ -3,18 +3,20 @@ package orchi.HHCloud.store;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import orchi.HHCloud.Start;
+
 public class Range {
 
 	public Long[] range = { 0L, 0L };
 	private String reg = "(?:bytes)=(\\d+)-(\\d+)?";
 	private Pattern pattern = Pattern.compile(reg);
 	private long contentLength;
-	private Long sizeRange; //TODO
+	private static Long sizeRange = Start.conf.getLong("api.openner.range.size");
 
-	public Range(String headerRange,Long fileSize) {
-		//System.out.println(headerRange);
+	public Range(String headerRange, Long fileSize) {
+		
 		Matcher m = pattern.matcher(headerRange);
-		// System.out.println(m.matches());
+
 		if (m.matches()) {
 			range[0] = Long.valueOf(m.group(1));
 			if (m.group(2) == null) {
@@ -27,8 +29,8 @@ public class Range {
 				range[1] = range[0] + range[1];
 			}
 
-			if(range[1]>fileSize){
-				range[1] = fileSize-1;
+			if (range[1] > fileSize) {
+				range[1] = fileSize - 1;
 			}
 
 			setContentLength(range[1] - range[0] + 1);
@@ -45,7 +47,8 @@ public class Range {
 	}
 
 	/**
-	 * @param contentLength the contentLength to set
+	 * @param contentLength
+	 *            the contentLength to set
 	 */
 	public void setContentLength(long contentLength) {
 		this.contentLength = contentLength;

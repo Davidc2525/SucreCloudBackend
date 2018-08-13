@@ -1,15 +1,12 @@
 
 package orchi.HHCloud.stores.HdfsStore;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -22,19 +19,13 @@ import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.store.Status;
 import orchi.HHCloud.store.arguments.GetStatusArguments;
 import orchi.HHCloud.store.response.GetStatusResponse;
-import orchi.HHCloud.store.response.ListResponse;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
-public class GetStatusOperation {
+public class GetStatusOperation implements IOperation {
 	private static Logger log = org.slf4j.LoggerFactory.getLogger(GetStatusOperation.class);
 	private FileSystem fs;
 	private String root;
-
 	private Path opath;
 	private String path;
-	private boolean withContent;
-
-	private Long MAX_FILE_SIZE = 102400L; // 100kb
 	private List<java.nio.file.Path> paths;
 	private GetStatusResponse response;
 	private GetStatusArguments args;
@@ -43,18 +34,16 @@ public class GetStatusOperation {
 
 		this.args = args;
 		response = new GetStatusResponse();
-		fs = HdfsManager.getInstance(true).fs;
-		root = args.getUserId();// args.getString("root");
+		fs = HdfsManager.getInstance().fs;
+		root = args.getUserId();
 		path = args.getPath().toString();
 		paths = args.getPaths();
 		opath = new Path(HdfsManager.newPath(root, path).toString());
-		withContent = false;
+
 		log.info("Nueva operacion de estatus de archivo {}", opath.toString());
 	}
 
 	public GetStatusResponse call() {
-		JSONObject json = new JSONObject();
-
 		if (paths != null) {// Multiple
 			try {
 				response.setMultiple(true);
@@ -62,26 +51,28 @@ public class GetStatusOperation {
 				response.setPaths(paths);
 
 				List<Status> payloadList = new ArrayList<>();
-				List<JSONObject> datalist = new ArrayList<>();
-
+				Long sizeSum = 0l;
 				for (java.nio.file.Path p : paths) {
 
 					Path item = new Path(HdfsManager.newPath(root, p.toString()).toString());
-					String itemPath = Util.getPathWithoutRootPath(item.toString());// ;new
-																					// Path(Paths.get(item).normalize().toString());
-					System.out.println("	itemPath: " + itemPath);
+					String itemPath = Util.getPathWithoutRootPath(item.toString());
+
+					// System.out.println(" itemPath: " + itemPath);
 					GetStatusArguments arguments = new GetStatusArguments();
 					arguments.setPath(Paths.get(itemPath));
 					arguments.setUser(args.getUse());
 					GetStatusResponse contentItem = new GetStatusOperation(arguments).call();
-					if (contentItem.getPayload() != null)
-						payloadList.add((Status) contentItem.getPayload());
-					;
+					Status status = null;
+					if (contentItem.getPayload() != null) {
+						status = (Status) contentItem.getPayload();
+						payloadList.add(status);
+						sizeSum += status.getSize();
+					}
 
 				}
 				response.setPayload(payloadList);
 				response.setStatus("ok");
-
+				response.setSize(sizeSum);
 				return response;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -104,7 +95,7 @@ public class GetStatusOperation {
 				log.info("Fin de operacion de listado");
 				return response;
 			}
-			
+
 			FileStatus fileStatus = fs.getFileLinkStatus(opath);
 			Status status = new Status();
 			status.setName(fileStatus.getPath().getName());
@@ -114,28 +105,23 @@ public class GetStatusOperation {
 			status.setReplication(Long.valueOf(fileStatus.getReplication()));
 			status.setPermission(fileStatus.getPermission() + "");
 			status.setModificacionTime(fileStatus.getModificationTime());
+			status.setAccessTime(fileStatus.getAccessTime());
 			status.setSize(fileStatus.getLen());
 			log.debug("{}", fileStatus.getPath());
 
 			if (fs.isDirectory(opath)) {
-
 				ContentSummary contentSumary = fs.getContentSummary(fileStatus.getPath());
 				status.setDirectoryCount(contentSumary.getDirectoryCount());
 				status.setSize(contentSumary.getLength());
 				status.setElements(Long.valueOf(fs.listStatus(fileStatus.getPath()).length));
 				status.setFileCount(contentSumary.getFileCount());
 				status.setSpaceQuota(contentSumary.getSpaceQuota());
-
-				// file.put("size",
-				// fs.getContentSummary(fileStatus.getPath()).getLength());
-				// file.put("list", new ListOperation(args).call());
 			}
 
 			response.setPath(Paths.get(path));
 			if (fs.isFile(opath)) {
 				response.setFile(true);
 				response.setSize(status.getSize());
-
 			} else {
 				response.setFile(false);
 

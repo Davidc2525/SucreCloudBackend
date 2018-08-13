@@ -1,10 +1,7 @@
 package orchi.HHCloud.user;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URI;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,7 +12,6 @@ import java.util.Map;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.apache.jasper.tagplugins.jstl.core.Url;
 import org.json.JSONObject;
 
 import com.google.api.client.util.Base64;

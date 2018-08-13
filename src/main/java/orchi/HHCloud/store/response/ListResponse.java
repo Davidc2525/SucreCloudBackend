@@ -1,9 +1,5 @@
 package orchi.HHCloud.store.response;
 
-import java.util.List;
-
-import orchi.HHCloud.store.Status;
-
 public class ListResponse extends Response {
 	private long size;
 	private long directoryCount;

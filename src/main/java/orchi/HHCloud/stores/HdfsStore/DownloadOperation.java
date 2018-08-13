@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletResponse;
 
@@ -15,13 +16,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.json.JSONObject;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Util;
 import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.store.arguments.DownloadArguments;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
+import orchi.HHCloud.store.response.Response;
 
 
 public class DownloadOperation implements IOperation {
@@ -35,7 +36,6 @@ public class DownloadOperation implements IOperation {
 
 	public DownloadOperation(DownloadArguments arg) {
 		log.info("Nueva operacion de descarga.");
-		//fs = HdfsManager.getInstance().fs;
 		this.ctx = arg.getCtx();
 		String root = arg.getUserId();
 		String path = arg.getPath().toString();
@@ -58,14 +58,11 @@ public class DownloadOperation implements IOperation {
 				return false;
 			}).collect(Collectors.toList());;
 			
-			
 			try{
-
 				r.addHeader("Content-Disposition", " attachment; filename=\"" + opath.getName() + ".zip\"");
 
 				MultiTree tree = new MultiTree(fs,yetPaths);
-				ZipFiles zip = new ZipFiles(tree, ctx.getResponse().getOutputStream());
-				zip = null;
+				new ZipFiles(tree, ctx.getResponse().getOutputStream());
 				tree = null;
 
 				log.info("Operacion de descarga terminada {}",opath.toString());
@@ -104,8 +101,7 @@ public class DownloadOperation implements IOperation {
 				r.addHeader("Content-Disposition", " attachment; filename=\"" + opath.getName() + ".zip\"");
 
 				MultiTree tree = new MultiTree(fs,Arrays.asList(opath));
-				ZipFiles zip = new ZipFiles(tree, ctx.getResponse().getOutputStream());
-				zip = null;
+				new ZipFiles(tree, ctx.getResponse().getOutputStream());
 				tree = null;
 
 				log.info("Operacion de descarga terminada {}",opath.toString());
@@ -119,7 +115,7 @@ public class DownloadOperation implements IOperation {
 	}
 
 	@Override
-	public JSONObject call() {
+	public Response call() {
 
 		return null;
 	}

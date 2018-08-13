@@ -15,9 +15,11 @@ public class GetStatusResponse extends Response {
 	@JsonProperty(value = "paths")
 	public List<String> getStringPaths() {
 		List<String> toString = new ArrayList<>();
-		paths.forEach(p -> {
-			toString.add(p.toString());
-		});
+		if(paths!=null){
+			paths.forEach(p -> {
+				toString.add(p.toString());
+			});	
+		}
 		return toString;
 	}
 

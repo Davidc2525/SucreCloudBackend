@@ -1,10 +1,11 @@
 package orchi.HHCloud.stores.FsStore;
 
-import orchi.HHCloud.store.Store;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
-import orchi.HHCloud.stores.hdfsStore.HdfsStoreProvider;
+import orchi.HHCloud.store.StoreProvider;
+import orchi.HHCloud.stores.HdfsStore.HdfsManager;
+import orchi.HHCloud.stores.HdfsStore.HdfsStoreProvider;
 
-public class FsStore extends HdfsStoreProvider implements Store {
+
+public class FsStore extends HdfsStoreProvider implements StoreProvider {
 	
 	@Override
 	public void init(){

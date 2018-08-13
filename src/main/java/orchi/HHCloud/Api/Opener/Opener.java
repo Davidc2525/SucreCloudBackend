@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,27 +20,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
+import orchi.HHCloud.stores.HdfsStore.HdfsManager;
 
 
 @Ignore
 @SessionRequired
-public class Opener extends HttpServlet {
+public class Opener extends API {
+	public static String apiName = "/opener";
 	private Logger log = LoggerFactory.getLogger(Opener.class);
 	private static Long sizeRange = Start.conf.getLong("api.openner.range.size");
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private Long readedParts = 0L;
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		//resp.addHeader("Access-Control-Allow-Origin",ACCESS_CONTROL_ALLOW_ORIGIN);
+		
 		HttpSession session = req.getSession(false);
 		if(session==null){
 			resp.getWriter().println("no tiene session activa");
 			return;
 		};
-		//resp.addHeader("Access-Control-Allow-Credentials", "true");
+		
 		log.debug("Abrir contenido de archivo.");
 		Path p;
 		try {
@@ -52,7 +55,7 @@ public class Opener extends HttpServlet {
 				Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
 				String mime = Files.probeContentType(Paths.get(path.toString()));
 
-				Range range = new Range(hRange,fileSize);
+				orchi.HHCloud.store.Range range = new orchi.HHCloud.store.Range(hRange,fileSize);
 				Long[] ranges = range.range;
 				long contentLength = range.getContentLength();
 
@@ -72,7 +75,8 @@ public class Opener extends HttpServlet {
 				resp.setHeader("Content-Length", contentLength + "");
 				resp.setHeader("Content-Range", "bytes " + ranges[0] + "-" + ranges[1] + "/" + fileSize);
 				resp.setHeader("Content-Type", mime);
-				HdfsManager.getInstance().readFile(path, (resp.getOutputStream()), range);
+				Start.getStoreManager().getStoreProvider().read(Paths.get(path.toString()), range, (resp.getOutputStream()));
+				
 
 			} else {
 
@@ -90,7 +94,8 @@ public class Opener extends HttpServlet {
 
 				resp.setHeader("Content-Length", fileSize + "");
 				resp.setHeader("Content-Type", mime);
-				HdfsManager.getInstance().readFile(path, resp.getOutputStream());
+
+				Start.getStoreManager().getStoreProvider().read(Paths.get(path.toString()), resp.getOutputStream());
 			}
 		} catch (Exception e1) {
 

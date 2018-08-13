@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import orchi.HHCloud.Util;
 import orchi.HHCloud.stores.HdfsStore.DownloadOperation.MultiTree;
 import orchi.HHCloud.stores.HdfsStore.DownloadOperation.PathAndDepth;
-import orchi.HHCloud.stores.hdfsStore.HdfsManager;
 
 
 public class ZipFiles {

@@ -1,12 +1,8 @@
 package orchi.HHCloud.store;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.json.JSONObject;
-
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import orchi.HHCloud.Start;
 import orchi.HHCloud.user.BasicUser;

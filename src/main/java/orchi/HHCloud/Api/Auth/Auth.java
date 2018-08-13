@@ -19,16 +19,14 @@ import org.mortbay.log.Log;
 
 import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
-import orchi.HHCloud.Util;
+import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.annotations.Operation;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.auth.Exceptions.VerifyException;
 
 
-public class Auth extends HttpServlet {
-
-	
-	
+public class Auth extends API{
+	public static String apiName = "/auth";
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private static ThreadPoolExecutor executorw2;
 	private static Logout logout;

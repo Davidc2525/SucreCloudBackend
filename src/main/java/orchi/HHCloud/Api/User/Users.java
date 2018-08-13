@@ -22,12 +22,14 @@ import org.mortbay.log.Log;
 
 import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
+import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.annotations.Operation;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.auth.Exceptions.TokenException;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.store.ContextStore;
 import orchi.HHCloud.store.Store;
+import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
@@ -49,15 +51,16 @@ import orchi.HHCloud.user.Exceptions.ValidationException;
  * Api para gestion de usuario
  * @author Colmenares David
  * */
-public class Users extends HttpServlet {
+public class Users extends API {
 
-	
+	public static String apiName = "/user";
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private static final long serialVersionUID = 3632921692211341012L;
 	private ThreadPoolExecutor executor;
+	private StoreProvider sp;
 	private static UserProvider up;
 	private static ObjectMapper om;
-	private static Store sp;
+	
 
 
 	@Override

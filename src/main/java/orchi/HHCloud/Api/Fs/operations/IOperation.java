@@ -1,7 +1,7 @@
 package orchi.HHCloud.Api.Fs.operations;
 
-import org.json.JSONObject;
+import orchi.HHCloud.store.response.Response;
 
 public interface IOperation {
-	public JSONObject call();
+	public Response call();
 }
