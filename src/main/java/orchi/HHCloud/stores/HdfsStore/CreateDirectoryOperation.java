@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Api.Fs.operations.IOperation;
+import orchi.HHCloud.store.RestrictedNames;
 import orchi.HHCloud.store.arguments.MkDirArguments;
 import orchi.HHCloud.store.response.CreateDirectoryResponse;
 
@@ -37,7 +38,7 @@ public class CreateDirectoryOperation implements IOperation {
 	public CreateDirectoryResponse call() {
 
 		try {
-			if (fs.exists(pathWithRoot)) {
+			if (fs.exists(pathWithRoot) || RestrictedNames.isRestricted(pathWithRoot.getName())) {
 				response.setStatus("error");
 				response.setError("directry_is_used");
 				response.setMsg("la rruta ya existe: " + path.toString());

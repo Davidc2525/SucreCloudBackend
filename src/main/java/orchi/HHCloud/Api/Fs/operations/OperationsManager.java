@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
@@ -166,6 +167,7 @@ public class OperationsManager {
 			 */
 			if (Operation.DOWNLOAD.equalsName(operation)) {// mutiple
 				setContentType("application/octet-stream");
+				((HttpServletResponse)ctx.getResponse()).setHeader("Content-type",getContentType());
 				DownloadArguments downArgs = new DownloadArguments();
 				u = new BasicUser();
 				u.setId(arg.getString("root"));
@@ -232,8 +234,9 @@ public class OperationsManager {
 				}
 			}
 
-			ctx.getResponse().setContentType(getContentType());
+			((HttpServletResponse)ctx.getResponse()).setHeader("Content-type",getContentType());
 			ctx.getResponse().getWriter().println(om.writeValueAsString(res));
+			ctx.complete();
 			response = null;
 			arg = null;
 			// params = null;
@@ -242,15 +245,14 @@ public class OperationsManager {
 			try {
 				ctx.getResponse().getWriter().println(new JSONObject().put("status", "error")
 						.put("error", "server_error").put("msg", e.getMessage()));
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} finally {
 				ctx.complete();
-			}
+			} catch (IOException e1) {
+				ctx.complete();
+				e1.printStackTrace();
+			} 
 			e.printStackTrace();
 		}
-		ctx.complete();
+		//ctx.complete();
 		return response;
 	}
 

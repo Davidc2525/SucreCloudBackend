@@ -61,9 +61,9 @@ public class StoreManager {
 	}
 
 	public static StoreManager getInstance() {
-		log.debug("Obtener de StoreManager_DEPRECATED");
+		log.debug("Obtener de StoreManager");
 		if (instance == null) {
-			log.warn("Creando nueva instancia de StoreManager_DEPRECATED con proveedor de almacenamiento por defecto: {}",defaultStore);
+			log.warn("Creando nueva instancia de StoreManager con proveedor de almacenamiento por defecto: {}",defaultStore);
 			instance = new StoreManager();
 		}
 

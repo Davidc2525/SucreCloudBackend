@@ -1,6 +1,7 @@
 package orchi.HHCloud.Api.Fs;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -8,31 +9,31 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.*;
 
 import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Api.API;
+import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.Fs.operations.OperationsManager;
 import orchi.HHCloud.Api.annotations.Operation;
 
-@Operation(name = "list",		isRequired = true)
-@Operation(name = "getstatus",	isRequired = true)
-@Operation(name = "mkdir",		isRequired = true)
-@Operation(name = "delete",		isRequired = true)
-@Operation(name = "move",		isRequired = true)
-@Operation(name = "copy",		isRequired = true)
-@Operation(name = "rename",		isRequired = true)
-@Operation(name = "download",	isRequired = true)
-public class Fs extends API{
-	
-	
+@Operation(name = "list", isRequired = true)
+@Operation(name = "getstatus", isRequired = true)
+@Operation(name = "mkdir", isRequired = true)
+@Operation(name = "delete", isRequired = true)
+@Operation(name = "move", isRequired = true)
+@Operation(name = "copy", isRequired = true)
+@Operation(name = "rename", isRequired = true)
+@Operation(name = "download", isRequired = true)
+public class Fs extends API {
+
+	private static Logger log = org.slf4j.LoggerFactory.getLogger(Fs.class);
 	public static String apiName = "/fs";
 	private static final long serialVersionUID = -7283584531584394004L;
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
@@ -49,60 +50,65 @@ public class Fs extends API{
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 
-		executor = new ThreadPoolExecutor(10, 1000, 50000L, TimeUnit.MICROSECONDS,
+		executor = new ThreadPoolExecutor(10000, 10000, 50000L, TimeUnit.MICROSECONDS,
 				new LinkedBlockingQueue<Runnable>(100000));
 
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-		doPost(req, resp);
+		//executor.execute(new Task(req.startAsync()));
+		CompletableFuture.runAsync(new Task(req.startAsync()),executor);
+		
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-		executor.execute(new Task(req.startAsync()));
+		//executor.execute(new Task(req.startAsync()));
+		 CompletableFuture.runAsync(new Task(req.startAsync()),executor);
 	}
 
-	public static class Task implements Runnable {
-
-		private AsyncContext ctx;
+	public static class Task extends ServiceTaskAPIImpl implements Runnable {
 
 		public Task(AsyncContext ctx) {
-
-			this.ctx = ctx;
-			this.ctx.setTimeout(Long.MAX_VALUE);
+			super(ctx);
+			getCtx().setTimeout(Long.MAX_VALUE);
 		}
 
 		@Override
 		public void run() {
-			// FileSystem fs = HdfsManager.getInstance().fs;
-
-			HttpServletRequest reqs = (HttpServletRequest) ctx.getRequest();
-			HttpServletResponse resps = (HttpServletResponse) ctx.getResponse();
+			
+			HttpServletRequest reqs = (HttpServletRequest) getCtx().getRequest();
+			HttpServletResponse resps = (HttpServletResponse) getCtx().getResponse();
 			HttpSession session = reqs.getSession(false);
-			// resps.addHeader("Access-Control-Allow-Origin",
-			// ACCESS_CONTROL_ALLOW_ORIGIN);
-			// resps.addHeader("Access-Control-Allow-Credentials", "true");
+			resps.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+			//resps.setHeader("Content-type", "application/json");
+			resps.setHeader("Access-Control-Allow-Credentials", "true");
 
-			ParseParamsMultiPart2 p = (ParseParamsMultiPart2) reqs.getAttribute("params");
-
+			// ParseParamsMultiPart2 p = (ParseParamsMultiPart2)
+			// reqs.getAttribute("params");
 			JSONObject JsonArgs = null;
+			ParseParamsMultiPart2 p = null;
+			try {
+				p = new ParseParamsMultiPart2(reqs);
+				checkAvailability(apiName, p.getString("op"));
+			} catch (Exception e) {
+				e.printStackTrace();
+				return;
+			}
 			try {
 				JsonArgs = new JSONObject(p.getString("args"));
-			} catch (JSONException e) {
-
+			} catch (Exception e1) {
 				try {
-					ctx.getResponse().getWriter().println(new JSONObject().put("status", "error")
-							.put("error", "server_error").put("msg", e.getMessage()));
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				} finally {
-					ctx.complete();
+					sendError("server_error", e1);
+				} catch (Exception e) {
+					getCtx().complete();
+					e.printStackTrace();
+					return;
 				}
+				e1.printStackTrace();
 				return;
+
 			}
 
 			if (session != null) {
@@ -115,7 +121,7 @@ public class Fs extends API{
 
 			JsonArgs.put("op", p.getString("op"));
 
-			OperationsManager.getInstance().processOperation(ctx, JsonArgs);
+			OperationsManager.getInstance().processOperation(getCtx(), JsonArgs);
 
 		}
 

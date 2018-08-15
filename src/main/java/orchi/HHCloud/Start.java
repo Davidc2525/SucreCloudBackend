@@ -28,6 +28,7 @@ import orchi.HHCloud.cipher.CipherManager;
 import orchi.HHCloud.conf.ConfManager;
 import orchi.HHCloud.database.DbConnectionManager;
 import orchi.HHCloud.mail.MailManager;
+import orchi.HHCloud.share.ShareManager;
 import orchi.HHCloud.store.StoreManager;
 import orchi.HHCloud.user.UserManager;
 
@@ -82,7 +83,7 @@ public class Start {
 
 		servletContext.setContextPath("/api");
 
-		servletContext.addFilter(ApiFilter.class, "/*", null);
+		//servletContext.addFilter(ApiFilter.class, "/*", null);
 
 		servletContext.addServlet(ApiManager.addApi(Fs.class, Fs.apiName),Fs.apiName);
 		servletContext.addServlet(ApiManager.addApi(Users.class,Users.apiName), Users.apiName);
@@ -131,5 +132,9 @@ public class Start {
 	
 	public static CipherManager getCipherManager(){
 		return CipherManager.getInstance();
+	}
+	
+	public static ShareManager getShareManager(){
+		return ShareManager.getInstance();
 	}
 }

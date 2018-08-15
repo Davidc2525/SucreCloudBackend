@@ -14,8 +14,13 @@ import org.apache.hadoop.fs.Path;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import orchi.HHCloud.Start;
 import orchi.HHCloud.Util;
 import orchi.HHCloud.Api.Fs.operations.IOperation;
+import orchi.HHCloud.share.DefaultShareProvider;
+import orchi.HHCloud.share.ShareProvider;
+import orchi.HHCloud.share.Shared;
+import orchi.HHCloud.store.RestrictedNames;
 import orchi.HHCloud.store.Status;
 import orchi.HHCloud.store.arguments.GetStatusArguments;
 import orchi.HHCloud.store.response.GetStatusResponse;
@@ -29,6 +34,11 @@ public class GetStatusOperation implements IOperation {
 	private List<java.nio.file.Path> paths;
 	private GetStatusResponse response;
 	private GetStatusArguments args;
+	
+	
+	private ShareProvider shareProvider;
+	private Shared shared;
+	private boolean thisIsShared;
 
 	public GetStatusOperation(GetStatusArguments args) {
 
@@ -39,7 +49,11 @@ public class GetStatusOperation implements IOperation {
 		path = args.getPath().toString();
 		paths = args.getPaths();
 		opath = new Path(HdfsManager.newPath(root, path).toString());
-
+		
+		shareProvider = Start.getShareManager().getShareProvider();
+		thisIsShared = shareProvider.isShared(args.getUse(), Paths.get(path));
+		shared = shareProvider.sharesInDirectory(args.getUse(), Paths.get(path).getParent());
+		
 		log.info("Nueva operacion de estatus de archivo {}", opath.toString());
 	}
 
@@ -53,7 +67,7 @@ public class GetStatusOperation implements IOperation {
 				List<Status> payloadList = new ArrayList<>();
 				Long sizeSum = 0l;
 				for (java.nio.file.Path p : paths) {
-
+					
 					Path item = new Path(HdfsManager.newPath(root, p.toString()).toString());
 					String itemPath = Util.getPathWithoutRootPath(item.toString());
 
@@ -85,7 +99,19 @@ public class GetStatusOperation implements IOperation {
 		}
 
 		try {
-			if (!fs.exists(opath)) {
+			
+			if (!fs.exists(opath) || RestrictedNames.isRestricted(opath.getName())) {
+				response.setStatus("error");
+				response.setError("path_no_found");
+				response.setMsg("la rruta no existe " + Util.getPathWithoutRootPath(opath.toString()));
+				response.setPath(Paths.get(Util.getPathWithoutRootPath(opath.toString())));
+
+				log.error("	file dont exists {}", opath);
+				log.info("Fin de operacion de listado");
+				return response;
+			}
+			
+			if(RestrictedNames.isRestricted(opath.getName())){
 				response.setStatus("error");
 				response.setError("path_no_found");
 				response.setMsg("la rruta no existe " + Util.getPathWithoutRootPath(opath.toString()));
@@ -98,6 +124,7 @@ public class GetStatusOperation implements IOperation {
 
 			FileStatus fileStatus = fs.getFileLinkStatus(opath);
 			Status status = new Status();
+			status.setShared(shared.isShared( args.getPath()));
 			status.setName(fileStatus.getPath().getName());
 			status.setPath(Paths.get(Util.getPathWithoutRootPath(fileStatus.getPath().toString())));
 			status.setMime(Files.probeContentType(Paths.get(fileStatus.getPath().getName())));
@@ -126,7 +153,7 @@ public class GetStatusOperation implements IOperation {
 				response.setFile(false);
 
 			}
-
+			response.setShared(thisIsShared);
 			response.setPayload(status);
 			response.setStatus("ok");
 

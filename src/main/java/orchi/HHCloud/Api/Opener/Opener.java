@@ -6,11 +6,15 @@ import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.AsyncContext;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -21,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Api.API;
+import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.stores.HdfsStore.HdfsManager;
@@ -30,76 +35,123 @@ import orchi.HHCloud.stores.HdfsStore.HdfsManager;
 @SessionRequired
 public class Opener extends API {
 	public static String apiName = "/opener";
-	private Logger log = LoggerFactory.getLogger(Opener.class);
+	private static Logger log = LoggerFactory.getLogger(Opener.class);
 	private static Long sizeRange = Start.conf.getLong("api.openner.range.size");
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
-	private Long readedParts = 0L;
+	private static Long readedParts = 0L;
+	private ThreadPoolExecutor executor;
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+
+		executor = new ThreadPoolExecutor(10000, 10000, 50000L, TimeUnit.MICROSECONDS,
+				new LinkedBlockingQueue<Runnable>(100000));
+
+	}
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		
-		HttpSession session = req.getSession(false);
-		if(session==null){
-			resp.getWriter().println("no tiene session activa");
-			return;
-		};
-		
-		log.debug("Abrir contenido de archivo.");
-		Path p;
-		try {
-			ParseOpenerHeaders headers = new ParseOpenerHeaders(req);
-			if (headers.headers.containsKey("Range")) {
-				String hRange = new ParseOpenerHeaders(req).headers.get("Range");
-				String endodePath = new ParseOpenerParams(req).params.get("path");
-				String decodePath = new decodeParam(endodePath).decodedParam;
-				Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
-				Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
-				String mime = Files.probeContentType(Paths.get(path.toString()));
+		executor.execute(new Task(req.startAsync()));
+		//CompletableFuture.runAsync(new Task(req.startAsync()));
 
-				orchi.HHCloud.store.Range range = new orchi.HHCloud.store.Range(hRange,fileSize);
-				Long[] ranges = range.range;
-				long contentLength = range.getContentLength();
+	}
+	
+	public static class Task extends ServiceTaskAPIImpl implements Runnable {
 
-				log.debug("contenido parcial");
-				log.debug("cabesera {}",hRange);
-				log.debug("ruta decodificada {}",decodePath);
-				log.debug("rango de consulta {} {}",ranges[0],ranges[1]);
-				log.debug("tamaño de contenido de salida {}",contentLength);
-				log.debug("tamaño del contenido total {}",fileSize);
-				log.debug("tipo de mime {}",mime);
-				log.debug("------------- {}",++readedParts);
+		public Task(AsyncContext ctx) {
+			super(ctx);
+			getCtx().setTimeout(Long.MAX_VALUE);
+		}
 
+		@Override
+		public void run() {
+			HttpServletRequest req = (HttpServletRequest) getCtx().getRequest();
+			HttpServletResponse resp = (HttpServletResponse) getCtx().getResponse();
+			HttpSession session = req.getSession(false);
+			resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+			resp.setHeader("Content-type", "application/json");
+			resp.setHeader("Access-Control-Allow-Credentials", "true");
 
+			// ParseParamsMultiPart2 p = (ParseParamsMultiPart2)
+			// reqs.getAttribute("params");
 
-				resp.setStatus(206);
-				resp.setHeader("Accept-Ranges", "bytes");
-				resp.setHeader("Content-Length", contentLength + "");
-				resp.setHeader("Content-Range", "bytes " + ranges[0] + "-" + ranges[1] + "/" + fileSize);
-				resp.setHeader("Content-Type", mime);
-				Start.getStoreManager().getStoreProvider().read(Paths.get(path.toString()), range, (resp.getOutputStream()));
-				
-
-			} else {
-
-				String endodePath = new ParseOpenerParams(req).params.get("path");
-				String decodePath = new decodeParam(endodePath).decodedParam;
-				Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
-				String mime = Files.probeContentType(Paths.get(path.toString()));
-				Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
-
-				log.debug("contenido total");
-				log.debug("ruta decodificada {}",decodePath);
-				log.debug("tamaño del contenido total {}",fileSize);
-				log.debug("tipo de mime {}",mime);
-				log.debug("------------- {}",++readedParts);
-
-				resp.setHeader("Content-Length", fileSize + "");
-				resp.setHeader("Content-Type", mime);
-
-				Start.getStoreManager().getStoreProvider().read(Paths.get(path.toString()), resp.getOutputStream());
+			try {
+				//params = new ParseParamsMultiPart2(req);
+				//JsonArgs = new JSONObject(params.getString("args"));
+				checkAvailability(apiName,null);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return;
 			}
-		} catch (Exception e1) {
 
-			e1.printStackTrace();
+			log.debug("Abrir contenido de archivo.");
+			
+			try {
+				ParseOpenerHeaders headers = new ParseOpenerHeaders(req);
+				if (headers.headers.containsKey("Range")) {
+					String hRange = new ParseOpenerHeaders(req).headers.get("Range");
+					String endodePath = new ParseOpenerParams(req).params.get("path");
+					String decodePath = new decodeParam(endodePath).decodedParam;
+					Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
+					Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
+					String mime = Files.probeContentType(Paths.get(path.toString()));
+
+					orchi.HHCloud.store.Range range = new orchi.HHCloud.store.Range(hRange,fileSize);
+					Long[] ranges = range.range;
+					long contentLength = range.getContentLength();
+
+					log.debug("contenido parcial");
+					log.debug("cabesera {}",hRange);
+					log.debug("ruta decodificada {}",decodePath);
+					log.debug("rango de consulta {} {}",ranges[0],ranges[1]);
+					log.debug("tamaño de contenido de salida {}",contentLength);
+					log.debug("tamaño del contenido total {}",fileSize);
+					log.debug("tipo de mime {}",mime);
+					log.debug("------------- {}",++readedParts);
+
+
+
+					resp.setStatus(206);
+					resp.setHeader("Accept-Ranges", "bytes");
+					resp.setHeader("Content-Length", contentLength + "");
+					resp.setHeader("Content-Range", "bytes " + ranges[0] + "-" + ranges[1] + "/" + fileSize);
+					resp.setHeader("Content-Type", mime);
+					Start.getStoreManager().getStoreProvider().read(Paths.get(path.toString()), range, (resp.getOutputStream()));
+					getCtx().complete();
+					
+				} else {
+
+					String endodePath = new ParseOpenerParams(req).params.get("path");
+					String decodePath = new decodeParam(endodePath).decodedParam;
+					Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
+					String mime = Files.probeContentType(Paths.get(path.toString()));
+					Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
+
+					log.debug("contenido total");
+					log.debug("ruta decodificada {}",decodePath);
+					log.debug("tamaño del contenido total {}",fileSize);
+					log.debug("tipo de mime {}",mime);
+					log.debug("------------- {}",++readedParts);
+
+					resp.setHeader("Content-Length", fileSize + "");
+					resp.setHeader("Content-Type", mime);
+					resp.addHeader("Content-Disposition", "filename=\"" + Paths.get(decodePath).getFileName() + "\"");
+
+
+					Start.getStoreManager().getStoreProvider().read(Paths.get(path.toString()), resp.getOutputStream());
+					getCtx().complete();
+				}
+			} catch (Exception e1) {
+				try {
+					sendError("error_server",e1);
+				} catch (Exception e) {
+					getCtx().complete();
+					e.printStackTrace();
+				}
+				getCtx().complete();
+				e1.printStackTrace();
+			}
+
+			
+
 		}
 
 	}

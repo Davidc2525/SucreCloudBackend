@@ -12,9 +12,17 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import orchi.HHCloud.Api.ApiManager.ApiDescriptor;
 import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 
+
+/**
+ * Permite llevar una recopilacion de datos de cada una de las apis, como nombre y operaciones,
+ * cada api puede dar permisos de ejecucion dependiendo de la existencia de una session de usuario
+ * de manera global u espesifica a cada operacion.
+ * 
+ * @author david*/
 public class ApiManager {
 	private static Logger log = LoggerFactory.getLogger(ApiManager.class);
 	public static Map<String, ApiDescriptor> api = new HashMap<String, ApiDescriptor>();
@@ -27,7 +35,32 @@ public class ApiManager {
 	public static ApiDescriptor getApid(String name){
 		return api.get(name);
 	}
+	
+	public static ApiDescriptor updateDescription(String apiName, String operation) {
+		ApiDescriptor apid = null;
+		if (apiName != null && !apiName.equals("")) {
+			apid = getApid(apiName);
 
+			if (apid != null) {
+				apid.calls++;
+				if (log.isDebugEnabled()) {
+					log.debug(new JSONObject(apid).toString(2));
+				}
+
+				if (operation != null) {
+					if(!operation.equals("")){
+						Operation op = apid.getOperation(operation);
+						if(op!=null){
+							op.calls++;
+						}
+					}
+				}
+				return apid;
+			}
+		}
+		return apid;
+	}
+	
 	public static ServletHolder addApi(Class<? extends API> clazz, String name) {
 
 		ServletHolder context = null;

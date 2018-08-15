@@ -5,6 +5,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -30,12 +33,17 @@ public class HdfsManager {
 							// "hdfs://orchi2:9000";
 	public static String root;// = getIsLocalFileSystem() ?
 								// "/home/david/HHCloudFsStore/mi_dfs/":"/mi_dfs/";
-
+	
 	public FileSystem fs;
 	public FileSystem dfs;
-
+	private Random rfs = new Random();
 	public HdfsManager() {
 		this(false);
+	}
+	
+	public FileSystem getFs(){
+		
+		return fs;		
 	}
 
 	public HdfsManager(Boolean isLocal) {
@@ -61,7 +69,7 @@ public class HdfsManager {
 
 		try {
 			fs = FileSystem.get(URI.create(hdfsuri), conf);
-
+			
 			Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
 				try {
 					FileSystem.printStatistics();

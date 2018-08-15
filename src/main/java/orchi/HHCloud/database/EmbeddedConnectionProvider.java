@@ -19,47 +19,32 @@ public class EmbeddedConnectionProvider implements ConnectionProvider {
 
 	private Properties settings;
 
-	private String driver =  !true ? "org.hsqldb.jdbcDriver" : "org.apache.derby.jdbc.EmbeddedDriver";
+	private String driver = !true ? "org.hsqldb.jdbcDriver" : "org.apache.derby.jdbc.EmbeddedDriver";
 	private String protocol = !true ? "jdbc:hsqldb:file:" : "jdbc:derby:";
-
 	private Connection conn;
-
-	public EmbeddedConnectionProvider() {
+	private MiniConnectionPoolManager poolMgr;
+	
+	@Override
+	public void start() {
 		Log.debug("Iniciando base de datos empotrada.");
+
+		org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource dataSource = new org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource();
+		dataSource.setDatabaseName("db/HHCloud");
+		// dataSource.setCreateDatabase("create");
+		poolMgr = new MiniConnectionPoolManager(dataSource, 2000);
 	}
 
 	@Override
 	public boolean isPooled() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public Connection getConnection() throws SQLException {
 		Log.debug("Octener conexion de base datos empotrada.");
-		try {
-
-			if (conn == null) {
-				Class.forName(driver).newInstance();
-				
-				conn = DriverManager.getConnection(protocol + "db/HHCloud;create=false");
-			}
-
-		} catch (ClassNotFoundException e) {
-			throw new SQLException("EmbeddedConnectionProvider: Unable to find driver: " + e);
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return conn;
-	}
-
-	@Override
-	public void start() {
-
+		Connection con = poolMgr.getConnection();
+		Log.debug("Connexion {}", con);
+		return con;
 	}
 
 	@Override

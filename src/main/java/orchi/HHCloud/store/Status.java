@@ -6,6 +6,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 public class Status {
+	private boolean shared = false;
 	private Long size;
 	private Long elements;
 	private Long fileCount;
@@ -131,6 +132,14 @@ public class Status {
 
 	public void setReplication(Long replication) {
 		this.replication = replication;
+	}
+
+	public boolean isShared() {
+		return shared;
+	}
+
+	public void setShared(boolean shared) {
+		this.shared = shared;
 	}
 
 }

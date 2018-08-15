@@ -6,6 +6,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 public abstract class Response {
+	private boolean shared = false;
 	private String status;
 	private String error;
 	private String msg;
@@ -75,5 +76,13 @@ public abstract class Response {
 
 	public void setPath(Path path) {
 		this.path = path;
+	}
+
+	public boolean isShared() {
+		return shared;
+	}
+
+	public void setShared(boolean shared) {
+		this.shared = shared;
 	}
 }

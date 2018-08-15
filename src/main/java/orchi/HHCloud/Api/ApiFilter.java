@@ -2,6 +2,7 @@ package orchi.HHCloud.Api;
 
 import java.io.IOException;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -20,6 +21,15 @@ import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Api.ApiManager.ApiDescriptor;
 
+
+/**
+ * Representa un problemas a la hora llamar las apis de manera asincrona ya q
+ * antes de llamarlas hay q hacer ciertas cosas q necesitan ser ejecutadas
+ * asyncContext.
+ * 
+ * @deprecated
+ * @see ServiceTaskAPIImpl
+ */
 public class ApiFilter implements Filter {
 	private static Logger log = LoggerFactory.getLogger(ApiFilter.class);
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
@@ -34,11 +44,13 @@ public class ApiFilter implements Filter {
 			throws IOException, ServletException {
 		HttpServletRequest r = (HttpServletRequest) request;
 		HttpServletResponse rs = (HttpServletResponse) response;
-		rs.setHeader("Access-Control-Allow-Origin",	ACCESS_CONTROL_ALLOW_ORIGIN);
-		rs.setHeader("Content-type", "application/json");
-		rs.setHeader("Access-Control-Allow-Credentials", "true");
-
-
+		/*
+		 * rs.setHeader("Access-Control-Allow-Origin",
+		 * ACCESS_CONTROL_ALLOW_ORIGIN); rs.setHeader("Content-type",
+		 * "application/json"); rs.setHeader("Access-Control-Allow-Credentials",
+		 * "true");
+		 */
+		// AsyncContext ctx = r.startAsync();
 		HttpSession session = r.getSession(false);
 
 		String path = r.getRequestURI().substring(request.getServletContext().getContextPath().length());
@@ -47,7 +59,7 @@ public class ApiFilter implements Filter {
 
 		ApiDescriptor apid = ApiManager.getApid(path);
 
-		if(apid==null){
+		if (apid == null) {
 			request.setAttribute("status", "error");
 			request.setAttribute("error", "api_no_found");
 			request.setAttribute("errorMsg", "Esta api no esta registrada.");
@@ -56,11 +68,9 @@ public class ApiFilter implements Filter {
 			return;
 		}
 
-
 		if (log.isDebugEnabled()) {
 			log.debug(new JSONObject(apid).toString(2));
 		}
-
 
 		if (apid.isIgnored()) {
 			log.debug("{}, ignoring", path);

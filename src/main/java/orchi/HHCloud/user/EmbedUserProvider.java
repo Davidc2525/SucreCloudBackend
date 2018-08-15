@@ -58,7 +58,7 @@ public class EmbedUserProvider implements UserProvider {
 											+ "WHERE ID=(?)";
 	private CipherProvider ciplherProvider = Start.getCipherManager().getCipherProvider();
 	private ConnectionProvider provider;
-	private Connection conn;
+	//private Connection conn;
 	private UserValidator userValidator = new DefaultUserValidator();
 	private String templateEmailVerify;
 	private String templateRecoveryPassword;
@@ -71,14 +71,9 @@ public class EmbedUserProvider implements UserProvider {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		try {
-			Start.getDbConnectionManager();
-			provider = DbConnectionManager.getInstance().getConnectionProvider();
-			conn = provider.getConnection();
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		Start.getDbConnectionManager();
+		provider = DbConnectionManager.getInstance().getConnectionProvider();
+		//conn = provider.getConnection();
 	}
 
 
@@ -86,8 +81,11 @@ public class EmbedUserProvider implements UserProvider {
 	public User getUserById(String userId) throws UserNotExistException ,UserException{
 		User user = null;
 		ResultSet result;
+		Connection conn = null;
 		PreparedStatement stm = null;
 		try {
+			conn = provider.getConnection();
+			
 			stm = conn.prepareStatement(SELECT_USERS_WHERE_ID);
 			stm.setString(1, (userId));
 			result = stm.executeQuery();
@@ -105,6 +103,7 @@ public class EmbedUserProvider implements UserProvider {
 		} finally {
 			try {
 				stm.close();
+				conn.close();
 			} catch (Exception e) {
 				
 				e.printStackTrace();
@@ -118,8 +117,10 @@ public class EmbedUserProvider implements UserProvider {
 	public User getUserByEmail(String userEmail) throws UserNotExistException,UserException {
 		User user = null;
 		ResultSet result;
+		Connection conn =null;
 		PreparedStatement stm = null;
 		try {
+			conn = provider.getConnection();
 			stm = conn.prepareStatement(SELECT_USERS_WHERE_EMAIL);
 			stm.setString(1, escape(userEmail));
 			result = stm.executeQuery();
@@ -136,6 +137,7 @@ public class EmbedUserProvider implements UserProvider {
 		} finally {
 			try {
 				stm.close();
+				conn.close();
 			} catch (Exception e) {
 				
 				e.printStackTrace();
@@ -149,8 +151,10 @@ public class EmbedUserProvider implements UserProvider {
 	public User getUserByUsername(String userName) throws UserNotExistException,UserException {
 		User user = null;
 		ResultSet result;
+		Connection conn =null;
 		PreparedStatement stm = null;
 		try {
+			conn = provider.getConnection();
 			stm = conn.prepareStatement(SELECT_USERS_WHERE_USERNAME);
 			stm.setString(1, escape(userName));
 			result = stm.executeQuery();
@@ -168,6 +172,7 @@ public class EmbedUserProvider implements UserProvider {
 		}  finally {
 			try {
 				stm.close();
+				conn.close();
 			} catch (Exception e) {
 				
 				e.printStackTrace();
@@ -188,8 +193,10 @@ public class EmbedUserProvider implements UserProvider {
 				getUserByEmail(newUser.getEmail());
 				throw new UserAleardyExistsException("Ya existe un usuario registrado con ese email: " + user.getEmail());
 			} catch (UserNotExistException e2) {
+				Connection conn =null;
 				PreparedStatement userInsert = null;
 				try {
+					conn = provider.getConnection();
 					userInsert = conn.prepareStatement(INSERT_INTO_USERS);
 
 					userInsert.setString(1, escape(user.getId()));
@@ -209,6 +216,7 @@ public class EmbedUserProvider implements UserProvider {
 				} finally {
 					try {
 						userInsert.close();
+						conn.close();
 					} catch (Exception e) {
 						
 						e.printStackTrace();
@@ -223,7 +231,9 @@ public class EmbedUserProvider implements UserProvider {
 	@Override
 	public void deleteUser(User user) throws UserException {
 		PreparedStatement userDelete = null;
+		Connection conn =null;
 		try {
+			 conn = provider.getConnection();
 			userDelete = conn.prepareStatement(DELETE_USERS_WHERE_ID);
 			userDelete.setString(1, escape(user.getId()));
 			userDelete.executeUpdate();
@@ -233,6 +243,7 @@ public class EmbedUserProvider implements UserProvider {
 		} finally {
 			try {
 				userDelete.close();
+				conn.close();
 			} catch (Exception e) {
 				
 				e.printStackTrace();
@@ -246,8 +257,10 @@ public class EmbedUserProvider implements UserProvider {
 		User user = userMutator.getUser();
 		String nPassword = userMutator.getPassword();
 		String nPasswordEncrypt = ciplherProvider.encrypt(nPassword);
+		Connection conn =null;
 		PreparedStatement updatePass = null;
 		try {
+			conn = provider.getConnection();
 			updatePass = conn.prepareStatement(UPDATE_PASS_USER);
 			updatePass.setString(1, nPasswordEncrypt);
 			updatePass.setString(2, user.getId());
@@ -259,6 +272,7 @@ public class EmbedUserProvider implements UserProvider {
 		} finally {
 			try {
 				updatePass.close();
+				conn.close();
 			} catch (Exception e) {
 
 				e.printStackTrace();
@@ -276,8 +290,10 @@ public class EmbedUserProvider implements UserProvider {
 		DataUser editUser = (DataUser) userWithChanges;
 		DataUser oldUser = (DataUser)getUserById(editUser.getId());
 		System.out.println("editUser "+editUser);
+		Connection conn =null;
 		PreparedStatement userUpdate = null;
 		try {
+			conn = provider.getConnection();
 			userUpdate = conn.prepareStatement(UPDATE_USER);
 
 			userUpdate.setString(1, escape(editUser.getEmail()));
@@ -294,6 +310,7 @@ public class EmbedUserProvider implements UserProvider {
 		} finally {
 			try {
 				userUpdate.close();
+				conn.close();
 			} catch (Exception e) {
 
 				e.printStackTrace();
@@ -331,11 +348,13 @@ public class EmbedUserProvider implements UserProvider {
 
 	@Override
 	public User setVerifyEmail(User user) throws UserException {
+		Connection conn =null;
 		PreparedStatement verifyEmail = null;;
 		if(isEmailVerified(user)){
 			return getUserById(user.getId());
 		}
 		try {
+			conn = provider.getConnection();
 			verifyEmail = conn.prepareStatement(UPDATE_EMAIL_VERIFIED);
 			verifyEmail.setBoolean(1, true);
 			verifyEmail.setString(2, user.getId());;
@@ -346,6 +365,7 @@ public class EmbedUserProvider implements UserProvider {
 		} finally {
 			try {
 				verifyEmail.close();
+				conn.close();
 			} catch (Exception e) {
 
 				e.printStackTrace();

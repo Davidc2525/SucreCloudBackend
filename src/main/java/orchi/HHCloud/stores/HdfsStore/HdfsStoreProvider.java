@@ -138,4 +138,43 @@ public class HdfsStoreProvider implements StoreProvider {
 		new DownloadOperation(args).call();
 	}
 
+	@Override
+	public boolean exists(Path path) {
+		boolean exists = false;
+		try {
+			exists = HdfsManager.getInstance().fs.exists(new org.apache.hadoop.fs.Path(path.toString()));
+		} catch (IllegalArgumentException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return exists;
+	}
+
+	@Override
+	public boolean isFile(Path path) {
+		boolean isfile = false;
+		
+		org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(HdfsManager.root, path.toString());
+		try {
+			isfile = HdfsManager.getInstance().fs.isFile(p);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return isfile;
+	}
+
+	@Override
+	public boolean isDirectory(Path path) {
+		boolean isDirectory = false;
+
+		org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(HdfsManager.root, path.toString());
+		try {
+			isDirectory = HdfsManager.getInstance().fs.isDirectory(p);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return isDirectory;
+	}
+
 }

@@ -23,6 +23,7 @@ public class DbConnectionManager {
 		Log.debug("Iniciando administrador de base de datos con proveedor: {}", nameProvider);
 		try {
 			connectionProvider = (ConnectionProvider) Class.forName(nameProvider).newInstance();
+			connectionProvider.start();
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			Log.debug("Error al instanciar al proveedor: {}", nameProvider);
 			e.printStackTrace();

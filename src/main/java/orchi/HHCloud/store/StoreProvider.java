@@ -45,7 +45,7 @@ public interface StoreProvider {
 
 	public void download(DownloadArguments args);
 
-	/** Api de vajo nivel */
+	/** Api de bajo nivel */
 	public void read(Path path, OutputStream out);
 
 	public void read(Path path, Range range, OutputStream out);
@@ -53,4 +53,10 @@ public interface StoreProvider {
 	public void create(Path path, InputStream in);
 
 	public void touch(Path path);
+
+	public boolean exists(Path path);
+	
+	public boolean isFile(Path path);
+	
+	public boolean isDirectory(Path path);
 }

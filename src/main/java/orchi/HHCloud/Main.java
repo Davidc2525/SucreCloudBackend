@@ -37,6 +37,8 @@ import orchi.HHCloud.auth.GenerateToken;
 import orchi.HHCloud.cipher.CipherManager;
 import orchi.HHCloud.mail.MailProvider;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
+import orchi.HHCloud.share.DefaultShareProvider;
+import orchi.HHCloud.share.ShareProvider;
 import orchi.HHCloud.store.ContextStore;
 import orchi.HHCloud.store.arguments.DeleteArguments;
 import orchi.HHCloud.store.arguments.GetStatusArguments;
@@ -50,13 +52,49 @@ import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Exceptions.UserException;
 
-
- 
+/**
+ * Aqui se hacen pruebas.
+ * */
 public class Main {
 	private static Logger log = LoggerFactory.getLogger(Main.class);
 	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException {
 
 	System.out.println("HHCloud pruebas!");
+	
+	ShareProvider s = Start.getShareManager().getShareProvider();
+	java.nio.file.Path pa = Paths.get("/respaldo/9/1.jpg");
+	BasicUser use2 = new BasicUser();
+	use2.setId("123");
+	s.createShare(use2, Paths.get("Nueva carpeta 1"));
+	
+	
+	BasicUser use = new BasicUser();
+	use.setId("1234");
+	//DefaultShareProvider s = new DefaultShareProvider();
+	
+	
+	log.info("is shared B {}",s.isShared(use, pa));;
+	
+	s.createShare(use, pa);
+	s.createShare(use, Paths.get("/respaldo"));;
+	
+	s.createShare(use, Paths.get("/respaldo/9/19888493_362559294162537_3723173154512699392_n.mp4"));;
+	
+	//log.info("shareds {}",s.sharesInDirectory(use, Paths.get("/")) );
+	
+	log.info("shareds {}",s.sharesInDirectory(use, Paths.get("/respaldo/9")) );
+	
+	//s.deleteShare(use, Paths.get("/"));
+	
+	log.info("shareds {}",s.sharesInDirectory(use, Paths.get("/respaldo/9")) );
+	log.info("shareds {} user 123 ",s.sharesInDirectory(use2, Paths.get("/")) );
+	int j=0;
+	while(j<1){
+		log.info("{} is shared A {}",++j,s.isShared(use, pa));;
+	}
+	if(true){
+		return;
+	}
 	HdfsManager.getInstance(true);
 		ObjectMapper om = new ObjectMapper();
 		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);
@@ -68,9 +106,7 @@ public class Main {
 		ar.setUser(us);;
 		
 		System.err.println(om.writeValueAsString(new HdfsStoreProvider().rename(ar)));
-		if(true){
-			return;
-		}	
+			
 		
 		
 		MoveOrCopyArguments amoc = new MoveOrCopyArguments( Paths.get("me lleva/2"), Paths.get("me lleva/3"));

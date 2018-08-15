@@ -14,8 +14,12 @@ import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import orchi.HHCloud.Start;
 import orchi.HHCloud.Util;
 import orchi.HHCloud.Api.Fs.operations.IOperation;
+import orchi.HHCloud.share.ShareProvider;
+import orchi.HHCloud.share.Shared;
+import orchi.HHCloud.store.RestrictedNames;
 import orchi.HHCloud.store.Status;
 import orchi.HHCloud.store.arguments.GetStatusArguments;
 import orchi.HHCloud.store.arguments.ListArguments;
@@ -31,29 +35,36 @@ public class ListOperation implements IOperation {
 	private String path;
 	private ListResponse response;
 	private ListArguments args;
+	private ShareProvider shareProvider;
+	private Shared shared;
+	private boolean thisIsShared;
 
 	public ListOperation(ListArguments args) {
 		this.args = args;
 		response = new ListResponse();
-		fs = HdfsManager.getInstance().fs;
+		fs = HdfsManager.getInstance().getFs();
 		root = args.getUserId();
 		path = args.getPath().toString();
 		opath = new Path(HdfsManager.newPath(root, path).toString());
-
+		shareProvider = Start.getShareManager().getShareProvider();
+		shared = shareProvider.sharesInDirectory(args.getUse(), Paths.get(path));
+		
+		thisIsShared = shareProvider.isShared(args.getUse(), Paths.get(path));
 		log.info("Nueva operacion de listado {}", opath.toString());
 
 	}
 
+	
 	public ListResponse call() {
 
 		try {
-			if (!fs.exists(opath)) {
+			if (!fs.exists(opath) || RestrictedNames.isRestricted(opath.getName()) ) {
 				response.setStatus("error");
 				response.setError("path_no_found");
 				response.setMsg("la rruta no existe " + Util.getPathWithoutRootPath(opath.toString()));
 
 				log.error("	file dont exists {} ", opath);
-				log.info("Fin de operacion de listado");
+				log.debug("Fin de operacion de listado");
 				return response;
 			}
 			if (fs.isDirectory(opath)) {
@@ -62,19 +73,24 @@ public class ListOperation implements IOperation {
 
 				List<Status> statues = new ArrayList<>();
 
-				ls.stream().forEach(x -> {
+				ls.stream()
+				.filter((f)->{
+					return !RestrictedNames.isRestricted(f.getPath().getName());
+				}).forEach(x -> {
 
 					try {
+						java.nio.file.Path statusPath = Paths.get(Util.getPathWithoutRootPath(x.getPath().toString()));
 						Status status = new Status();
+						status.setShared(shared.isShared(statusPath));
 						status.setName(x.getPath().getName());
-						status.setPath(Paths.get(Util.getPathWithoutRootPath(x.getPath().toString())));
+						status.setPath(statusPath);
 						status.setMime(Files.probeContentType(Paths.get(x.getPath().getName())));
 						status.setFile(x.isFile());
 						status.setReplication(Long.valueOf(x.getReplication()));
 						status.setPermission(x.getPermission() + "");
 						status.setModificacionTime(x.getModificationTime());
 						status.setAccessTime(x.getAccessTime());
-						log.debug("\t{} in path", x.getPath().getName());
+						log.debug("\t{} in path, shared {}", x.getPath().getName(),status.isShared());
 
 						if (x.isFile()) {
 							status.setSize(x.getLen());
@@ -105,9 +121,10 @@ public class ListOperation implements IOperation {
 				response.setDirectoryCount(contentSumary.getDirectoryCount());
 				response.setFileCount(contentSumary.getFileCount());
 				response.setFile(false);
+				response.setShared(thisIsShared);
 				response.setStatus("ok");
 
-				log.info("Fin de operacion de listado");
+				log.debug("Fin de operacion de listado");
 			} else if (fs.isFile(new Path(HdfsManager.newPath(root, path).toString()))) {
 				log.warn("transfer operation, get status file", opath);
 				GetStatusArguments gsa = new GetStatusArguments();

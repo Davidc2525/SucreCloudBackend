@@ -3,6 +3,7 @@ package orchi.HHCloud.Api.User;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,9 @@ import org.mortbay.log.Log;
 import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Api.API;
+import orchi.HHCloud.Api.ServiceTaskAPIImpl;
+import orchi.HHCloud.Api.Fs.Fs.Task;
+import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.Operation;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.auth.Exceptions.TokenException;
@@ -51,6 +55,7 @@ import orchi.HHCloud.user.Exceptions.ValidationException;
  * Api para gestion de usuario
  * @author Colmenares David
  * */
+@Ignore
 public class Users extends API {
 
 	public static String apiName = "/user";
@@ -70,28 +75,31 @@ public class Users extends API {
 		om = new ObjectMapper();
 		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);
 		om.getJsonFactory();
-		executor = new ThreadPoolExecutor(10, 1000000, 10L, TimeUnit.SECONDS,
+		executor = new ThreadPoolExecutor(10000, 10000, 10L, TimeUnit.SECONDS,
 				new LinkedBlockingQueue<Runnable>(1000000));
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		executor.execute(new Task(req.startAsync()));
+		//executor.execute(new Task(req.startAsync()));
+		CompletableFuture.runAsync(new Task(req.startAsync()),executor);
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-		executor.execute(new Task(req.startAsync()));
+		//executor.execute(new Task(req.startAsync()));
+		CompletableFuture.runAsync(new Task(req.startAsync()),executor);
 
 	}
 
 
 
-	public static class Task implements Runnable {
+	public static class Task extends ServiceTaskAPIImpl implements Runnable {
 		private AsyncContext ctx;
 
 		public Task(AsyncContext ctx) {
+			super(ctx);
 			this.ctx = ctx;
 		}
 
@@ -135,11 +143,20 @@ public class Users extends API {
 
 			HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
 			HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
-			//resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
-			//resp.addHeader("Access-Control-Allow-Credentials", "true");
+			resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 			resp.setHeader("Content-type", "application/json");
-
-			ParseParamsMultiPart2  p = (ParseParamsMultiPart2) req.getAttribute("params");
+			resp.setHeader("Access-Control-Allow-Credentials", "true");
+			
+			ParseParamsMultiPart2 p = null;
+			try {
+				p = new ParseParamsMultiPart2(req);
+				checkAvailability(apiName, p.getString("op"));
+			} catch (Exception e) {
+				sendError(e);
+				e.printStackTrace();
+				return;
+			}
+			//ParseParamsMultiPart2  p = (ParseParamsMultiPart2) req.getAttribute("params");
 
 			JSONObject jsonArgs = new JSONObject(p.getString("args"));
 			Log.info("{}", jsonArgs.toString(2));
@@ -426,7 +443,7 @@ public class Users extends API {
 	}
 
 	@Operation(name="sendrecoveryemail")
-	@SessionRequired
+	//@SessionRequired
 	public static void sendRecoveryEmailOperation(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
 		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
 		//HttpServletRequest req = (HttpServletRequest) ctx.getRequest();

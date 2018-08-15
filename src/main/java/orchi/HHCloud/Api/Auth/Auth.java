@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -20,12 +19,14 @@ import org.mortbay.log.Log;
 import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Api.API;
+import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Operation;
-import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.auth.Exceptions.VerifyException;
 
-
-public class Auth extends API{
+@Operation(name = "login")
+@Operation(name = "logout", isRequired = true)
+@Operation(name = "verifyemail")
+public class Auth extends API {
 	public static String apiName = "/auth";
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private static ThreadPoolExecutor executorw2;
@@ -36,8 +37,8 @@ public class Auth extends API{
 	public Auth() {
 		login = new Login();
 		logout = new Logout();
-		executorw2 = new ThreadPoolExecutor(10, 100, 50000L, TimeUnit.MILLISECONDS,
-				new LinkedBlockingQueue<Runnable>(100));
+		executorw2 = new ThreadPoolExecutor(10000, 10000, 50000L, TimeUnit.MILLISECONDS,
+				new LinkedBlockingQueue<Runnable>(10000));
 		om = new ObjectMapper();
 		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);
 		om.getJsonFactory();
@@ -48,13 +49,14 @@ public class Auth extends API{
 		login.init();
 		logout.init();
 	}
-	
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-		doPost(req,resp);
+		doPost(req, resp);
 
 	}
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -105,34 +107,34 @@ public class Auth extends API{
 		}
 
 	}
-	public Task getTask(){
+
+	public Task getTask() {
 		return new Task(null);
 	}
 
-	public static class Task implements Runnable {
-
-		private static AsyncContext ctx;
+	public static class Task extends ServiceTaskAPIImpl implements Runnable {
 
 		public Task(AsyncContext ctx) {
-			this.ctx = ctx;
+			super(ctx);
 		}
 
-		public static void writeResponse(JsonResponse responseContent) {
+		public void writeResponse(JsonResponse responseContent) {
 			try {
 
-				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin",
+				((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Origin",
 						ACCESS_CONTROL_ALLOW_ORIGIN);
-				((HttpServletResponse) ctx.getResponse()).setHeader("Content-type", "application/json");
-				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin", "*");
-				((HttpServletResponse) ctx.getResponse()).setHeader("Content-encoding", "gzip");
+				((HttpServletResponse) getCtx().getResponse()).setHeader("Content-type", "application/json");
+				((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Origin", "*");
+				((HttpServletResponse) getCtx().getResponse()).setHeader("Content-encoding", "gzip");
 
 				// ctx.getResponse().getWriter().print(om.writeValueAsString(data));
-				om.writeValue(new GzipCompressorOutputStream(ctx.getResponse().getOutputStream()), responseContent);
-				ctx.complete();
+				om.writeValue(new GzipCompressorOutputStream(getCtx().getResponse().getOutputStream()),
+						responseContent);
+				getCtx().complete();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				ctx.complete();
+				getCtx().complete();
 			}
 
 		}
@@ -140,11 +142,29 @@ public class Auth extends API{
 		@Override
 		public void run() {
 
-			HttpServletRequest req = ((HttpServletRequest) ctx.getRequest());
-			HttpServletResponse resp = ((HttpServletResponse) ctx.getResponse());
-			ParseParamsMultiPart2  p =(ParseParamsMultiPart2) req.getAttribute("params");
+			HttpServletRequest req = ((HttpServletRequest) getCtx().getRequest());
+			HttpServletResponse resp = ((HttpServletResponse) getCtx().getResponse());
+			ParseParamsMultiPart2 p = null;
+			try {
+				p = new ParseParamsMultiPart2(req);
+				checkAvailability(apiName, p.getString("op"));
+			} catch (Exception e) {
+				try {
+					sendError("server_error", e);
+				} catch (Exception e1) {
+					getCtx().complete();
+					e1.printStackTrace();
+					return;
 
-			JSONObject jsonArgs = null;;
+				}
+				e.printStackTrace();
+				return;
+			}
+			// ParseParamsMultiPart2 p =(ParseParamsMultiPart2)
+			// req.getAttribute("params");
+
+			JSONObject jsonArgs = null;
+			;
 			try {
 				jsonArgs = new JSONObject(p.getString("args"));
 			} catch (JSONException e1) {
@@ -154,67 +174,50 @@ public class Auth extends API{
 
 			String op = null;
 			op = p.getString("op");
-			op = op != null ? op :"none";
-			
+			op = op != null ? op : "none";
+
 			switch (op) {
 			case "login":
 				;
-				executorw2.execute(new orchi.HHCloud.Api.Auth.Login.Task(ctx));
-				
+				executorw2.execute(new orchi.HHCloud.Api.Auth.Login.Task(getCtx()));
+
 				break;
 			case "logout":
-				executorw2.execute(new orchi.HHCloud.Api.Auth.Logout.Task(ctx));
+				executorw2.execute(new orchi.HHCloud.Api.Auth.Logout.Task(getCtx()));
 				break;
 
 			case "verifyemail":
-				verifyEmailOperation(jsonArgs);				
+				// verifyEmailOperation(jsonArgs);
+				String idVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
+				if (idVeryfy == null) {
+					writeResponse(new JsonResponse(false, "No se ha resivido ningun token")
+							.setError("token_missing")
+							.setStatus("error"));
+					return;
+				}
+
+				try {
+					Start.getAuthProvider().verifyEmail(idVeryfy);
+					writeResponse(new JsonResponse(true, "email verificado"));
+				} catch (VerifyException e) {
+
+					writeResponse(
+							new JsonResponse(false, e.getMessage())
+							.setError("verify_exception")
+							.setStatus("error"));
+
+					e.printStackTrace();
+				}
 				break;
 
 			default:
-				writeResponse(
-						new JsonResponse(false, "debe espesificar una operacion")
-						.setError("operation_missing")
+				writeResponse(new JsonResponse(false, "debe espesificar una operacion").setError("operation_missing")
 						.setStatus("error"));
 				break;
 			}
 
 		}
 
-		
 	}
-	@Operation(name = "login")
-	private static void loginOperation(JSONObject jsonArgs){
-		
-	}
-	
-	@Operation(name = "logout")
-	@SessionRequired
-	private static void logoutOperation(JSONObject jsonArgs){
-		
-	}
-	
-	@Operation(name = "verifyemail")
-	private static void verifyEmailOperation(JSONObject jsonArgs) {
-		String idVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
-		if (idVeryfy == null) {
-			Task.writeResponse(new JsonResponse(false, "No se ha resivido ningun token")
-					.setError("token_missing")
-					.setStatus("error"));
-			return;
-		}
 
-		try {
-			Start.getAuthProvider().verifyEmail(idVeryfy);
-			Task.writeResponse(new JsonResponse(true, "email verificado"));
-		} catch (VerifyException e) {
-
-			Task.writeResponse(
-					new JsonResponse(false, e.getMessage())
-					.setError("verify_exception")
-					.setStatus("error"));
-
-			e.printStackTrace();
-		}
-	}
-	
 }
