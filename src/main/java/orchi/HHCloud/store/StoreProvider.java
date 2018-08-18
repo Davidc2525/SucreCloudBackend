@@ -46,17 +46,19 @@ public interface StoreProvider {
 	public void download(DownloadArguments args);
 
 	/** Api de bajo nivel */
-	public void read(Path path, OutputStream out);
+	public void read(User user,Path path, OutputStream out);
 
-	public void read(Path path, Range range, OutputStream out);
+	public void read(User user,Path path, Range range, OutputStream out);
 
-	public void create(Path path, InputStream in);
+	public void create(User user,Path path, InputStream in);
 
-	public void touch(Path path);
+	public void touch(User user,Path path);
 
-	public boolean exists(Path path);
+	public boolean exists(User user,Path path);
 	
-	public boolean isFile(Path path);
+	public boolean isFile(User user,Path path);
 	
-	public boolean isDirectory(Path path);
+	public boolean isDirectory(User user,Path path);
+	
+	public Long getSize(User user, Path path);
 }

@@ -117,6 +117,7 @@ public class HdfsManager {
 			totalReads += numBytes;
 		}
 		in.close();
+		
 		in = null;
 		// out.close();
 
@@ -136,7 +137,6 @@ public class HdfsManager {
 		while ((numBytes = in.read(b)) > 0) {
 			out.write(b, 0, numBytes);
 		}
-
 		in.close();
 		in = null;
 		// out.close();
@@ -163,7 +163,6 @@ public class HdfsManager {
 			int numBytes = 0;
 			while ((numBytes = inStream.read(b)) > 0) {
 				f.write(b, 0, numBytes);
-
 			}
 
 			inStream.close();

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.hadoop.fs.Path;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,10 @@ import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
+import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.stores.HdfsStore.HdfsManager;
+import orchi.HHCloud.user.BasicUser;
+import orchi.HHCloud.user.User;
 
 
 @Ignore
@@ -40,9 +44,10 @@ public class Opener extends API {
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private static Long readedParts = 0L;
 	private ThreadPoolExecutor executor;
+	private static StoreProvider sp;
 	@Override
 	public void init(ServletConfig config) throws ServletException {
-
+		sp = Start.getStoreManager().getStoreProvider();
 		executor = new ThreadPoolExecutor(10000, 10000, 50000L, TimeUnit.MICROSECONDS,
 				new LinkedBlockingQueue<Runnable>(100000));
 
@@ -69,7 +74,7 @@ public class Opener extends API {
 			resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 			resp.setHeader("Content-type", "application/json");
 			resp.setHeader("Access-Control-Allow-Credentials", "true");
-
+			resp.setHeader("Accept-Ranges", "bytes");
 			// ParseParamsMultiPart2 p = (ParseParamsMultiPart2)
 			// reqs.getAttribute("params");
 
@@ -85,13 +90,15 @@ public class Opener extends API {
 			log.debug("Abrir contenido de archivo.");
 			
 			try {
+				User user = new BasicUser();
+				user.setId((String)session.getAttribute("uid"));
 				ParseOpenerHeaders headers = new ParseOpenerHeaders(req);
 				if (headers.headers.containsKey("Range")) {
 					String hRange = new ParseOpenerHeaders(req).headers.get("Range");
 					String endodePath = new ParseOpenerParams(req).params.get("path");
 					String decodePath = new decodeParam(endodePath).decodedParam;
-					Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
-					Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
+					String path = decodePath;
+					Long fileSize = sp.getSize(user,Paths.get(path));
 					String mime = Files.probeContentType(Paths.get(path.toString()));
 
 					orchi.HHCloud.store.Range range = new orchi.HHCloud.store.Range(hRange,fileSize);
@@ -105,30 +112,29 @@ public class Opener extends API {
 					log.debug("tamaño de contenido de salida {}",contentLength);
 					log.debug("tamaño del contenido total {}",fileSize);
 					log.debug("tipo de mime {}",mime);
+					log.debug("Usuario {}",user.getId());
 					log.debug("------------- {}",++readedParts);
-
-
-
-					resp.setStatus(206);
-					resp.setHeader("Accept-Ranges", "bytes");
+					
+					resp.setStatus(HttpResponseStatus.PARTIAL_CONTENT.getCode());
 					resp.setHeader("Content-Length", contentLength + "");
 					resp.setHeader("Content-Range", "bytes " + ranges[0] + "-" + ranges[1] + "/" + fileSize);
 					resp.setHeader("Content-Type", mime);
-					Start.getStoreManager().getStoreProvider().read(Paths.get(path.toString()), range, (resp.getOutputStream()));
+					sp.read(user, Paths.get(path), range, resp.getOutputStream());
 					getCtx().complete();
 					
 				} else {
 
 					String endodePath = new ParseOpenerParams(req).params.get("path");
 					String decodePath = new decodeParam(endodePath).decodedParam;
-					Path path  =new Path(HdfsManager.newPath((String)session.getAttribute("uid"),decodePath ).toString());
+					String path  = decodePath;
 					String mime = Files.probeContentType(Paths.get(path.toString()));
-					Long fileSize = HdfsManager.getInstance().fs.getFileStatus(path).getLen();
+					Long fileSize = sp.getSize(user, Paths.get(path));
 
 					log.debug("contenido total");
 					log.debug("ruta decodificada {}",decodePath);
 					log.debug("tamaño del contenido total {}",fileSize);
 					log.debug("tipo de mime {}",mime);
+					log.debug("Usuario {}",user.getId());
 					log.debug("------------- {}",++readedParts);
 
 					resp.setHeader("Content-Length", fileSize + "");
@@ -136,7 +142,7 @@ public class Opener extends API {
 					resp.addHeader("Content-Disposition", "filename=\"" + Paths.get(decodePath).getFileName() + "\"");
 
 
-					Start.getStoreManager().getStoreProvider().read(Paths.get(path.toString()), resp.getOutputStream());
+					sp.read(user,Paths.get(path), resp.getOutputStream());
 					getCtx().complete();
 				}
 			} catch (Exception e1) {

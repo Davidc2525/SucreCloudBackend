@@ -10,18 +10,14 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
-import org.apache.hadoop.fs.Path;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import orchi.HHCloud.Start;
@@ -29,7 +25,8 @@ import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
-import orchi.HHCloud.stores.HdfsStore.HdfsManager;
+import orchi.HHCloud.user.BasicUser;
+import orchi.HHCloud.user.User;
 
 @Ignore
 @SessionRequired
@@ -63,6 +60,7 @@ public class Uploader extends API {
 			HttpServletResponse resp = (HttpServletResponse) getCtx().getResponse();
 			boolean isMultipart = ServletFileUpload.isMultipartContent(req);
 
+            resp.setHeader("Access-Control-Allow-Credentials","true");
 			resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 			resp.setHeader("Content-type", "application/json");
 
@@ -97,6 +95,7 @@ public class Uploader extends API {
 				}
 				getCtx().complete();
 			} catch (Exception e) {
+			e.printStackTrace();
 				try {
 					sendError("server_error", e);
 					getCtx().complete();
@@ -104,7 +103,7 @@ public class Uploader extends API {
 					getCtx().complete();
 					e1.printStackTrace();
 				}
-				e.printStackTrace();
+
 			}
 		}
 
@@ -122,7 +121,7 @@ public class Uploader extends API {
 	 * va ha almacenar dicho archivo, luego de tener el path de args, se llama
 	 * el metodo, toStore q con pathArgs y el path parasado por parametro se
 	 * arma la rruta de destino completa,
-	 * 
+	 *
 	 * <pre>
 	 * pathArgs = rruta donde se encuentra el usuario, /mi musica
 	 * path = nombre del archivo, junto con la rruta relativa, artistas/coldplay/albums/parachute/trouble.mp3
@@ -144,8 +143,9 @@ public class Uploader extends API {
 			if (session != null) {
 				java.nio.file.Path p = Paths.get(pathArgs, path);
 				String root = (String) session.getAttribute("uid");
-				Path opath = new Path(HdfsManager.newPath(root, p.toString()).toString());
-				Start.getStoreManager().getStoreProvider().create(Paths.get(opath.toString()), in);
+				User user = new BasicUser();
+				user.setId(root);
+				Start.getStoreManager().getStoreProvider().create(user,p, in);
 			}
 		}
 

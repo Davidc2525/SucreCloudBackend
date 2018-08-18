@@ -52,7 +52,7 @@ public class GetStatusOperation implements IOperation {
 		
 		shareProvider = Start.getShareManager().getShareProvider();
 		thisIsShared = shareProvider.isShared(args.getUse(), Paths.get(path));
-		shared = shareProvider.sharesInDirectory(args.getUse(), Paths.get(path).getParent());
+		shared = shareProvider.sharedInDirectory(args.getUse(), Paths.get(path).getParent());
 		
 		log.info("Nueva operacion de estatus de archivo {}", opath.toString());
 	}

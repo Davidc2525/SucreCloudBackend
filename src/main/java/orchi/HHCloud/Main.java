@@ -60,7 +60,14 @@ public class Main {
 	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException {
 
 	System.out.println("HHCloud pruebas!");
+	Start.conf.getList("app.folders.wellcome").forEach(x->{
+		log.info("csm {}",x);
+	});
+	log.info("{}",Start.conf.getList("app.folders.wellcome"));
 	
+	if(true){
+		return;
+	}
 	ShareProvider s = Start.getShareManager().getShareProvider();
 	java.nio.file.Path pa = Paths.get("/respaldo/9/1.jpg");
 	BasicUser use2 = new BasicUser();
@@ -82,19 +89,17 @@ public class Main {
 	
 	//log.info("shareds {}",s.sharesInDirectory(use, Paths.get("/")) );
 	
-	log.info("shareds {}",s.sharesInDirectory(use, Paths.get("/respaldo/9")) );
+	log.info("shareds {}",s.sharedInDirectory(use, Paths.get("/respaldo/9")) );
 	
 	//s.deleteShare(use, Paths.get("/"));
 	
-	log.info("shareds {}",s.sharesInDirectory(use, Paths.get("/respaldo/9")) );
-	log.info("shareds {} user 123 ",s.sharesInDirectory(use2, Paths.get("/")) );
+	log.info("shareds {}",s.sharedInDirectory(use, Paths.get("/respaldo/9")) );
+	log.info("shareds {} user 123 ",s.sharedInDirectory(use2, Paths.get("/")) );
 	int j=0;
 	while(j<1){
 		log.info("{} is shared A {}",++j,s.isShared(use, pa));;
 	}
-	if(true){
-		return;
-	}
+	
 	HdfsManager.getInstance(true);
 		ObjectMapper om = new ObjectMapper();
 		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);

@@ -18,7 +18,7 @@ public interface ShareProvider {
 
 	public void init();
 
-	public Shared sharesInDirectory(User user, Path path);
+	public Shared sharedInDirectory(User user, Path path);
 
 	public void deleteShares(User user, List<Path> paths);
 

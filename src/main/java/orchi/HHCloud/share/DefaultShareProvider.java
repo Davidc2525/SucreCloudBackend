@@ -43,8 +43,8 @@ public class DefaultShareProvider implements ShareProvider {
 	/**por hacer*/
 	public void getSharedDescriptor(User user, Path path) {
 		try {
-			String pathwr = ContextStore.toUserContext(user, path.toString()).toString();
-			if (sp.exists(Paths.get(pathwr, SHAREDS_DESCRIPTOR))) {
+			String pathwr = path.toString();
+			if (sp.exists(user,Paths.get(pathwr, SHAREDS_DESCRIPTOR))) {
 
 			}
 		} catch (IllegalArgumentException e) {
@@ -52,7 +52,7 @@ public class DefaultShareProvider implements ShareProvider {
 		}
 	}
 
-	private void createShareParend(User user, Path path){
+	private void createShareParent(User user, Path path){
 		Connection con;
 		try {// SHAREDPARENT
 			path = normaizePaht(path);
@@ -81,12 +81,11 @@ public class DefaultShareProvider implements ShareProvider {
 			path = normaizePaht(path);
 
 			log.debug("creando share en {} para usuario {}",path.toString(),user.getId());
-
-			path = path.normalize();
+			
 			if (isShared(user, path))
 				return;
 
-			createShareParend(user,path);
+			createShareParent(user,path);
 			con = db.getConnection();
 			PreparedStatement stm = con.prepareStatement("INSERT INTO SHARE VALUES(?,?,?,?)");
 			stm.setString(1, path.toString());
@@ -131,7 +130,7 @@ public class DefaultShareProvider implements ShareProvider {
 
 			String sqlDeleteShared = "DELETE FROM SHARE WHERE PATH = ? AND PPATH = ? AND OWNERUSER=?";
 
-			if(sp.isDirectory(ContextStore.toUserContext(user, path.toString()) )){
+			if(sp.isDirectory(user,path )){
 				log.debug("La rruta es un directorio {}",path+"");
 				log.debug("Eliminando todos las rrutas padre q coinsidan con {} de user {}",path+"%",user.getId());
 
@@ -148,7 +147,7 @@ public class DefaultShareProvider implements ShareProvider {
 				int countChildrens = stm.executeUpdate();
 				log.debug("Eliminadas rrutas hijas",countChildrens);
 
-			}else if(sp.isFile(ContextStore.toUserContext(user, path.toString()) )){
+			}else if(sp.isFile(user,path )){
 
 				log.debug("La rruta es un archivo {}",path+"");
 				log.debug("Eliminando la rruta padre q coinsidan con {}",path+"");
@@ -174,23 +173,23 @@ public class DefaultShareProvider implements ShareProvider {
 	}
 
 	@Override
-	public Shared sharesInDirectory(User user, Path path) {		
+	public Shared sharedInDirectory(User user, Path path) {		
 
-		Shared shareds = new Shared();	
+		Shared shared = new Shared();	
 		try {
 
 			log.debug("Obtener rutas compartidas en directorio {} para {}",path+"",user.getId());
 			path = normaizePaht(path);
-			if(sp.isDirectory(ContextStore.toUserContext(user, path.toString()) )){
+			if(sp.isDirectory(user,path )){
 
 				log.debug("La rruta es un directorio {}",path+"");
-				//System.out.println(ContextStore.toUserContext(user, path.toString()));
+				//System.out.println(path);
 
 				Connection con = db.getConnection();
 				String sql = ""
 						+ "SELECT DISTINCT SHARE.* FROM SHARE LEFT JOIN SHAREDPARENT "
-						+ "ON SHARE.PPATH = SHAREDPARENT.PATH "
-						+ "WHERE SHAREDPARENT.PATH=(?) AND SHARE.OWNERUSER=(?)";
+						+ " ON SHARE.PPATH = SHAREDPARENT.PATH "
+						+ " WHERE SHAREDPARENT.PATH=(?) AND SHARE.OWNERUSER=(?)";
 				PreparedStatement stm = con.prepareStatement(sql);
 				stm.setString(1, path.toString());
 				stm.setString(2, user.getId());
@@ -200,7 +199,7 @@ public class DefaultShareProvider implements ShareProvider {
 					BasicUser newUser = new BasicUser();
 					newUser.setId(r.getString("OWNERUSER"));
 					Share share = BuildShare.createShare("", newUser, Paths.get(r.getString("PATH")), r.getLong("CREATEAT"));
-					shareds.addShare(share);
+					shared.addShare(share);
 				}
 				con.close();
 			}
@@ -208,7 +207,7 @@ public class DefaultShareProvider implements ShareProvider {
 			e.printStackTrace();
 		}
 
-		return shareds;
+		return shared;
 	}
 
 	@Override

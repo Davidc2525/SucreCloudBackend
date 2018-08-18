@@ -47,7 +47,7 @@ public class ListOperation implements IOperation {
 		path = args.getPath().toString();
 		opath = new Path(HdfsManager.newPath(root, path).toString());
 		shareProvider = Start.getShareManager().getShareProvider();
-		shared = shareProvider.sharesInDirectory(args.getUse(), Paths.get(path));
+		shared = shareProvider.sharedInDirectory(args.getUse(), Paths.get(path));
 		
 		thisIsShared = shareProvider.isShared(args.getUse(), Paths.get(path));
 		log.info("Nueva operacion de listado {}", opath.toString());
@@ -132,6 +132,7 @@ public class ListOperation implements IOperation {
 				gsa.setUser(args.getUse());
 				GetStatusResponse gs = new GetStatusOperation(gsa).call();
 				ListResponse lr = new ListResponse();
+				lr.setShared(gs.isShared());
 				lr.setStatus(gs.getStatus());
 				lr.setError(gs.getError());
 				lr.setMsg(gs.getMsg());
