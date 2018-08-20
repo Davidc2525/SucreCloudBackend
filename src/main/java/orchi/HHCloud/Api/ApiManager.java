@@ -232,6 +232,9 @@ public class ApiManager {
 		}
 	}
 
+	public static void showDescriptions(String apiName) {
+		log.info("{}", new JSONObject(api.get(apiName)).toString(2));
+	}
 	public static void showDescriptions() {
 		log.info("{}", new JSONObject(api).toString(2));
 	}

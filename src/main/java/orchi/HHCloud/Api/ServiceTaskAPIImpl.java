@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.json.JSONObject;
+import org.mortbay.log.Log;
 
 import orchi.HHCloud.Api.ApiManager.ApiDescriptor;
 
@@ -95,6 +96,7 @@ public abstract class ServiceTaskAPIImpl implements ServiceTaskAPIInterface {
 		orchi.HHCloud.Api.ApiManager.Operation op = null;
 
 		if (apid != null) {
+			
 			if (!apid.isIgnored()) {
 				if (apid.isGsr()) {
 					if (session == null) {
@@ -103,6 +105,8 @@ public abstract class ServiceTaskAPIImpl implements ServiceTaskAPIInterface {
 					} else {
 						apid.calls++;
 					}
+				}else{
+					apid.calls++;
 				}
 				if (operationName != null) {
 					op = apid.getOperation(operationName);
@@ -115,6 +119,8 @@ public abstract class ServiceTaskAPIImpl implements ServiceTaskAPIInterface {
 						} else {
 							op.calls++;
 						}
+					}else{
+						op.calls++;
 					}
 				} else {
 					sendError("server_error", "Esa operacion no esta registrada.");
@@ -128,6 +134,7 @@ public abstract class ServiceTaskAPIImpl implements ServiceTaskAPIInterface {
 					}
 				}
 			}
+			if(Log.isDebugEnabled()) ApiManager.showDescriptions(apid.name);
 		}
 	}
 

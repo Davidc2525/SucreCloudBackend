@@ -14,6 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -32,7 +33,6 @@ import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.auth.Exceptions.TokenException;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.store.ContextStore;
-import orchi.HHCloud.store.Store;
 import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.DataUser;
@@ -55,7 +55,6 @@ import orchi.HHCloud.user.Exceptions.ValidationException;
  * Api para gestion de usuario
  * @author Colmenares David
  * */
-@Ignore
 public class Users extends API {
 
 	public static String apiName = "/user";
@@ -65,8 +64,6 @@ public class Users extends API {
 	private StoreProvider sp;
 	private static UserProvider up;
 	private static ObjectMapper om;
-	
-
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -93,8 +90,7 @@ public class Users extends API {
 
 	}
 
-
-
+	
 	public static class Task extends ServiceTaskAPIImpl implements Runnable {
 		private AsyncContext ctx;
 
@@ -182,8 +178,8 @@ public class Users extends API {
 				deleteUserOperation(ctx, jsonArgs);
 				break;
 
-			case "sendveryfyemail"://session
-				// TODO hacer operacion para enviar correo de verificacion por el usuario
+			case "sendverifyemail"://session
+				sendVerifyEmailOperation(ctx,jsonArgs);
 				break;
 
 			case "sendrecoveryemail"://no session
@@ -200,8 +196,9 @@ public class Users extends API {
 
 			default:
 				JsonResponse response = new JsonResponse();
-				response.setError("op_no_espesified");
-				response.setMsg("No espesifico operacion");
+				response.setStatus("error");
+				response.setError("op_not_espesified");
+				response.setMsg("No espesifico operacion.");
 
 				resp.getWriter().println(om.writeValueAsString(response));
 				ctx.complete();
@@ -211,7 +208,7 @@ public class Users extends API {
 	}
 
 
-	/**--------------------------------OPERACIONES------------------------**/
+	/*--------------------------------OPERACIONES------------------------**/
 	public static class JsonResponse {
 		public String status = "ok";
 		private String error;
@@ -436,9 +433,83 @@ public class Users extends API {
 
 	}
 
-	@Operation(name = "sendveryfyemail")
+	@Operation(name = "sendverifyemail")
 	@SessionRequired
-	public static void sendVerifyEmailOperation(AsyncContext ctx,JSONObject jsonArgs){
+	public static void sendVerifyEmailOperation(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{
+		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
+		HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
+		HttpSession session = req.getSession(false);
+		String idInSession = (String) session.getAttribute("uid");
+
+		boolean hasError = false;
+		JsonResponse response = new JsonResponse();
+		String email = jsonArgs.has("email") ? jsonArgs.getString("email") : null;
+		DataUser user = null;
+
+		if(email == null){
+			hasError = true;
+			response.setStatus("error");
+			response.setError("email_missing");
+			response.setMsg("Debe suministrar un email");
+		}
+
+		if (!hasError) {
+			try {
+				user = (DataUser) up.getUserById(idInSession);
+			} catch (UserNotExistException e) {
+				hasError = true;
+				response.setStatus("error");
+				response.setError("user_no_exists");
+				response.setMsg(e.getMessage());
+			} catch (UserException e) {
+				hasError = true;
+				response.setStatus("error");
+				response.setError("user_exception");
+				response.setMsg(e.getMessage());
+				// e.printStackTrace();
+			}
+		}
+
+		if(!hasError){
+			if(user.isEmailVerified()){
+				hasError = true;
+				response.setStatus("error");
+				response.setError("account_is_verified");
+				response.setMsg("Esta cuenta ya ha sido verificada");
+			}
+		}
+
+		if(!hasError){
+			if(!user.getEmail().equals(email)){
+				hasError = true;
+				response.setStatus("error");
+				response.setError("violation_security");
+				response.setMsg("El email suministrado no concuerda con el email de tu session actual.");
+			}else{
+				try {
+					up.sendVerifyEmail(user);
+				} catch (UserException e) {
+					hasError = true;
+					response.setStatus("error");
+					response.setError("user_exception");
+					response.setMsg(e.getMessage());
+				} catch (SendEmailException e) {
+					hasError = true;
+					response.setStatus("error");
+					response.setError("email_exception");
+					response.setMsg(e.getMessage());
+				}
+			}
+		}
+
+		if (!hasError) {
+			response.setStatus("ok");
+			response.setMsg("Se envio a tu correo un enlace para terminar con la verificacion de tu cuenta.");
+			resp.getWriter().println(om.writeValueAsString(response));
+		} else {
+			resp.getWriter().println(om.writeValueAsString(response));
+		}
+		ctx.complete();
 
 	}
 

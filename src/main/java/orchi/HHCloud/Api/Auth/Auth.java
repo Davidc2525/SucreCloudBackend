@@ -23,9 +23,12 @@ import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Operation;
 import orchi.HHCloud.auth.Exceptions.VerifyException;
 
-@Operation(name = "login")
+@Operation(name = "login",isRequired = false)
 @Operation(name = "logout", isRequired = true)
 @Operation(name = "verifyemail")
+/**
+ * Api para autenticacion
+ * */
 public class Auth extends API {
 	public static String apiName = "/auth";
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");

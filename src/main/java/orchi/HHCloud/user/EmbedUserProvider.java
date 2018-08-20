@@ -8,6 +8,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -28,6 +32,7 @@ import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Exceptions.UserMutatorException;
 import orchi.HHCloud.user.Exceptions.UserMutatorPassword;
 import orchi.HHCloud.user.Exceptions.UserNotExistException;
+import org.slf4j.*;
 
 /**
  * Proveedor de usuarios con base de datos empotrada
@@ -36,7 +41,7 @@ import orchi.HHCloud.user.Exceptions.UserNotExistException;
  *
  */
 public class EmbedUserProvider implements UserProvider {
-
+	private static final Logger log = LoggerFactory.getLogger(EmbedUserProvider.class);
 	private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.admin");
 	private static final String UPDATE_PASS_USER = "UPDATE USERS SET PASS=(?) WHERE ID=(?)";
 	private static final String DELETE_USERS_WHERE_ID = "DELETE FROM USERS WHERE ID=(?)";
@@ -56,6 +61,7 @@ public class EmbedUserProvider implements UserProvider {
 											+ "UPDATE USERS SET "
 											+ "EMAILVERIFIED=(?)"
 											+ "WHERE ID=(?)";
+	private final ThreadPoolExecutor executor;
 	private CipherProvider ciplherProvider = Start.getCipherManager().getCipherProvider();
 	private ConnectionProvider provider;
 	//private Connection conn;
@@ -64,6 +70,7 @@ public class EmbedUserProvider implements UserProvider {
 	private String templateRecoveryPassword;
 
 	public EmbedUserProvider() {
+		log.debug("Iniciando EmbedUserProvider");
 		try {
 			templateEmailVerify = Streams.asString(EmbedUserProvider.class.getResourceAsStream("/templateVerifyEmail.html"));
 			templateRecoveryPassword = Streams.asString(EmbedUserProvider.class.getResourceAsStream("/templateRecoveryPasswordEmail.html"));
@@ -74,11 +81,14 @@ public class EmbedUserProvider implements UserProvider {
 		Start.getDbConnectionManager();
 		provider = DbConnectionManager.getInstance().getConnectionProvider();
 		//conn = provider.getConnection();
+		executor = new ThreadPoolExecutor(100, 100, 10L, TimeUnit.SECONDS,
+				new LinkedBlockingQueue<Runnable>(1000000));
 	}
 
 
 	@Override
 	public User getUserById(String userId) throws UserNotExistException ,UserException{
+		log.debug("getUserById {}",userId);
 		User user = null;
 		ResultSet result;
 		Connection conn = null;
@@ -92,6 +102,7 @@ public class EmbedUserProvider implements UserProvider {
 
 			if (result.next()) {
 				user = buildUserFromResult(result);
+				log.debug("User found {}",user);
 			} else {
 				throw new UserNotExistException("Usuario con id: " + userId + ", no existe.");
 			}
@@ -109,12 +120,12 @@ public class EmbedUserProvider implements UserProvider {
 				e.printStackTrace();
 			}
 		}
-		System.err.println("UserById " + user);
 		return user;
 	}
 
 	@Override
 	public User getUserByEmail(String userEmail) throws UserNotExistException,UserException {
+		log.debug("getUserByEmail {}",userEmail);
 		User user = null;
 		ResultSet result;
 		Connection conn =null;
@@ -127,6 +138,7 @@ public class EmbedUserProvider implements UserProvider {
 			
 			if (result.next()) {
 				user = buildUserFromResult(result);
+				log.debug("User found {}",user);
 			} else {
 				throw new UserNotExistException("Usuario con " + userEmail + " no existe.");
 			}
@@ -149,6 +161,7 @@ public class EmbedUserProvider implements UserProvider {
 
 	@Override
 	public User getUserByUsername(String userName) throws UserNotExistException,UserException {
+		log.debug("getUserByUsername {}",userName);
 		User user = null;
 		ResultSet result;
 		Connection conn =null;
@@ -161,6 +174,7 @@ public class EmbedUserProvider implements UserProvider {
 
 			if (result.next()) {
 				user = buildUserFromResult(result);
+				log.debug("User found {}",user);
 			} else {
 				throw new UserNotExistException("Usuario con " + userName + " no existe.");
 			}
@@ -184,6 +198,7 @@ public class EmbedUserProvider implements UserProvider {
 
 	@Override
 	public void createUser(User newUser) throws UserException {
+		log.debug("createUser {}",newUser);
 		DataUser user = ((DataUser) newUser);
 		try {
 			getUserById(newUser.getId());
@@ -210,6 +225,7 @@ public class EmbedUserProvider implements UserProvider {
 					userInsert.setString(9, ciplherProvider.encrypt(user.getPassword()));
 					userInsert.executeUpdate();
 					sendVerifyEmail(user);
+					log.debug("User created {}, sendind email to veridy account",user);
 				} catch (SQLException e) {
 					e.printStackTrace();
 					throw new UserException(e.getMessage());
@@ -230,6 +246,7 @@ public class EmbedUserProvider implements UserProvider {
 
 	@Override
 	public void deleteUser(User user) throws UserException {
+		log.debug("deleteUser {}",user);
 		PreparedStatement userDelete = null;
 		Connection conn =null;
 		try {
@@ -237,6 +254,7 @@ public class EmbedUserProvider implements UserProvider {
 			userDelete = conn.prepareStatement(DELETE_USERS_WHERE_ID);
 			userDelete.setString(1, escape(user.getId()));
 			userDelete.executeUpdate();
+			log.debug("User deleted {}",user);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
@@ -254,6 +272,7 @@ public class EmbedUserProvider implements UserProvider {
 
 	@Override
 	public User changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException, UserException {
+		log.debug("changePasswordUser {}",userMutator.getUser());
 		User user = userMutator.getUser();
 		String nPassword = userMutator.getPassword();
 		String nPasswordEncrypt = ciplherProvider.encrypt(nPassword);
@@ -265,6 +284,8 @@ public class EmbedUserProvider implements UserProvider {
 			updatePass.setString(1, nPasswordEncrypt);
 			updatePass.setString(2, user.getId());
 			updatePass.executeUpdate();
+
+			log.debug("Password changued to {}",user);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
@@ -286,7 +307,7 @@ public class EmbedUserProvider implements UserProvider {
 
 	@Override
 	public User editUser(User userWithChanges) throws UserException {
-		
+		log.debug("editUser {}",userWithChanges);
 		DataUser editUser = (DataUser) userWithChanges;
 		DataUser oldUser = (DataUser)getUserById(editUser.getId());
 		System.out.println("editUser "+editUser);
@@ -304,6 +325,7 @@ public class EmbedUserProvider implements UserProvider {
 			userUpdate.setString(5, escape(editUser.getGender()));
 			userUpdate.setString(6, escape(oldUser.getId()));
 			userUpdate.executeUpdate();
+			log.debug("User chaged from: {}\nto: {}",oldUser,editUser);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException(e.getMessage());
@@ -348,6 +370,7 @@ public class EmbedUserProvider implements UserProvider {
 
 	@Override
 	public User setVerifyEmail(User user) throws UserException {
+		log.debug("setVerifyEmail {}",user);
 		Connection conn =null;
 		PreparedStatement verifyEmail = null;;
 		if(isEmailVerified(user)){
@@ -359,6 +382,7 @@ public class EmbedUserProvider implements UserProvider {
 			verifyEmail.setBoolean(1, true);
 			verifyEmail.setString(2, user.getId());;
 			verifyEmail.executeUpdate();
+			log.debug("ACCOUNT VERIFIED {}",user);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new UserException("No se pudo verificar el email. "+e.getMessage());
@@ -376,12 +400,16 @@ public class EmbedUserProvider implements UserProvider {
 	}
 
 	private boolean isEmailVerified(User user) throws UserNotExistException, UserException{
-		return ((DataUser) getUserById(user.getId())).isEmailVerified();
+		boolean isVerified = false;
+		isVerified = ((DataUser) getUserById(user.getId())).isEmailVerified();
+		log.debug("isEmailVerified {} {}",isVerified,user);
+		return isVerified;
 	}
 
 
 	@Override
 	public User sendVerifyEmail(User user) throws UserException {
+		log.debug("sendVerifyEmail {}", user);
 		String idToken;
 		try {
 			idToken = Start.getAuthProvider().createTokenToVerifyEmail(user);
@@ -412,28 +440,34 @@ public class EmbedUserProvider implements UserProvider {
 		values.put("appName", 	appName);
 		String templateBody = createBody(values,templateEmailVerify);
 
-		System.err.println(user.getEmail());
-		System.err.println(subject);
-		System.err.println(templateBody);
-		new Thread(()->{
-			System.out.println("enviado correo de verificacion.");
+		if(log.isDebugEnabled()){
+			log.debug("" +
+					"\tTo {}\n" +
+					"\tValues {}\n" +
+					"\tSubject {}\n" +
+					"\tBody {}\n",
+
+					user.getEmail(),values,subject,templateBody);
+		}
+		CompletableFuture.runAsync(()->{
+			log.debug("enviado correo de verificacion.");
 			try {
 				mp.sendEmail(APPLICATION_ADMIN, user.getEmail()+"", subject, templateBody);
-				System.out.println("Correo de verificacion enviado.");
+				log.debug("Correo de verificacion enviado.");
 			} catch (SendEmailException e) {
-			    System.err.println("No se pudo enviar el correo de verificacion.");
-			    Start.getAuthProvider().revokeTokenToVerifyEmail(idToken);
+				log.error("No se pudo enviar el correo de verificacion.");
+				Start.getAuthProvider().revokeTokenToVerifyEmail(idToken);
 				e.printStackTrace();
 			}
 
-		}).start();
+		},executor);
 		return user;
 	}
 
 
 	@Override
 	public User sendRecoveryPasswordEmail(User user) throws UserException, SendEmailException {
-		
+		log.debug("sendRecoveryPasswordEmail {}",user);
 		String token = Start.getAuthProvider().createTokenToRecoveryPassword(user);
 		DataUser dUser = (DataUser) user;
 		MailProvider mp = Start.getMailManager().getProvider();
@@ -454,9 +488,15 @@ public class EmbedUserProvider implements UserProvider {
 		values.put("token",token);
 		
 		String templateBody = createBody(values,templateRecoveryPassword);
-		System.out.println(subject);
-		System.out.println(templateBody);
-		System.out.println(user.getEmail());
+		if(log.isDebugEnabled()){
+			log.debug("" +
+							"\tTo {}\n" +
+							"\tValues {}\n" +
+							"\tSubject {}\n" +
+							"\tBody {}\n",
+
+					user.getEmail(),values,subject,templateBody);
+		}
 		try {
 			mp.sendEmail(APPLICATION_ADMIN, user.getEmail()+"", subject, templateBody);
 		} catch (SendEmailException e) {
