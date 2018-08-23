@@ -72,7 +72,7 @@ public class Users extends API {
 		om = new ObjectMapper();
 		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);
 		om.getJsonFactory();
-		executor = new ThreadPoolExecutor(10000, 10000, 10L, TimeUnit.SECONDS,
+		executor = new ThreadPoolExecutor(1000, 10000, 10L, TimeUnit.SECONDS,
 				new LinkedBlockingQueue<Runnable>(1000000));
 	}
 
@@ -90,7 +90,7 @@ public class Users extends API {
 
 	}
 
-	
+
 	public static class Task extends ServiceTaskAPIImpl implements Runnable {
 		private AsyncContext ctx;
 
@@ -142,7 +142,7 @@ public class Users extends API {
 			resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 			resp.setHeader("Content-type", "application/json");
 			resp.setHeader("Access-Control-Allow-Credentials", "true");
-			
+
 			ParseParamsMultiPart2 p = null;
 			try {
 				p = new ParseParamsMultiPart2(req);

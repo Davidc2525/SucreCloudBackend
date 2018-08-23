@@ -94,7 +94,7 @@ public class Start {
 		servletContext.addServlet(TEST.class, "/test").setAsyncSupported(true);
 
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
-		
+
 		contexts.setHandlers(new Handler[] { servletContext });
 
 		server.setHandler(contexts);
@@ -117,7 +117,7 @@ public class Start {
 	public static LogInAndOut getLoginAndOut() {
 		return LogInAndOut.getInstance();
 	}
-	
+
 	public static StoreManager getStoreManager() {
 		return StoreManager.getInstance();
 	}
@@ -129,11 +129,11 @@ public class Start {
 	public static MailManager getMailManager(){
 		return MailManager.getInstance();
 	}
-	
+
 	public static CipherManager getCipherManager(){
 		return CipherManager.getInstance();
 	}
-	
+
 	public static ShareManager getShareManager(){
 		return ShareManager.getInstance();
 	}

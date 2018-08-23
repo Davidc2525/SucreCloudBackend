@@ -8,9 +8,15 @@ import orchi.HHCloud.user.Exceptions.UserNotExistException;
 
 /**
  * interface para proveedor de usuarios
+ * @author david
+ * see {@link DefaultUserProvider}
  */
 public interface UserProvider {
 
+	/**
+	 * Validador de usuario
+	 * valida emain, username, nombre, apellido, clave ...
+	 * */
 	public UserValidator getValidator();
 
 	/** obtener usuario por su id */
@@ -35,6 +41,10 @@ public interface UserProvider {
 	 */
 	public User changePasswordUser(UserMutatorPassword userMutator) throws UserMutatorException, UserException;
 
+	/**
+	 * Editar usuario, se le pasa como parametro un objeto {@link User}
+	 * se cambiara con los datos en userWithChanges
+	 * */
 	public User editUser(User userWithChanges) throws UserException;
 
 	/**
@@ -49,7 +59,6 @@ public interface UserProvider {
 	public User sendVerifyEmail(User user) throws UserException,SendEmailException;
 	
 	/**
-	 * <h1>tengo q crear la plantilla para este mensaje</h1>
 	 * Envia un menssa al correo de el usuario con un token de, ese token le permite cambiar la contraseña de su cuenta por si se le olvido
 	 * */
 	public User sendRecoveryPasswordEmail(User user) throws UserException,SendEmailException;

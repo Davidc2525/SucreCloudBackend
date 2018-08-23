@@ -48,7 +48,7 @@ public class Opener extends API {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		sp = Start.getStoreManager().getStoreProvider();
-		executor = new ThreadPoolExecutor(10000, 10000, 50000L, TimeUnit.MICROSECONDS,
+		executor = new ThreadPoolExecutor(1000, 10000, 50000L, TimeUnit.MICROSECONDS,
 				new LinkedBlockingQueue<Runnable>(100000));
 
 	}
@@ -58,7 +58,7 @@ public class Opener extends API {
 		//CompletableFuture.runAsync(new Task(req.startAsync()));
 
 	}
-	
+
 	public static class Task extends ServiceTaskAPIImpl implements Runnable {
 
 		public Task(AsyncContext ctx) {
@@ -88,7 +88,7 @@ public class Opener extends API {
 			}
 
 			log.debug("Abrir contenido de archivo.");
-			
+
 			try {
 				User user = new BasicUser();
 				user.setId((String)session.getAttribute("uid"));
@@ -114,14 +114,14 @@ public class Opener extends API {
 					log.debug("tipo de mime {}",mime);
 					log.debug("Usuario {}",user.getId());
 					log.debug("------------- {}",++readedParts);
-					
+
 					resp.setStatus(HttpResponseStatus.PARTIAL_CONTENT.getCode());
 					resp.setHeader("Content-Length", contentLength + "");
 					resp.setHeader("Content-Range", "bytes " + ranges[0] + "-" + ranges[1] + "/" + fileSize);
 					resp.setHeader("Content-Type", mime);
 					sp.read(user, Paths.get(path), range, resp.getOutputStream());
 					getCtx().complete();
-					
+
 				} else {
 
 					String endodePath = new ParseOpenerParams(req).params.get("path");
@@ -156,7 +156,7 @@ public class Opener extends API {
 				e1.printStackTrace();
 			}
 
-			
+
 
 		}
 

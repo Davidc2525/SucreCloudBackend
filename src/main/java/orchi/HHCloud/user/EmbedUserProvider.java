@@ -310,7 +310,6 @@ public class EmbedUserProvider implements UserProvider {
 		log.debug("editUser {}",userWithChanges);
 		DataUser editUser = (DataUser) userWithChanges;
 		DataUser oldUser = (DataUser)getUserById(editUser.getId());
-		System.out.println("editUser "+editUser);
 		Connection conn =null;
 		PreparedStatement userUpdate = null;
 		try {

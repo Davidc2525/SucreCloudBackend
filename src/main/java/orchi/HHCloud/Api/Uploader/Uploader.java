@@ -37,7 +37,7 @@ public class Uploader extends API {
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
-		executor = new ThreadPoolExecutor(10000, 10000, 50000L, TimeUnit.MICROSECONDS,
+		executor = new ThreadPoolExecutor(1000, 10000, 50000L, TimeUnit.MICROSECONDS,
 				new LinkedBlockingQueue<Runnable>(100000));
 
 	}

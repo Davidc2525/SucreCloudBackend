@@ -40,7 +40,7 @@ public class Auth extends API {
 	public Auth() {
 		login = new Login();
 		logout = new Logout();
-		executorw2 = new ThreadPoolExecutor(10000, 10000, 50000L, TimeUnit.MILLISECONDS,
+		executorw2 = new ThreadPoolExecutor(1000, 10000, 50000L, TimeUnit.MILLISECONDS,
 				new LinkedBlockingQueue<Runnable>(10000));
 		om = new ObjectMapper();
 		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);

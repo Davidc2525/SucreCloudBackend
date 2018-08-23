@@ -50,7 +50,7 @@ public class Fs extends API {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 
-		executor = new ThreadPoolExecutor(10000, 10000, 50000L, TimeUnit.MICROSECONDS,
+		executor = new ThreadPoolExecutor(1000, 10000, 50000L, TimeUnit.MICROSECONDS,
 				new LinkedBlockingQueue<Runnable>(100000));
 
 	}
@@ -59,7 +59,7 @@ public class Fs extends API {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		//executor.execute(new Task(req.startAsync()));
 		CompletableFuture.runAsync(new Task(req.startAsync()),executor);
-		
+
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class Fs extends API {
 
 		@Override
 		public void run() {
-			
+
 			HttpServletRequest reqs = (HttpServletRequest) getCtx().getRequest();
 			HttpServletResponse resps = (HttpServletResponse) getCtx().getResponse();
 			HttpSession session = reqs.getSession(false);
