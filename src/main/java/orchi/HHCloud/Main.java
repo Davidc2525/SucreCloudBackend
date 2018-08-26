@@ -17,11 +17,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,15 +57,31 @@ public class Main {
 	private static Logger log = LoggerFactory.getLogger(Main.class);
 	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException {
 
-	System.out.println("HHCloud pruebas!");
-	Start.conf.getList("app.folders.wellcome").forEach(x->{
-		log.info("csm {}",x);
-	});
-	log.info("{}",Start.conf.getList("app.folders.wellcome"));
-	
-	if(true){
-		return;
-	}
+		System.out.println("HHCloud pruebas!");
+		FileSystem fs = HdfsManager.getInstance().getFs();
+		HdfsAdmin admin = HdfsManager.getInstance().dfsAdmin;
+		DistributedFileSystem dfs = (DistributedFileSystem) fs;
+	//	dfs.setQuotaByStorageType(new Path("/mi_dfs/1234/files"),StorageType.DISK, 78_555_432_078L + 10_000);
+		//admin.setSpaceQuota(new Path("/mi_dfs/1234/files"),78_555_432_078L + 10_000);
+		ContentSummary cs = dfs.getContentSummary(new Path("/mi_dfs/1535289546807/files/"));
+		System.out.println("getDirectoryCount: "+cs.getDirectoryCount());
+		System.out.println("getFileCount: "+cs.getFileCount());
+		System.out.println("getLength: "+cs.getLength());
+		System.out.println("getSpaceQuota: "+cs.getSpaceQuota());
+		System.out.println("getSpaceConsumed(): "+cs.getSpaceConsumed());
+		System.out.println("getQuota: "+cs.getQuota());
+		System.out.println("isTypeConsumedAvailable: "+cs.isTypeConsumedAvailable());
+		System.out.println("isTypeQuotaSet: "+cs.isTypeQuotaSet());
+		System.out.println("getHeader(true): "+cs.getHeader(true));
+
+		if(true){
+			return;
+		}
+		Start.conf.getList("app.folders.wellcome").forEach(x->{
+			log.info("csm {}",x);
+		});
+		log.info("{}",Start.conf.getList("app.folders.wellcome"));
+
 	ShareProvider s = Start.getShareManager().getShareProvider();
 	java.nio.file.Path pa = Paths.get("/respaldo/9/1.jpg");
 	BasicUser use2 = new BasicUser();

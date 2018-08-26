@@ -1,6 +1,7 @@
 package orchi.HHCloud.Api.User;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import orchi.HHCloud.store.ContentSummary;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -61,7 +63,7 @@ public class Users extends API {
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private static final long serialVersionUID = 3632921692211341012L;
 	private ThreadPoolExecutor executor;
-	private StoreProvider sp;
+	private static StoreProvider sp;
 	private static UserProvider up;
 	private static ObjectMapper om;
 
@@ -167,6 +169,9 @@ public class Users extends API {
 			case "get"://session
 				getOperation(ctx, jsonArgs);
 				break;
+			case "accountstatus"://session
+					AccountStatusOperation(ctx, jsonArgs);
+					break;
 			case "create"://no session
 				createUserOperation(ctx, jsonArgs);
 				break;
@@ -349,6 +354,112 @@ public class Users extends API {
 
 	}
 
+	public static class AccoutStatePayload {
+		private User user;
+		private ContentSummary storageSummary;
+
+		public ContentSummary getStorageSummary() {
+			return storageSummary;
+		}
+
+		public void setStorageSummary(ContentSummary storageSummary) {
+			this.storageSummary = storageSummary;
+		}
+
+		public User getUser() {
+			return user;
+		}
+
+		public void setUser(User user) {
+			this.user = user;
+		}
+
+
+	}
+
+	public static class AccountStateJsonResponse {
+		private String status = "ok";
+		private String error;
+		private String msg = "ok";
+		private AccoutStatePayload payload = null;
+
+
+		public AccoutStatePayload getPayload() {
+			return payload;
+		}
+
+		public void setPayload(AccoutStatePayload payload) {
+			this.payload = payload;
+		}
+
+		public String getStatus() {
+			return status;
+		}
+
+		public void setStatus(String status) {
+			this.status = status;
+		}
+
+		public String getMsg() {
+			return msg;
+		}
+
+		public void setMsg(String msg) {
+			this.msg = msg;
+		}
+
+		public String getError() {
+			return error;
+		}
+
+		public void setError(String error) {
+			this.error = error;
+		}
+
+	}
+
+	@Operation(name = "accountstatus")
+	@SessionRequired
+	public static void AccountStatusOperation(AsyncContext ctx, JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException {
+		HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
+		HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
+		HttpSession session = req.getSession(false);
+		String idInSession = (String) session.getAttribute("uid");
+		boolean hasError = false;
+		AccoutStatePayload payload = new AccoutStatePayload();
+		AccountStateJsonResponse response = new AccountStateJsonResponse();
+		DataUser user = null;
+
+		try {
+			user = (DataUser) up.getUserById(idInSession);
+		} catch (UserNotExistException e) {
+			hasError = true;
+			response.setStatus("error");
+			response.setError("user_no_exists");
+			response.setMsg(e.getMessage());
+		} catch (UserException e) {
+			hasError = true;
+			response.setStatus("error");
+			response.setError("user_exception");
+			response.setMsg(e.getMessage());
+			// e.printStackTrace();
+		}
+
+		if(!hasError){
+			payload.setUser(user);
+			payload.setStorageSummary(sp.getContentSummary(user, Paths.get("/")));
+			response.setPayload(payload);
+		}
+
+		if (!hasError) {
+			response.setStatus("ok");
+			resp.getWriter().println(om.writeValueAsString(response));
+		} else {
+			resp.getWriter().println(om.writeValueAsString(response));
+		}
+		ctx.complete();
+
+	}
 
 	@Operation(name = "changepasswordbyrecover")
 	public static void changePasswordByRecover(AsyncContext ctx,JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException{

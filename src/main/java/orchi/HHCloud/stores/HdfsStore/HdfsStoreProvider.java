@@ -7,12 +7,10 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import orchi.HHCloud.store.*;
 import org.apache.hadoop.fs.FileStatus;
 
 import orchi.HHCloud.Start;
-import orchi.HHCloud.store.Range;
-import orchi.HHCloud.store.Status;
-import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.store.arguments.DeleteArguments;
 import orchi.HHCloud.store.arguments.DownloadArguments;
 import orchi.HHCloud.store.arguments.GetStatusArguments;
@@ -28,6 +26,7 @@ import orchi.HHCloud.store.response.MoveOrCopyResponse;
 import orchi.HHCloud.store.response.RenameResponse;
 import orchi.HHCloud.user.User;
 import orchi.HHCloud.user.DataUser;
+import org.apache.hadoop.fs.FileSystem;
 
 public class HdfsStoreProvider implements StoreProvider {
 
@@ -90,8 +89,7 @@ public class HdfsStoreProvider implements StoreProvider {
 		try {
 			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
 			HdfsManager.getInstance().readFile(p, out);
-		} catch (IllegalArgumentException | IOException e) {
-
+		} catch ( Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -101,30 +99,35 @@ public class HdfsStoreProvider implements StoreProvider {
 		try {
 			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
 			HdfsManager.getInstance().readFile(p, out, range);
-		} catch (IllegalArgumentException | IOException e) {
+		} catch ( Exception e) {
 
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void createStoreContextToUser(User user) throws IOException {
-		DataUser dUser = (DataUser) user;
-		String appName = Start.conf.getString("app.name");
+	public void createStoreContextToUser(User user)  {
+		try {
+			DataUser dUser = (DataUser) user;
+			String appName = Start.conf.getString("app.name");
+			org.apache.hadoop.fs.Path rootUserPath = HdfsManager.newPath(user.getId(), "");
+			HdfsManager.getInstance().fs.mkdirs(rootUserPath);
 
-		HdfsManager.getInstance().fs.mkdirs(HdfsManager.newPath(user.getId(), ""));
-		
-		Start.conf.getList("app.folders.wellcome").forEach(folder->{
-			try {
-				HdfsManager.getInstance().fs.mkdirs(HdfsManager.newPath(user.getId(), folder+""));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
-		
-		String msgWellcome = "Bienvenido a " + appName+" "+dUser.getFirstName();
-		String pathWellcome = msgWellcome+".md";
-		create(user,Paths.get( pathWellcome ), new ByteArrayInputStream(msgWellcome.getBytes()));
+			setQuota(user,Paths.get(""), StoreManager.SPACE_QUOTA_SIZE_NO_VERIFIED_USER);
+			Start.conf.getList("app.folders.wellcome").forEach(folder->{
+				try {
+					HdfsManager.getInstance().fs.mkdirs(HdfsManager.newPath(user.getId(), folder+""));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+
+			String msgWellcome = "Bienvenido a " + appName+" "+dUser.getFirstName();
+			String pathWellcome = msgWellcome+".md";
+			create(user,Paths.get( pathWellcome ), new ByteArrayInputStream(msgWellcome.getBytes()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -132,7 +135,7 @@ public class HdfsStoreProvider implements StoreProvider {
 		try {
 			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
 			HdfsManager.getInstance().writeFile(p, in);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -144,7 +147,7 @@ public class HdfsStoreProvider implements StoreProvider {
 			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
 			if (!HdfsManager.getInstance().fs.exists(p))
 				create(user,path, new ByteArrayInputStream("".getBytes()));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -161,7 +164,7 @@ public class HdfsStoreProvider implements StoreProvider {
 		try {
 			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
 			exists = HdfsManager.getInstance().fs.exists(p);
-		} catch (IllegalArgumentException | IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -176,7 +179,7 @@ public class HdfsStoreProvider implements StoreProvider {
 		//org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(HdfsManager.root, path.toString());
 		try {
 			isfile = HdfsManager.getInstance().fs.isFile(p);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return isfile;
@@ -189,7 +192,7 @@ public class HdfsStoreProvider implements StoreProvider {
 		//org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(HdfsManager.root, path.toString());
 		try {
 			isDirectory = HdfsManager.getInstance().fs.isDirectory(p);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return isDirectory;
@@ -200,7 +203,7 @@ public class HdfsStoreProvider implements StoreProvider {
 		org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
 		try {
 			FileStatus fsStatus = HdfsManager.getInstance().fs.getFileStatus(p);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -213,7 +216,7 @@ public class HdfsStoreProvider implements StoreProvider {
 		try {
 			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
 			size=  HdfsManager.getInstance().fs.getFileStatus(p).getLen();
-		} catch (IOException e) {
+		} catch (Exception e) {
 
 			e.printStackTrace();
 		}
@@ -221,4 +224,50 @@ public class HdfsStoreProvider implements StoreProvider {
 		return size;
 	}
 
+	@Override
+	public ContentSummary getContentSummary(User user, Path path) {
+		ContentSummary cs = new ContentSummary();
+		try {
+			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
+			FileSystem fs = HdfsManager.getInstance().getFs();
+			org.apache.hadoop.fs.ContentSummary fsCs = fs.getContentSummary(p);
+
+			cs.setDirectoryCount(fsCs.getDirectoryCount());
+			cs.setFileCount(fsCs.getFileCount());
+			cs.setSpaceQuota(fsCs.getSpaceQuota());
+			cs.setSpaceConsumed(fsCs.getSpaceConsumed());
+			cs.setLength(fsCs.getLength());
+			cs.setQuota(fsCs.getQuota());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return cs;
+	}
+
+	@Override
+	public void setQuota(User user, Path path, long size) {
+		if (HdfsManager.isLocalFileSystem) {
+			return;
+		}
+		org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path+"" );
+		try {
+			HdfsManager.getInstance().dfsAdmin.setSpaceQuota(p, size);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void removeQuota(User user, Path path) {
+		if (HdfsManager.isLocalFileSystem) {
+			return;
+		}
+		org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path+"" );
+		try {
+			HdfsManager.getInstance().dfsAdmin.clearSpaceQuota(p);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

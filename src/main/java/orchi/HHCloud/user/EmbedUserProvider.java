@@ -51,7 +51,7 @@ public class EmbedUserProvider implements UserProvider {
 	private static final String INSERT_INTO_USERS = "INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	private static final String UPDATE_USER = "UPDATE USERS SET "
 											+ "EMAIL=(?),"
-											//+ "EMAILVERIFIED=(?),"
+										//+ "EMAILVERIFIED=(?),"
 											+ "USERNAME=(?),"
 											+ "FIRSTNAME=(?),"
 											+ "LASTNAME=(?),"

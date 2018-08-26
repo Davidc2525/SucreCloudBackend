@@ -11,6 +11,9 @@ public class StoreManager {
 	private static StoreManager instance = null;
 	private StoreProvider storeProvider = null;
 
+	public static final long SPACE_QUOTA_SIZE = Start.conf.getLong("store.storemanager.quote.users.verified");
+	public static final long SPACE_QUOTA_SIZE_NO_VERIFIED_USER = Start.conf.getLong("store.storemanager.quote.users.unverified");
+
 	public StoreManager() {		
 		this(defaultStore);
 	}

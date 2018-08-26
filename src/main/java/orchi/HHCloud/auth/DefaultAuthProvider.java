@@ -1,10 +1,13 @@
 package orchi.HHCloud.auth;
 
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import orchi.HHCloud.store.ContextStore;
+import orchi.HHCloud.store.StoreManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,9 +147,11 @@ public class DefaultAuthProvider implements AuthProvider {
 	public void verifyEmail(String idToken) throws VerifyException {
 		User user = tokensToVeryfyEmail.get(idToken);
 		try {
-			System.err.println(user + " " + idToken);
+			log.debug(user + " " + idToken);
 			revokeTokenToVerifyEmail(idToken);
 			up.setVerifyEmail(user);
+
+			Start.getStoreManager().getStoreProvider().setQuota(user, Paths.get(""), StoreManager.SPACE_QUOTA_SIZE);
 		} catch (UserException e) {
 			e.printStackTrace();
 			throw new VerifyException(e.getMessage());

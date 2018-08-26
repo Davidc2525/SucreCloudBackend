@@ -16,6 +16,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +30,7 @@ public class HdfsManager {
 	public static Boolean isLocalFileSystem;
 
 	private static HdfsManager instance;
+	public static HdfsAdmin dfsAdmin;
 	private String hdfsuri;// getIsLocalFileSystem() ? "file:///":
 							// "hdfs://orchi2:9000";
 	public static String root;// = getIsLocalFileSystem() ?
@@ -55,11 +57,11 @@ public class HdfsManager {
 		hdfsuri = getIsLocalFileSystem()
 				? Start.conf.getString("store.hdfs.hdfsmanager.fs.defaultFS.local")
 				: Start.conf.getString("store.hdfs.hdfsmanager.fs.defaultFS.dfs");
-				
+
 		root = getIsLocalFileSystem()
 				? Start.conf.getString("store.hdfs.hdfsmanager.path.store.local")
 				: Start.conf.getString("store.hdfs.hdfsmanager.path.store.dfs");
-				
+
 		log.debug("hdfs uri {}", hdfsuri);
 		log.debug("root system {}", root);
 
@@ -69,7 +71,11 @@ public class HdfsManager {
 
 		try {
 			fs = FileSystem.get(URI.create(hdfsuri), conf);
-			
+			if (!isLocalFileSystem) {
+				dfsAdmin = new HdfsAdmin(fs.getUri(), conf);
+			}
+
+
 			Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
 				try {
 					FileSystem.printStatistics();

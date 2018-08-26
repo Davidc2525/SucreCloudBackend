@@ -20,7 +20,7 @@ import orchi.HHCloud.store.response.MoveOrCopyResponse;
 import orchi.HHCloud.store.response.RenameResponse;
 import orchi.HHCloud.user.User;
 
-public interface StoreProvider {
+public interface StoreProvider extends QuotaProvider {
 
 	public void init();
 
@@ -55,10 +55,12 @@ public interface StoreProvider {
 	public void touch(User user,Path path);
 
 	public boolean exists(User user,Path path);
-	
+
 	public boolean isFile(User user,Path path);
-	
+
 	public boolean isDirectory(User user,Path path);
-	
+
 	public Long getSize(User user, Path path);
+
+	public ContentSummary getContentSummary(User user, Path path);
 }
