@@ -1,5 +1,21 @@
 package orchi.HHCloud.user;
 
+import com.google.api.client.util.Base64;
+import orchi.HHCloud.Start;
+import orchi.HHCloud.auth.Exceptions.TokenException;
+import orchi.HHCloud.cipher.CipherProvider;
+import orchi.HHCloud.database.ConnectionProvider;
+import orchi.HHCloud.database.DbConnectionManager;
+import orchi.HHCloud.mail.Exceptions.SendEmailException;
+import orchi.HHCloud.mail.MailProvider;
+import orchi.HHCloud.user.Exceptions.*;
+import org.apache.commons.fileupload.util.Streams;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -12,27 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.fileupload.util.Streams;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.text.StrSubstitutor;
-import org.json.JSONObject;
-
-import com.google.api.client.util.Base64;
-
-import orchi.HHCloud.Start;
-import orchi.HHCloud.auth.Exceptions.TokenException;
-import orchi.HHCloud.cipher.CipherProvider;
-import orchi.HHCloud.database.ConnectionProvider;
-import orchi.HHCloud.database.DbConnectionManager;
-import orchi.HHCloud.mail.MailProvider;
-import orchi.HHCloud.mail.Exceptions.SendEmailException;
-import orchi.HHCloud.user.Exceptions.UserAleardyExistsException;
-import orchi.HHCloud.user.Exceptions.UserException;
-import orchi.HHCloud.user.Exceptions.UserMutatorException;
-import orchi.HHCloud.user.Exceptions.UserMutatorPassword;
-import orchi.HHCloud.user.Exceptions.UserNotExistException;
-import org.slf4j.*;
 
 /**
  * Proveedor de usuarios con base de datos empotrada
@@ -316,7 +311,7 @@ public class EmbedUserProvider implements UserProvider {
 			conn = provider.getConnection();
 			userUpdate = conn.prepareStatement(UPDATE_USER);
 
-			userUpdate.setString(1, escape(editUser.getEmail()));
+			userUpdate.setString(1, escape(oldUser.getEmail()));
 			//userUpdate.setBoolean(2, editUser.isEmailVerified());
 			userUpdate.setString(2, escape(editUser.getUsername()));
 			userUpdate.setString(3, escape(editUser.getFirstName()));

@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import orchi.HHCloud.cipher.CipherProvider;
 import orchi.HHCloud.store.ContentSummary;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -66,6 +67,7 @@ public class Users extends API {
 	private static StoreProvider sp;
 	private static UserProvider up;
 	private static ObjectMapper om;
+	private static CipherProvider cipher = Start.getCipherManager().getCipherProvider();
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -536,6 +538,7 @@ public class Users extends API {
 
 		if(!hasError){
 			jsonArgs.put("id", user.getId());
+			jsonArgs.put("currentPassword",cipher.decrypt(user.getPassword()));
 			changePasswordOperation(ctx,jsonArgs);
 		}else{
 			resp.getWriter().println(om.writeValueAsString(response));
@@ -1152,9 +1155,12 @@ public class Users extends API {
 		boolean hasError 	= false;
 		String id 			= jsonArgs.has("id") ? jsonArgs.getString("id"):"";
 		String nPassword 	= jsonArgs.has("password") ? jsonArgs.getString("password"):"";
+		String currentPassword 	= jsonArgs.has("currentPassword") ? jsonArgs.getString("currentPassword"):"";
 		nPassword = nPassword != null ? nPassword : "";
 		BasicUser tmpPassUser = new BasicUser();
+		BasicUser tmpPassUser2 = new BasicUser();
 		tmpPassUser.setPassword(nPassword);
+		tmpPassUser2.setPassword(currentPassword);
 
 		try {
 			validator.validatePassword(tmpPassUser);
@@ -1162,6 +1168,22 @@ public class Users extends API {
 			hasError = true;
 			response.setStatus("error");
 			response.setError("password_validation");
+			response.setMsg(e.getMessage());
+			e.printStackTrace();
+		} catch (ValidationException e1) {
+			hasError = true;
+			response.setStatus("error");
+			response.setError("validation_exception");
+			response.setMsg(e1.getMessage());
+			e1.printStackTrace();
+		}
+
+		try {
+			validator.validatePassword(tmpPassUser2);
+		} catch (PasswordValidationException e) {
+			hasError = true;
+			response.setStatus("error");
+			response.setError("current_password_validation");
 			response.setMsg(e.getMessage());
 			e.printStackTrace();
 		} catch (ValidationException e1) {
@@ -1197,6 +1219,17 @@ public class Users extends API {
 
 		}
 
+		if(!hasError){
+			String storeCurrentPassword = user.getPassword();
+			storeCurrentPassword = cipher.decrypt(storeCurrentPassword);
+			if (!storeCurrentPassword.equals(currentPassword)) {
+				hasError = true;
+				response.setStatus("error");
+				response.setError("current_password");
+				response.setMsg("La contraseña actual introducida no concuerda con la contraseña.");
+			}
+		}
+
 		if (!hasError) {
 			try {
 				user = up.changePasswordUser(new UserMutatorPassword(user, nPassword));
@@ -1215,7 +1248,6 @@ public class Users extends API {
 		}
 
 		if (hasError) {
-
 			resp.getWriter().println(om.writeValueAsString(response));
 
 		} else {
@@ -1228,4 +1260,3 @@ public class Users extends API {
 		ctx.complete();
 	}
 }
-//david c:
