@@ -17,7 +17,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import orchi.HHCloud.Start;
 
 public class Logout extends HttpServlet {
-	
+
 
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private ThreadPoolExecutor executorw2;
@@ -33,39 +33,39 @@ public class Logout extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-	
+
 		doPost(req,resp);
 
 	}
-	
+
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-	
+
 		executorw2.execute(new Task(req.getAsyncContext()));
 		System.err.println("tarea en proceso "+Thread.currentThread());
-		
+
 
 	}
-	
+
 	public static class JsonResponse {
 		private String status = "ok";
-		
+
 
 		private Boolean logout = false;
 		private String msg = "N/A";
-		
+
 		public JsonResponse(Boolean logout,String msg){
 			this.logout = logout;
 			this.msg = msg;
 		}
-		
+
 		public Boolean getLogout() {
 			return logout;
 		}
-		
+
 		public String getMsg(){return msg;}
-		
+
 		public String getStatus() {
 			return status;
 		}
@@ -74,26 +74,27 @@ public class Logout extends HttpServlet {
 			this.status = status;
 			return this;
 		}
-		
+
 	}
-	
+
 	public static class Task implements Runnable{
-		
-		
+
+
 		private AsyncContext ctx;
 		public Task(AsyncContext ctx){
 			this.ctx = ctx;
 		}
-		
+
 		public void writeResponse(JsonResponse responseContent){
 			try {
-				
+
+				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Credentials", "true");
 				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 				((HttpServletResponse) ctx.getResponse()).setHeader("Content-type", "application/json");
-				((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin", "*");
+				//((HttpServletResponse) ctx.getResponse()).setHeader("Access-Control-Allow-Origin", "*");
 				((HttpServletResponse) ctx.getResponse()).setHeader("Content-encoding", "gzip");
-				
-				//ctx.getResponse().getWriter().print(om.writeValueAsString(data));				
+
+				//ctx.getResponse().getWriter().print(om.writeValueAsString(data));
 				om.writeValue(new  GzipCompressorOutputStream(ctx.getResponse().getOutputStream()), responseContent);
 				ctx.complete();
 			} catch (IOException e) {
@@ -101,25 +102,25 @@ public class Logout extends HttpServlet {
 				e.printStackTrace();
 				ctx.complete();
 			}
-			
+
 		}
-		
+
 		@Override
-		public void run() { 
+		public void run() {
 			if(((HttpServletRequest)ctx.getRequest()).getSession(false) == null){
 				writeResponse(new JsonResponse(false,"no session create before").setStatus("error"));
 				return;
 			}
-			
+
 			System.err.println("dentro de runnable tarea en proceso "+Thread.currentThread());
 			Start.getLoginAndOut().logOutCallBack(ctx, true, ()->{
-				
+
 				System.err.println("dentro de labmda "+Thread.currentThread());
 				writeResponse(new JsonResponse(true,"session close"));
-				
+
 			});
-			
+
 		}
-		
+
 	}
 }

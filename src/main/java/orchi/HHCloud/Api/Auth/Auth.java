@@ -124,10 +124,11 @@ public class Auth extends API {
 		public void writeResponse(JsonResponse responseContent) {
 			try {
 
+				((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Credentials", "true");
 				((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Origin",
 						ACCESS_CONTROL_ALLOW_ORIGIN);
 				((HttpServletResponse) getCtx().getResponse()).setHeader("Content-type", "application/json");
-				((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Origin", "*");
+				//((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Origin", "*");
 				((HttpServletResponse) getCtx().getResponse()).setHeader("Content-encoding", "gzip");
 
 				// ctx.getResponse().getWriter().print(om.writeValueAsString(data));
