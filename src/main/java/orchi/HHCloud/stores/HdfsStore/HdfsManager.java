@@ -5,12 +5,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import orchi.HHCloud.store.QuotaExceededException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -149,36 +148,41 @@ public class HdfsManager {
 
 	}
 
-	public void writeFile(Path path, InputStream inStream) throws IOException {
+	public void writeFile(Path path, InputStream inStream) throws Exception {
+		try{
 
-		if (!fs.exists(path) || true) {
+			if (!fs.exists(path) || true) {
 
-			System.out.println("creando archivo " + path.toString());
-			FSDataOutputStream f = fs.create(path,
-					true);/*
-							 * ,1024*4, new Progressable() {
-							 * 
-							 * @Override public void progress() {
-							 * 
-							 * System.out.println(String.
-							 * format("copiando %s ...",path.toString()));
-							 * 
-							 * } });
-							 */
-			byte[] b = new byte[1024];
-			int numBytes = 0;
-			while ((numBytes = inStream.read(b)) > 0) {
-				f.write(b, 0, numBytes);
+				System.out.println("creando archivo " + path.toString());
+				FSDataOutputStream f = fs.create(path,
+						true);/*
+								 * ,1024*4, new Progressable() {
+								 *
+								 * @Override public void progress() {
+								 *
+								 * System.out.println(String.
+								 * format("copiando %s ...",path.toString()));
+								 *
+								 * } });
+								 */
+				byte[] b = new byte[1024];
+				int numBytes = 0;
+				while ((numBytes = inStream.read(b)) > 0) {
+					f.write(b, 0, numBytes);
+				}
+
+				inStream.close();
+				// f.flush();
+				// f.hflush();
+				f.close();
+
+				return;
 			}
-
-			inStream.close();
-			// f.flush();
-			// f.hflush();
-			f.close();
-
-			return;
+		}catch (org.apache.hadoop.hdfs.protocol.DSQuotaExceededException e){
+			fs.delete(path,true);
+			e.printStackTrace();
+			throw new QuotaExceededException("No tiene suficiente espacio para subir este archivo.");
 		}
-
 		// out.close();
 		// fs.close();
 	}

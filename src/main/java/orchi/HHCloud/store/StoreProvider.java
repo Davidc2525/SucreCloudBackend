@@ -50,7 +50,7 @@ public interface StoreProvider extends QuotaProvider {
 
 	public void read(User user,Path path, Range range, OutputStream out);
 
-	public void create(User user,Path path, InputStream in);
+	public void create(User user,Path path, InputStream in) throws Exception;
 
 	public void touch(User user,Path path);
 

@@ -125,20 +125,15 @@ public class HdfsStoreProvider implements StoreProvider {
 			String msgWellcome = "Bienvenido a " + appName+" "+dUser.getFirstName();
 			String pathWellcome = msgWellcome+".md";
 			create(user,Paths.get( pathWellcome ), new ByteArrayInputStream(msgWellcome.getBytes()));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void create(User user,Path path, InputStream in) {
-		try {
-			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
-			HdfsManager.getInstance().writeFile(p, in);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void create(User user,Path path, InputStream in) throws Exception {
+		org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
+		HdfsManager.getInstance().writeFile(p, in);
 	}
 
 	@Override

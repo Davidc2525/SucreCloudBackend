@@ -45,7 +45,7 @@ public class ConfManager {
 				new FileBasedConfigurationBuilder<PropertiesConfiguration>(
 		PropertiesConfiguration.class)
 				.configure(params.properties()
-						.setFileName("./application.properties")
+						.setFileName(ConfManager.class.getClassLoader().getResource("application.properties").getPath())
 						.setListDelimiterHandler(new DefaultListDelimiterHandler(',')));
 		// Configuration config = builder.getConfiguration();
 

@@ -14,10 +14,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import orchi.HHCloud.store.QuotaExceededException;
+import orchi.HHCloud.store.response.UploaderResponse;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 
 import orchi.HHCloud.Start;
@@ -34,11 +37,15 @@ public class Uploader extends API {
 	public static String apiName = "/uploader";
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private ThreadPoolExecutor executor;
+	private static ObjectMapper om;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		executor = new ThreadPoolExecutor(1000, 10000, 50000L, TimeUnit.MICROSECONDS,
 				new LinkedBlockingQueue<Runnable>(100000));
+		om = new ObjectMapper();
+		om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);
+		om.getJsonFactory();
 
 	}
 
@@ -59,7 +66,7 @@ public class Uploader extends API {
 			HttpServletRequest req = (HttpServletRequest) getCtx().getRequest();
 			HttpServletResponse resp = (HttpServletResponse) getCtx().getResponse();
 			boolean isMultipart = ServletFileUpload.isMultipartContent(req);
-
+			UploaderResponse response = new UploaderResponse();
             resp.setHeader("Access-Control-Allow-Credentials","true");
 			resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
 			resp.setHeader("Content-type", "application/json");
@@ -72,6 +79,7 @@ public class Uploader extends API {
 				checkAvailability(apiName, null);
 				FileItemIterator iter = upload.getItemIterator(req);
 				Process process = new Process();
+				JSONObject args = null;
 				while (iter.hasNext()) {
 					FileItemStream item = iter.next();
 					String name = item.getFieldName();
@@ -80,7 +88,7 @@ public class Uploader extends API {
 
 					if (item.isFormField()) {
 						if (name.equalsIgnoreCase("args")) {
-							JSONObject args = new JSONObject(Streams.asString(stream));
+							args = new JSONObject(Streams.asString(stream));
 							process.setPathArgs(args.getString("path"));
 						}
 						System.out.println("Form field " + name + " with value " + " detected.");
@@ -93,12 +101,23 @@ public class Uploader extends API {
 
 					}
 				}
+				response.setStatus("ok");
+				response.setPath(Paths.get(args.getString("path")));
+				response.setMsg(String.format("%s subido sastifactoriamente.",process.getInfo()));
+				resp.getWriter().print(om.writeValueAsString(response));
 				getCtx().complete();
-			} catch (Exception e) {
-			e.printStackTrace();
+			} catch(QuotaExceededException e){
+				e.printStackTrace();
 				try {
-					sendError("server_error", e);
+					sendError("quota_exceeded", e);
+				} catch (Exception e1) {
 					getCtx().complete();
+					e1.printStackTrace();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				try {
+					sendError("upload_error", e);
 				} catch (Exception e1) {
 					getCtx().complete();
 					e1.printStackTrace();
@@ -137,7 +156,8 @@ public class Uploader extends API {
 		private String pathArgs;
 		private String pathFilename;
 
-		public void toStore(String path, InputStream in, HttpServletRequest req) {
+		public void toStore(String path, InputStream in, HttpServletRequest req) throws Exception {
+			pathFilename = path;
 			HttpSession session = req.getSession(false);
 
 			if (session != null) {
@@ -148,7 +168,9 @@ public class Uploader extends API {
 				Start.getStoreManager().getStoreProvider().create(user,p, in);
 			}
 		}
-
+		public String getInfo(){
+			return Paths.get(pathArgs, pathFilename)+"";
+		}
 		public String getPathArgs() {
 			return pathArgs;
 		}

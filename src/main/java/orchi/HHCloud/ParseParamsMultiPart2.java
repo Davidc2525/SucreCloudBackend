@@ -1,9 +1,8 @@
 package orchi.HHCloud;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URI;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,8 +14,10 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
+import org.slf4j.*;
 
 public class ParseParamsMultiPart2 {
+	private static Logger log = LoggerFactory.getLogger(ParseParamsMultiPart2.class);
 	private Map<String, Param> paramsMap = new HashMap<String, Param>();
 
 	public ParseParamsMultiPart2(HttpServletRequest req) throws Exception {
@@ -35,9 +36,16 @@ public class ParseParamsMultiPart2 {
 				    }
 
 				}
-
-				paramsMap.put(name,new Param(name, valueParam));
-				System.out.println("add param " + name +" value: "+valueParam);
+				String valueParamUrlDecoded = null;
+				try {
+					valueParamUrlDecoded = URLDecoder.decode(valueParam,"UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					valueParamUrlDecoded = valueParam;
+					log.error("Name character encoding is not supported, the value is no modified {}",valueParam);
+				}
+				log.debug("Param {}\nvalue {}\ndecoded {}",name,valueParam,valueParamUrlDecoded);
+				paramsMap.put(name,new Param(name, valueParamUrlDecoded));
+				log.debug("add param " + name +" value: "+valueParam);
 			});
 
 			return;
@@ -60,9 +68,18 @@ public class ParseParamsMultiPart2 {
 				        }
 					}
 
-					paramsMap.put(name,new Param(name, value));
+					String valueParamUrlDecoded = null;
+					try {
+						valueParamUrlDecoded = URLDecoder.decode(value,"UTF-8");
+					} catch (UnsupportedEncodingException e) {
+						valueParamUrlDecoded = value;
+						log.error("Name character encoding is not supported, the value is no modified {}",value);
+					}
+					log.debug("Param {}\nvalue {}\ndecoded {}",name,value,valueParamUrlDecoded);
 
-					System.out.println("add param " + name +" value: "+value);
+					paramsMap.put(name,new Param(name, valueParamUrlDecoded));
+
+					log.debug("add param " + name +" value: "+valueParamUrlDecoded);
 				}
 
 			}
