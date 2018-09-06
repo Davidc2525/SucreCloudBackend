@@ -414,12 +414,12 @@ public class EmbedUserProvider implements UserProvider {
 
 		DataUser dUser 	= (DataUser) user;
 		MailProvider mp = Start.getMailManager().getProvider();
-		String host 	= Start.conf.getString("api.host");
+		String host 	= Start.conf.getString("app.host");
 		int port 		= Start.conf.getInt("api.port");
 		String appUrl	= "http://"+host+":"+port+"/";
 		String args 	= new JSONObject().put("token", idToken).toString();
 			   args 	= Base64.encodeBase64String(args.getBytes());
-		String url		= "http://"+host+":"+port+"/api/auth?op=verifyemail&args="+args;
+		String url		= host+"/api/auth?op=verifyemail&args="+args;
 		String appName 	= Start.conf.getString("app.name");;
 		String subject 	= "Verificar tu correo para "+appName;
 
@@ -465,9 +465,9 @@ public class EmbedUserProvider implements UserProvider {
 		String token = Start.getAuthProvider().createTokenToRecoveryPassword(user);
 		DataUser dUser = (DataUser) user;
 		MailProvider mp = Start.getMailManager().getProvider();
-		String host 	= Start.conf.getString("api.host");
+		String host 	= Start.conf.getString("app.host");
 		int port 		= Start.conf.getInt("api.port");
-		String appUrl	= "http://"+host+":"+port+"/";
+		String appUrl	= host;
 		String appName 	= Start.conf.getString("app.name");;
 		String subject = "Codigo para recuperacion de contraseña.";
 
