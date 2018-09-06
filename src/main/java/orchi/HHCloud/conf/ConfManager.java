@@ -21,6 +21,7 @@ public class ConfManager {
 	private Configuration config;
 
 	public ConfManager() {
+		System.out.printf(ConfManager.class.getClassLoader().getResource("application.properties").getPath());
 		Configurations configs = new Configurations();
 		try {
 			//setConfig(configs.properties(new File("./application.properties")));

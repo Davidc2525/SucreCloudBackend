@@ -2,6 +2,8 @@ package orchi.HHCloud.Api.Uploader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.file.Paths;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -30,10 +32,13 @@ import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Ignore
 @SessionRequired
 public class Uploader extends API {
+	private static Logger log = LoggerFactory.getLogger(Uploader.class);
 	public static String apiName = "/uploader";
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private ThreadPoolExecutor executor;
@@ -88,7 +93,15 @@ public class Uploader extends API {
 
 					if (item.isFormField()) {
 						if (name.equalsIgnoreCase("args")) {
-							args = new JSONObject(Streams.asString(stream));
+							String value = Streams.asString(stream);
+							String valueParamUrlDecoded = null;
+							try {
+								valueParamUrlDecoded = URLDecoder.decode(value,"UTF-8");
+							} catch (UnsupportedEncodingException e) {
+								valueParamUrlDecoded = value;
+								log.error("Name character encoding is not supported, the value is no modified {}",value);
+							}
+							args = new JSONObject(valueParamUrlDecoded);
 							process.setPathArgs(args.getString("path"));
 						}
 						System.out.println("Form field " + name + " with value " + " detected.");
