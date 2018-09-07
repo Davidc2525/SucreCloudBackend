@@ -415,18 +415,20 @@ public class EmbedUserProvider implements UserProvider {
 		DataUser dUser 	= (DataUser) user;
 		MailProvider mp = Start.getMailManager().getProvider();
 		String host 	= Start.conf.getString("app.host");
-		int port 		= Start.conf.getInt("api.port");
-		String appUrl	= "http://"+host+":"+port+"/";
-		String args 	= new JSONObject().put("token", idToken).toString();
+		String apiHost	= Start.conf.getString("api.host");
+		int apiPort		= Start.conf.getInt("api.port");
+		String apiUrl	= String.format("http://%s:%s",apiHost,apiPort);
+		String appUrl	= host;
+		String args 	= new JSONObject().put("token", idToken).put("redirect", true).toString();
 			   args 	= Base64.encodeBase64String(args.getBytes());
-		String url		= host+"/api/auth?op=verifyemail&args="+args;
+		String url		= apiUrl+"/api/auth?op=verifyemail&args="+args;
 		String appName 	= Start.conf.getString("app.name");;
 		String subject 	= "Verificar tu correo para "+appName;
 
 		Map<String,String> values = new HashMap<String,String>();
 		values.put("uid", 		dUser.getId());
 		values.put("email", 	dUser.getEmail());
-		values.put("isverified",Boolean.toString(dUser.isEmailVerified()));
+		values.put("isVerified",Boolean.toString(dUser.isEmailVerified()));
 		values.put("firstName", dUser.getFirstName().toUpperCase());
 		values.put("lastName", 	dUser.getLastName().toUpperCase());
 		values.put("appUrl", 	appUrl);
@@ -474,7 +476,7 @@ public class EmbedUserProvider implements UserProvider {
 		Map<String,String> values = new HashMap<String,String>();
 		values.put("uid", 		dUser.getId());
 		values.put("email", 	dUser.getEmail());
-		values.put("isverified",Boolean.toString(dUser.isEmailVerified()));
+		values.put("isVerified",Boolean.toString(dUser.isEmailVerified()));
 		values.put("firstName", dUser.getFirstName().toUpperCase());
 		values.put("lastName", 	dUser.getLastName().toUpperCase());
 		values.put("appUrl", 	appUrl);

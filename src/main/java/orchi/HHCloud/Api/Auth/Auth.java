@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mortbay.log.Log;
@@ -31,6 +32,7 @@ import orchi.HHCloud.auth.Exceptions.VerifyException;
  * */
 public class Auth extends API {
 	public static String apiName = "/auth";
+	private static String appDomain = Start.conf.getString("app.host");
 	private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
 	private static ThreadPoolExecutor executorw2;
 	private static Logout logout;
@@ -182,17 +184,20 @@ public class Auth extends API {
 
 			switch (op) {
 			case "login":
-				;
 				executorw2.execute(new orchi.HHCloud.Api.Auth.Login.Task(getCtx()));
-
 				break;
 			case "logout":
 				executorw2.execute(new orchi.HHCloud.Api.Auth.Logout.Task(getCtx()));
 				break;
 
 			case "verifyemail":
+				String defaultLocationRedirect = String.format("%s/SC/account",appDomain);
 				// verifyEmailOperation(jsonArgs);
 				String idVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
+				boolean redirect = jsonArgs.has("redirect") ? jsonArgs.getBoolean("redirect") : false;
+				String redirectTo = jsonArgs.has("redirectTo") ? jsonArgs.getString("redirectTo") : defaultLocationRedirect;
+
+
 				if (idVeryfy == null) {
 					writeResponse(new JsonResponse(false, "No se ha resivido ningun token")
 							.setError("token_missing")
@@ -202,7 +207,12 @@ public class Auth extends API {
 
 				try {
 					Start.getAuthProvider().verifyEmail(idVeryfy);
+					if(redirect){
+						resp.setStatus(HttpResponseStatus.FOUND.getCode());
+						resp.setHeader("Location", redirectTo);
+					}
 					writeResponse(new JsonResponse(true, "email verificado"));
+					getCtx().complete();
 				} catch (VerifyException e) {
 
 					writeResponse(
