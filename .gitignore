@@ -8,7 +8,6 @@ target/*
 log/
 /db
 /derby.log
-tokens
 HHCloudFsStore
 HHCloud.ipr
 HHCloud.iws
