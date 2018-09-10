@@ -39,7 +39,7 @@ public abstract class User implements Externalizable{
 	}
 
 	public String getEmail() {
-		return email;
+		return email.toLowerCase();
 	}
 
 	public String getPassword() {
@@ -51,7 +51,7 @@ public abstract class User implements Externalizable{
 	}
 
 	public void setEmail(String email) {
-		this.email = email;
+		this.email = email.toLowerCase();
 	}
 
 	public void setPassword(String password) {

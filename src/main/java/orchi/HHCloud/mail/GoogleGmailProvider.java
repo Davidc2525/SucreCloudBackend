@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.SocketTimeoutException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
@@ -110,6 +111,9 @@ public class GoogleGmailProvider implements MailProvider {
 	public void sendEmail(String from, String to, String subject, String body) throws SendEmailException{
 		try {
 			sendMessage(service, APPLICATION_ADMIN, createEmail(from, to, subject, body));
+		} catch (SocketTimeoutException e){
+			e.printStackTrace();
+			throw new SendEmailException(e);
 		} catch (MessagingException e) {
 			e.printStackTrace();
 			throw new SendEmailException(e);			

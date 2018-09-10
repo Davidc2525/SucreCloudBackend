@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.lang.WordUtils;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
@@ -62,16 +63,17 @@ public class Main {
 	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException {
 
 		System.out.println("HHCloud pruebas!");
+		System.out.printf(WordUtils.capitalize("david colmenares"));
+		if (true) {
+
+			return;
+		}
 		String urlEncoded = "%2FUP%202%2FGTA%2BVice%2BCity%2Bby%2BNJ-Tutoriales.rar";//URLEncoder.encode("/a b","UTF-8");
 		String urlDecoded = URLDecoder.decode(urlEncoded,"UTF-8");
 		log.info("decoded {} {}",urlEncoded,urlDecoded);
 		log.info("{}",new JSONObject(new StringBuilder(urlDecoded)));
 		log.info("{}",Paths.get(urlDecoded));
 		log.info("{}",new Path(Paths.get(urlDecoded)+""));
-		if (true) {
-
-			return;
-		}
 		FileSystem fs = HdfsManager.getInstance().getFs();
 		HdfsAdmin admin = HdfsManager.getInstance().dfsAdmin;
 		DistributedFileSystem dfs = (DistributedFileSystem) fs;

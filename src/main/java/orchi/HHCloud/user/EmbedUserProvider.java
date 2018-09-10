@@ -11,6 +11,7 @@ import orchi.HHCloud.mail.MailProvider;
 import orchi.HHCloud.user.Exceptions.*;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -128,7 +129,7 @@ public class EmbedUserProvider implements UserProvider {
 		try {
 			conn = provider.getConnection();
 			stm = conn.prepareStatement(SELECT_USERS_WHERE_EMAIL);
-			stm.setString(1, escape(userEmail));
+			stm.setString(1, escape(userEmail.toLowerCase()));
 			result = stm.executeQuery();
 			
 			if (result.next()) {
@@ -215,7 +216,7 @@ public class EmbedUserProvider implements UserProvider {
 					userInsert.setString(4, escape(user.getUsername()));
 					userInsert.setString(5, escape(user.getFirstName()));
 					userInsert.setString(6, escape(user.getLastName()));
-					userInsert.setString(7, escape(user.getGender()));
+					userInsert.setString(7, escape(user.getGender().toLowerCase()));
 					userInsert.setBigDecimal(8, new BigDecimal(user.getCreateAt()));
 					userInsert.setString(9, ciplherProvider.encrypt(user.getPassword()));
 					userInsert.executeUpdate();
@@ -429,8 +430,8 @@ public class EmbedUserProvider implements UserProvider {
 		values.put("uid", 		dUser.getId());
 		values.put("email", 	dUser.getEmail());
 		values.put("isVerified",Boolean.toString(dUser.isEmailVerified()));
-		values.put("firstName", dUser.getFirstName().toUpperCase());
-		values.put("lastName", 	dUser.getLastName().toUpperCase());
+		values.put("firstName", WordUtils.capitalize(dUser.getFirstName()));
+		values.put("lastName", 	WordUtils.capitalize(dUser.getLastName()));
 		values.put("appUrl", 	appUrl);
 		values.put("url", 		url);
 		values.put("appName", 	appName);
@@ -477,8 +478,8 @@ public class EmbedUserProvider implements UserProvider {
 		values.put("uid", 		dUser.getId());
 		values.put("email", 	dUser.getEmail());
 		values.put("isVerified",Boolean.toString(dUser.isEmailVerified()));
-		values.put("firstName", dUser.getFirstName().toUpperCase());
-		values.put("lastName", 	dUser.getLastName().toUpperCase());
+		values.put("firstName", WordUtils.capitalize(dUser.getFirstName()));
+		values.put("lastName", 	WordUtils.capitalize(dUser.getLastName()));
 		values.put("appUrl", 	appUrl);
 		values.put("appName", 	appName);
 		values.put("token",token);
