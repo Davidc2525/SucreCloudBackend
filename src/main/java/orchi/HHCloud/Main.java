@@ -1,9 +1,6 @@
 package orchi.HHCloud;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -64,6 +61,47 @@ public class Main {
 
 		System.out.println("HHCloud pruebas!");
 		System.out.printf(WordUtils.capitalize("david colmenares"));
+
+		java.nio.file.Path ppp = Paths.get("/montart/HDFS/mi_dfs");
+		System.out.println(ppp.subpath(1,ppp.getNameCount())+"");
+
+
+
+		String ss = null;
+
+		try {
+
+			// run the Unix "ps -ef" command
+			// using the Runtime exec method:
+			Process p = Runtime.getRuntime().exec("gluster volume quota hhcloud list");
+
+			BufferedReader stdInput = new BufferedReader(new
+					InputStreamReader(p.getInputStream()));
+
+			BufferedReader stdError = new BufferedReader(new
+					InputStreamReader(p.getErrorStream()));
+
+			// read the output from the command
+			System.out.println("Here is the standard output of the command:\n");
+			while ((ss = stdInput.readLine()) != null) {
+				System.out.println(ss);
+			}
+
+			// read any errors from the attempted command
+			System.out.println("Here is the standard error of the command (if any):\n");
+			while ((ss = stdError.readLine()) != null) {
+				System.out.println(ss);
+			}
+
+			System.exit(0);
+		}
+		catch (IOException e) {
+			System.out.println("exception happened - here's what I know: ");
+			e.printStackTrace();
+			System.exit(-1);
+		}
+
+
 		if (true) {
 
 			return;

@@ -48,13 +48,13 @@ public class ListOperation implements IOperation {
 		opath = new Path(HdfsManager.newPath(root, path).toString());
 		shareProvider = Start.getShareManager().getShareProvider();
 		shared = shareProvider.sharedInDirectory(args.getUse(), Paths.get(path));
-		
+
 		thisIsShared = shareProvider.isShared(args.getUse(), Paths.get(path));
 		log.info("Nueva operacion de listado {}", opath.toString());
 
 	}
 
-	
+
 	public ListResponse call() {
 
 		try {
