@@ -53,8 +53,27 @@ public class Uploader extends API {
     }
 
     @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+       /**Access-Control-Request-Method: POST
+        Access-Control-Request-Headers: X-PINGOTHER, Content-Type
+
+        Access-Control-Allow-Origin: http://foo.example
+        Access-Control-Allow-Methods: POST
+        Access-Control-Allow-Headers: X-PINGOTHER, Content-Type
+        Access-Control-Max-Age: 86400*/
+
+        resp.setHeader("Access-Control-Allow-Credentials", "true");
+        resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+        resp.setHeader("Access-Control-Allow-Headers","X-PINGOTHER, Content-Type");
+        resp.setHeader("Access-Control-Allow-Methods","POST");
+
+    }
+
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        executor.execute(new Task(req.startAsync()));
+        AsyncContext aContext = req.startAsync();
+        aContext.setTimeout(Long.MAX_VALUE);
+        executor.execute(new Task(aContext));
     }
 
     public static class Task extends ServiceTaskAPIImpl implements Runnable {
