@@ -65,6 +65,8 @@ public class HdfsManager {
 		log.debug("root system {}", root);
 
 		conf.set("fs.defaultFS", hdfsuri);
+		conf.set("dfs.blocksize", "10m");
+		conf.set("dfs.replication", "2");
 		conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
 		conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
 
@@ -154,8 +156,7 @@ public class HdfsManager {
 			if (!fs.exists(path) || true) {
 
 				System.out.println("creando archivo " + path.toString());
-				FSDataOutputStream f = fs.create(path,
-						true);/*
+				FSDataOutputStream f = fs.create(path);/*
 								 * ,1024*4, new Progressable() {
 								 *
 								 * @Override public void progress() {

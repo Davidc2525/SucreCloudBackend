@@ -25,6 +25,16 @@ public class FsStore extends HdfsStoreProvider implements StoreProvider {
 	}
 
 	@Override
+	public void setQuota(User user, Path path, long size) {
+		return;
+	}
+
+	@Override
+	public void removeQuota(User user, Path path) {
+		return;
+	}
+
+	@Override
 	public ContentSummary getContentSummary(User user, Path path) {
 		ContentSummary cs = new ContentSummary();
 		DataUser dUser = (DataUser) user;

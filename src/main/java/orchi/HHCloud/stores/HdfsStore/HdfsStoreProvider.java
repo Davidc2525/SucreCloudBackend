@@ -222,6 +222,8 @@ public class HdfsStoreProvider implements StoreProvider {
 	@Override
 	public ContentSummary getContentSummary(User user, Path path) {
 		ContentSummary cs = new ContentSummary();
+		DataUser dUser = (DataUser) user;
+		boolean verified = dUser.isEmailVerified();
 		try {
 			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
 			FileSystem fs = HdfsManager.getInstance().getFs();
@@ -229,7 +231,8 @@ public class HdfsStoreProvider implements StoreProvider {
 
 			cs.setDirectoryCount(fsCs.getDirectoryCount());
 			cs.setFileCount(fsCs.getFileCount());
-			cs.setSpaceQuota(fsCs.getSpaceQuota());
+			cs.setSpaceQuota(verified ? Start.getStoreManager().SPACE_QUOTA_SIZE : Start.getStoreManager().SPACE_QUOTA_SIZE_NO_VERIFIED_USER);
+			// cs.setSpaceQuota(fsCs.getSpaceQuota());
 			cs.setSpaceConsumed(fsCs.getSpaceConsumed());
 			cs.setLength(fsCs.getLength());
 			cs.setQuota(fsCs.getQuota());
@@ -242,12 +245,9 @@ public class HdfsStoreProvider implements StoreProvider {
 
 	@Override
 	public void setQuota(User user, Path path, long size) {
-		if (HdfsManager.isLocalFileSystem) {
-			return;
-		}
 		org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path+"" );
 		try {
-			HdfsManager.getInstance().dfsAdmin.setSpaceQuota(p, size);
+			HdfsManager.getInstance().dfsAdmin.setSpaceQuota(p, size * 2);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -255,9 +255,6 @@ public class HdfsStoreProvider implements StoreProvider {
 
 	@Override
 	public void removeQuota(User user, Path path) {
-		if (HdfsManager.isLocalFileSystem) {
-			return;
-		}
 		org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path+"" );
 		try {
 			HdfsManager.getInstance().dfsAdmin.clearSpaceQuota(p);

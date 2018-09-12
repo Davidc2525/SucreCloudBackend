@@ -17,9 +17,9 @@ CREATE UNIQUE INDEX email ON USERS (EMAIL);
 
 CREATE UNIQUE INDEX username ON USERS (USERNAME);
 
-INSERT INTO USERS VALUES
-('123', 'luisa@gmail.com', true, 'luisa.s','luisa','gomes','f', 1533252085955,'AUQk/iNJ+0h0xfHhyTwlUVuIXu7VofOHaS9J1HOtbvrd9KQmcNK7mlk='),
-('1234', 'david@gmail.com', true, 'david.c', 'david','colmenares','m',1533252085955,'AUQk/iNJ+0h0xfHhyTwlUVuIXu7VofOHaS9J1HOtbvrd9KQmcNK7mlk=');
+--INSERT INTO USERS VALUES
+--('123', 'luisa@gmail.com', true, 'luisa.s','luisa','gomes','f', 1533252085955,'AUQk/iNJ+0h0xfHhyTwlUVuIXu7VofOHaS9J1HOtbvrd9KQmcNK7mlk='),
+--('1234', 'david@gmail.com', true, 'david.c', 'david','colmenares','m',1533252085955,'AUQk/iNJ+0h0xfHhyTwlUVuIXu7VofOHaS9J1HOtbvrd9KQmcNK7mlk=');
 
 
 CREATE TABLE SHAREDPARENT
