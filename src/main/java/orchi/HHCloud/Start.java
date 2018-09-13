@@ -1,8 +1,10 @@
 package orchi.HHCloud;
 
+import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.configuration2.Configuration;
+import org.eclipse.jetty.server.session.*;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -31,6 +33,8 @@ import orchi.HHCloud.mail.MailManager;
 import orchi.HHCloud.share.ShareManager;
 import orchi.HHCloud.store.StoreManager;
 import orchi.HHCloud.user.UserManager;
+
+import javax.servlet.SessionCookieConfig;
 
 /**
  * @Author david
@@ -93,12 +97,20 @@ public class Start {
 
 		servletContext.addServlet(TEST.class, "/test").setAsyncSupported(true);
 
-		ContextHandlerCollection contexts = new ContextHandlerCollection();
+		HashSessionIdManager idManager = new HashSessionIdManager();
+		server.setSessionIdManager(idManager);
+		HashSessionManager manager = new HashSessionManager();
+		manager.setStoreDirectory(new File("./sessions"));
+		SessionCookieConfig cc = manager.getSessionCookieConfig();
+		cc.setName(conf.getString("app.name")+"-S");
+		SessionHandler sessions = new SessionHandler(manager);
 
+		servletContext.setSessionHandler(sessions);
+		ContextHandlerCollection contexts = new ContextHandlerCollection();
+		sessions.getSessionManager();
 		contexts.setHandlers(new Handler[] { servletContext });
 
 		server.setHandler(contexts);
-
 
 		log.info("Iniciando servidor");
 		server.start();

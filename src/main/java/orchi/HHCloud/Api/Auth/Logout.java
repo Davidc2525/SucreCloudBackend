@@ -7,9 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.*;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -107,16 +105,20 @@ public class Logout extends HttpServlet {
 
 		@Override
 		public void run() {
-			if(((HttpServletRequest)ctx.getRequest()).getSession(false) == null){
-				writeResponse(new JsonResponse(false,"no session create before").setStatus("error"));
+			HttpSession session = ((HttpServletRequest) ctx.getRequest()).getSession(false);
+			if(session == null){
+				writeResponse(new JsonResponse(false, "no session create before").setStatus("error"));
 				return;
 			}
 
-			System.err.println("dentro de runnable tarea en proceso "+Thread.currentThread());
+			System.err.println("dentro de runnable tarea en proceso " + Thread.currentThread());
 			Start.getLoginAndOut().logOutCallBack(ctx, true, ()->{
-
-				System.err.println("dentro de labmda "+Thread.currentThread());
-				writeResponse(new JsonResponse(true,"session close"));
+				Cookie c = new Cookie(Start.conf.getString("app.name")+"-S","");
+				c.setMaxAge(0);
+				c.setPath("/");
+				((HttpServletResponse) ctx.getResponse()).addCookie(c);
+				System.err.println("dentro de labmda " + Thread.currentThread());
+				writeResponse(new JsonResponse(true, "session close"));
 
 			});
 

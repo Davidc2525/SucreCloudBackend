@@ -8,10 +8,7 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.codehaus.jackson.JsonGenerationException;
@@ -148,6 +145,12 @@ public class Login extends HttpServlet {
 		}
 	}
 
+	public static void setCookie(HttpSession session,HttpServletResponse resp){
+		Cookie c = new Cookie(Start.conf.getString("app.name")+"-S", session.getId());
+		c.setMaxAge(60*60*24*365);
+		c.setPath("/");
+		resp.addCookie(c);
+	}
 
 	public static class Task implements Runnable {
 
@@ -201,11 +204,11 @@ public class Login extends HttpServlet {
 
 		public void process() throws JsonGenerationException, JsonMappingException, IOException, InterruptedException {
 			HttpServletRequest req = ((HttpServletRequest) ctx.getRequest());
+			HttpServletResponse resp = ((HttpServletResponse) ctx.getResponse());
 			HttpSession s = req.getSession(false);
 			JSONObject jsonArgs = Util.parseParams(req);
 			Log.info("{}", jsonArgs.toString(2));
-			System.err.println("Dentro: " + Thread.currentThread());
-			//Thread.sleep(10000);
+
 			if (s == null) {
 
 				if (jsonArgs.has("username") && jsonArgs.has("password")) {
@@ -220,8 +223,7 @@ public class Login extends HttpServlet {
 							session.setAttribute("uid", loginData.getUser().getId());
 
 							if (newUser.isRemember()) {
-								System.err.println("User is remember: " + newUser.isRemember());
-								session.setMaxInactiveInterval(0);
+								session.setMaxInactiveInterval(-1);
 							}
 
 							writeResponse(new AuthJsonResponse("login", true).setUserid(loginData.getUser().getId())
@@ -263,10 +265,34 @@ public class Login extends HttpServlet {
 							.setStatus("error"));
 				}
 
+				/**
+				 * luego de iniciar session, el usuario seguro quiere que su navegador recuerde su sesion
+				 * para eso, justo despoes de iniciar la session, se envia otra solicitud de iniciar session
+				 * pero en los argumentos solo puede estar el parametro remember, q es lo unico que se usara
+				 * para hacer un seteo de una cookie de sesion con los datos de la session (de la cookie de session)
+				 * para asi pasarle al navegador la nueva fecha de expiracion de la cookie de sesion.
+				 *
+				 * si se envia luego de iniciar sesion otra solisitud de inicio de sesion, y el parametro remember es false
+				 * no se envia la nueva cookie al navegador.
+				 * */
+				LoginDataUser newUser = createUserLoginWithRequest(jsonArgs);
+				if(newUser.isRemember()){
+					setCookie(s,resp);
+
+					writeResponse(new AuthJsonResponse("session maxage set", false)
+							.setExist(true)
+							.setUserid(user.getId())
+							.setSesId(s.getId()));
+
+					return;
+				}
+
 				writeResponse(new AuthJsonResponse("session aleardy create", false)
 						.setExist(true)
 						.setUserid(user.getId())
 						.setSesId(s.getId()));
+
+
 
 			}
 
