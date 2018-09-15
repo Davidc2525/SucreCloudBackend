@@ -149,7 +149,7 @@ public class DefaultAuthProvider implements AuthProvider {
 		try {
 			log.debug(user + " " + idToken);
 			revokeTokenToVerifyEmail(idToken);
-			up.setVerifyEmail(user);
+			up.setVerifyEmail(user,true);
 
 			Start.getStoreManager().getStoreProvider().setQuota(user, Paths.get(""), StoreManager.SPACE_QUOTA_SIZE);
 		} catch (UserException e) {

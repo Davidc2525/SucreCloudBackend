@@ -17,10 +17,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import orchi.HHCloud.AdminService.AdminServer;
 import org.apache.commons.lang.WordUtils;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
+import org.apache.xmlrpc.XmlRpcException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -57,9 +59,16 @@ import orchi.HHCloud.user.Exceptions.UserException;
  * */
 public class Main {
 	private static Logger log = LoggerFactory.getLogger(Main.class);
-	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException {
+	public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException, XmlRpcException {
 
 		System.out.println("HHCloud pruebas!");
+		//orchi.HHCloud.HHCloudAdmin.Main.main(args);
+		new AdminServer();
+		if (true) {
+
+			return;
+		}
+
 		System.out.printf(WordUtils.capitalize("david colmenares"));
 
 		java.nio.file.Path ppp = Paths.get("/montart/HDFS/mi_dfs");
@@ -102,10 +111,7 @@ public class Main {
 		}
 
 
-		if (true) {
 
-			return;
-		}
 		String urlEncoded = "%2FUP%202%2FGTA%2BVice%2BCity%2Bby%2BNJ-Tutoriales.rar";//URLEncoder.encode("/a b","UTF-8");
 		String urlDecoded = URLDecoder.decode(urlEncoded,"UTF-8");
 		log.info("decoded {} {}",urlEncoded,urlDecoded);

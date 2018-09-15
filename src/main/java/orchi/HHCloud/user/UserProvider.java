@@ -34,6 +34,12 @@ public interface UserProvider {
 	/** eliminar un usuario */
 	public void deleteUser(User user) throws UserException;
 
+	/** cantidad de usuarios*/
+	public Long countUsers() throws UserException;
+
+	/** Obtener todos los usuarios*/
+	public Users getUsers() throws UserException;
+
 	/**
 	 * cambiar la clave de un usuario "esto tengo q hacerlo en otro lugar"
 	 * 
@@ -51,7 +57,7 @@ public interface UserProvider {
 	 * configurar verificacion de usuario, para esto se tiene q crear un token de verificacion con {@link orchi.HHCloud.auth.AuthProvider.createTokenToVerifyEmail}
 	 * 
 	 * */
-	public User setVerifyEmail(User user) throws UserException;
+	public User setVerifyEmail(User user,boolean verified) throws UserException;
 	
 	/**
 	 * Envia un menssa al correo de el usuario con un enlace q contiene un token de, ese token permite verificar la cuenta de el usuario. 

@@ -3,6 +3,7 @@ package orchi.HHCloud;
 import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import orchi.HHCloud.AdminService.AdminServer;
 import org.apache.commons.configuration2.Configuration;
 import org.eclipse.jetty.server.session.*;
 import org.eclipse.jetty.server.Handler;
@@ -114,6 +115,7 @@ public class Start {
 
 		log.info("Iniciando servidor");
 		server.start();
+		new AdminServer();
 		ApiManager.showDescriptions();
 		server.join();
 	}

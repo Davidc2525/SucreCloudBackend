@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class EmbedUserProvider implements UserProvider {
 	private static final Logger log = LoggerFactory.getLogger(EmbedUserProvider.class);
+	private static final String GET_ALL_USERS = "SELECT * FROM USERS";
 	private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.admin");
 	private static final String UPDATE_PASS_USER = "UPDATE USERS SET PASS=(?) WHERE ID=(?)";
 	private static final String DELETE_USERS_WHERE_ID = "DELETE FROM USERS WHERE ID=(?)";
@@ -47,11 +48,12 @@ public class EmbedUserProvider implements UserProvider {
 	private static final String INSERT_INTO_USERS = "INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	private static final String UPDATE_USER = "UPDATE USERS SET "
 											+ "EMAIL=(?),"
-										//+ "EMAILVERIFIED=(?),"
+										    + "EMAILVERIFIED=(?),"
 											+ "USERNAME=(?),"
 											+ "FIRSTNAME=(?),"
 											+ "LASTNAME=(?),"
-											+ "GENDER=(?)"
+											+ "GENDER=(?), "
+											+ "PASS=(?) "
 											+ "WHERE ID=(?)";
 	private static final String UPDATE_EMAIL_VERIFIED = ""
 											+ "UPDATE USERS SET "
@@ -220,8 +222,11 @@ public class EmbedUserProvider implements UserProvider {
 					userInsert.setBigDecimal(8, new BigDecimal(user.getCreateAt()));
 					userInsert.setString(9, ciplherProvider.encrypt(user.getPassword()));
 					userInsert.executeUpdate();
-					sendVerifyEmail(user);
-					log.debug("User created {}, sendind email to veridy account",user);
+
+					if(!user.isEmailVerified()){
+						sendVerifyEmail(user);
+						log.debug("User created {}, sendind email to veridy account",user);
+					}
 				} catch (SQLException e) {
 					e.printStackTrace();
 					throw new UserException(e.getMessage());
@@ -264,6 +269,53 @@ public class EmbedUserProvider implements UserProvider {
 			}
 		}
 
+	}
+
+	/**
+	 * cantidad de usuarios
+	 */
+	@Override
+	public Long countUsers() throws UserException {
+		return null;
+	}
+
+	/**
+	 * Obtener todos los usuarios
+	 */
+	@Override
+	public Users getUsers() throws UserException {
+		Users users = new Users();
+		log.debug("getUsers");
+		User user = null;
+		ResultSet result;
+		Connection conn = null;
+		PreparedStatement stm = null;
+		try {
+			conn = provider.getConnection();
+
+			stm = conn.prepareStatement(GET_ALL_USERS);
+			result = stm.executeQuery();
+
+			while(result.next()){
+				user = buildUserFromResult(result);
+				log.debug("User found {}",user);
+				users.add((DataUser) user);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new UserException(e.getMessage());
+
+		} finally {
+			try {
+				stm.close();
+				conn.close();
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
+		}
+		return users;
 	}
 
 	@Override
@@ -312,13 +364,14 @@ public class EmbedUserProvider implements UserProvider {
 			conn = provider.getConnection();
 			userUpdate = conn.prepareStatement(UPDATE_USER);
 
-			userUpdate.setString(1, escape(oldUser.getEmail()));
-			//userUpdate.setBoolean(2, editUser.isEmailVerified());
-			userUpdate.setString(2, escape(editUser.getUsername()));
-			userUpdate.setString(3, escape(editUser.getFirstName()));
-			userUpdate.setString(4, escape(editUser.getLastName()));
-			userUpdate.setString(5, escape(editUser.getGender()));
-			userUpdate.setString(6, escape(oldUser.getId()));
+			userUpdate.setString(1, escape(editUser.getEmail()));
+			userUpdate.setBoolean(2, editUser.isEmailVerified());
+			userUpdate.setString(3, escape(editUser.getUsername()));
+			userUpdate.setString(4, escape(editUser.getFirstName()));
+			userUpdate.setString(5, escape(editUser.getLastName()));
+			userUpdate.setString(6, escape(editUser.getGender()));
+			userUpdate.setString(7, escape(editUser.getPassword()));
+			userUpdate.setString(8, escape(editUser.getId()));
 			userUpdate.executeUpdate();
 			log.debug("User chaged from: {}\nto: {}",oldUser,editUser);
 		} catch (SQLException e) {
@@ -364,7 +417,7 @@ public class EmbedUserProvider implements UserProvider {
 
 
 	@Override
-	public User setVerifyEmail(User user) throws UserException {
+	public User setVerifyEmail(User user,boolean verified) throws UserException {
 		log.debug("setVerifyEmail {}",user);
 		Connection conn =null;
 		PreparedStatement verifyEmail = null;;
@@ -374,19 +427,18 @@ public class EmbedUserProvider implements UserProvider {
 		try {
 			conn = provider.getConnection();
 			verifyEmail = conn.prepareStatement(UPDATE_EMAIL_VERIFIED);
-			verifyEmail.setBoolean(1, true);
+			verifyEmail.setBoolean(1, verified);
 			verifyEmail.setString(2, user.getId());;
 			verifyEmail.executeUpdate();
-			log.debug("ACCOUNT VERIFIED {}",user);
+			if(verified) {log.debug("ACCOUNT VERIFIED {}",user); } else {log.debug("ACCOUNT UNVERIFIED {}",user);};
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new UserException("No se pudo verificar el email. "+e.getMessage());
+			throw new UserException("No se pudo configurar verificacion el cuenta. "+e.getMessage());
 		} finally {
 			try {
 				verifyEmail.close();
 				conn.close();
 			} catch (Exception e) {
-
 				e.printStackTrace();
 			}
 		}

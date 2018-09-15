@@ -900,12 +900,14 @@ public class Users extends API {
 		gender = gender != null ? gender : oldUser.getGender();
 
 		DataUser userParam = new DataUser();
-		userParam.setId(id);
-		userParam.setEmail(email);
+		userParam.setId(oldUser.getId());
+		userParam.setEmail(oldUser.getEmail());
 		userParam.setUsername(username);
 		userParam.setFirstName(firstName);
 		userParam.setLastName(lastName);
 		userParam.setGender(gender);
+		userParam.setEmailVerified(oldUser.isEmailVerified());
+		userParam.setPassword(oldUser.getPassword());
 
 		if (oldUser != null) {
 

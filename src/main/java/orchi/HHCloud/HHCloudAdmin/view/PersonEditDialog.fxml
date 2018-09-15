@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="300.0" prefWidth="550.0"  xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="orchi.HHCloud.HHCloudAdmin.controler.PersonEditDialog">
+  <children>
+    <GridPane fx:id="gridPane" alignment="CENTER" prefHeight="200.0" prefWidth="360.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+      <children>
+        <Label text="Id" />
+        <TextField fx:id="idField" GridPane.columnIndex="1" />
+        <Label text="Nombre de usuario" GridPane.rowIndex="1" />
+        <Label text="Email" GridPane.rowIndex="2" />
+        <Label text="Nombre" GridPane.rowIndex="3" />
+        <Label text="Apellido" GridPane.rowIndex="4" />
+        <Label text="Contraseña" GridPane.rowIndex="7" />
+        <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <TextField fx:id="emailField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <TextField fx:id="firstNameField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <TextField fx:id="lastNameField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        <Label text="Cuenta verificada" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <Label prefWidth="36.999908447265625" text="Sexo" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+        <Button fx:id="generateIdButton" defaultButton="true" mnemonicParsing="false" prefWidth="139.0" text="Generar nuevo id" textAlignment="CENTER" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="0" />
+        <ChoiceBox fx:id="genderSelect" GridPane.columnIndex="1" GridPane.rowIndex="6">
+          <items>
+            <FXCollections fx:factory="observableArrayList">
+              <String fx:value="No espesificar" />
+              <String fx:value="Hombre" />
+              <String fx:value="Mujer" />
+            </FXCollections>
+          </items>
+        </ChoiceBox>
+        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+          <children>
+            <ToggleButton fx:id="verifiedButton" mnemonicParsing="true" selected="true" text="Cuenta verificada" underline="false" />
+          </children>
+        </HBox>
+        <TextField fx:id="passwordField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+      </children>
+      <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="175.0" minWidth="10.0" prefWidth="129.0" />
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="249.0" minWidth="10.0" prefWidth="220.0" />
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="240.0" minWidth="10.0" prefWidth="131.0" />
+      </columnConstraints>
+      <rowConstraints>
+        <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+      </rowConstraints>
+    </GridPane>
+    <HBox spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+      <children>
+        <Button mnemonicParsing="false" onAction="#handleOk" prefWidth="90.0" text="OK" />
+        <Button mnemonicParsing="false" onAction="#handleCancel" prefWidth="90.0" text="Cancel" />
+      </children>
+    </HBox>
+  </children>
+</AnchorPane>
