@@ -2,6 +2,7 @@ package orchi.HHCloud.AdminService;
 
 import orchi.HHCloud.Start;
 import orchi.HHCloud.quota.Exceptions.QuotaException;
+import orchi.HHCloud.quota.Quota;
 import orchi.HHCloud.quota.QuotaProvider;
 import orchi.HHCloud.store.ContentSummary;
 import orchi.HHCloud.store.ContextStore;
@@ -23,67 +24,47 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public DataUser getUser(String email) {
+    public DataUser getUser(String email) throws UserException {
         DataUser user = null;
-        try {
-            user = (DataUser) Start.getUserManager().getUserProvider().getUserByEmail(email);
-        } catch (UserException e) {
-            e.printStackTrace();
-        }
+        user = (DataUser) Start.getUserManager().getUserProvider().getUserByEmail(email);
+
         return user;
     }
 
     @Override
-    public DataUser editUser(DataUser user) {
+    public DataUser editUser(DataUser user) throws UserException, QuotaException {
         DataUser u = null;
         DataUser oldU = null;
-
-        try {
-            oldU = (DataUser) Start.getUserManager().getUserProvider().getUserById(user.getId());
-            u = (DataUser) Start.getUserManager().getUserProvider().editUser(user);
-            if ((oldU.isEmailVerified() != u.isEmailVerified())) {
-                if (u.isEmailVerified()) {
-                    qp.setQuota(u, Paths.get(""), StoreManager.SPACE_QUOTA_SIZE);
-                } else {
-                    qp.setQuota(u, Paths.get(""), StoreManager.SPACE_QUOTA_SIZE_NO_VERIFIED_USER);
-                }
+        oldU = (DataUser) Start.getUserManager().getUserProvider().getUserById(user.getId());
+        u = (DataUser) Start.getUserManager().getUserProvider().editUser(user);
+        if ((oldU.isEmailVerified() != u.isEmailVerified())) {
+            if (u.isEmailVerified()) {
+                qp.setQuota(u, Paths.get(""), StoreManager.SPACE_QUOTA_SIZE);
+            } else {
+                qp.setQuota(u, Paths.get(""), StoreManager.SPACE_QUOTA_SIZE_NO_VERIFIED_USER);
             }
-        } catch (UserException e) {
-            e.printStackTrace();
-        } catch (QuotaException e) {
-            e.printStackTrace();
         }
+
         return u;
     }
 
     @Override
-    public DataUser createUser(DataUser user) {
+    public DataUser createUser(DataUser user) throws UserException {
         DataUser u = null;
-        try {
-            Start.getUserManager().getUserProvider().createUser(user);
-            u = getUser(user.getEmail());
-            ContextStore.createUserContext(u);
-        } catch (UserException e) {
-            e.printStackTrace();
-        }
+        Start.getUserManager().getUserProvider().createUser(user);
+        u = getUser(user.getEmail());
+        ContextStore.createUserContext(u);
         return u;
     }
 
     @Override
-    public boolean deleteUser(DataUser user) {
+    public boolean deleteUser(DataUser user) throws UserException, QuotaException {
         boolean deleted = false;
-        try {
-            Start.getUserManager().getUserProvider().deleteUser(user);
-            qp.removeQuota(user, Paths.get(""));
-            sp.delete(user, Paths.get(""));
+        Start.getUserManager().getUserProvider().deleteUser(user);
+        qp.removeQuota(user, Paths.get(""));
+        sp.delete(user, Paths.get(""));
 
-            deleted = true;
-
-        } catch (UserException e) {
-            e.printStackTrace();
-        } catch (QuotaException e) {
-            e.printStackTrace();
-        }
+        deleted = true;
         return deleted;
     }
 
@@ -107,5 +88,12 @@ public class ServiceImpl implements Service {
     public ContentSummary getContentSummary(DataUser user) {
         return sp.getContentSummary(user,Paths.get("/"));
     }
+
+    @Override
+    public Quota setQuota(DataUser user,Quota q) throws QuotaException {
+        return qp.setQuota(user,Paths.get(""),q.getQuota());
+
+    }
+
 
 }

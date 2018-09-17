@@ -14,7 +14,7 @@
         <items>
             <Button fx:id="updateButton" mnemonicParsing="false" onAction="#updateTalbePerson" text="Actualizar tabla" />
             <TextField fx:id="filterInput" promptText="Filtrar" />
-            <ComboBox fx:id="filterBy" prefHeight="25.0" prefWidth="120.0" promptText="Filtrar por" />
+            <ComboBox fx:id="filterBy" prefHeight="25.0" prefWidth="103.0" promptText="Filtrar por" />
             <JFXSpinner fx:id="spinnerWait" prefHeight="30.0" prefWidth="30.0" visible="false" />
         </items>
       </ToolBar>
@@ -33,7 +33,7 @@
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
             <Label text="Datos de usuario" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="10.0" />
-                  <Button fx:id="openQuotaDialog" layoutX="137.0" layoutY="5.0" mnemonicParsing="false" onAction="#handleQuotaPerson" text="Ver quota" AnchorPane.topAnchor="5.0" />
+                  <Button fx:id="openQuotaDialog" layoutX="137.0" layoutY="5.0" mnemonicParsing="false" onAction="#handleQuotaPerson" text="Ver cuota" AnchorPane.topAnchor="5.0" />
             <GridPane AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="35.0">
               <children>
                 <Label text="Id" GridPane.columnIndex="0" GridPane.rowIndex="0" />

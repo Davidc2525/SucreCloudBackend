@@ -56,6 +56,7 @@
                   <Font size="25.0" />
                </font>
             </Text>
+            <JFXSpinner fx:id="spinnerLoadin" layoutX="108.0" layoutY="8.0" visible="false" />
          </children>
          <opaqueInsets>
             <Insets />
@@ -63,12 +64,12 @@
       </AnchorPane>
       <HBox alignment="CENTER" layoutX="63.0" layoutY="353.0" prefHeight="52.0" prefWidth="330.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
-            <Button defaultButton="true" mnemonicParsing="false" text="Cambiar" textAlignment="CENTER">
+            <Button onAction="#editQuota" fx:id="buttonEdit" defaultButton="true" mnemonicParsing="false" text="Cambiar" textAlignment="CENTER">
                <HBox.margin>
                   <Insets left="10.0" right="10.0" />
                </HBox.margin>
             </Button>
-            <Button defaultButton="true" mnemonicParsing="false" text="Cancelar" textAlignment="CENTER">
+            <Button onAction="#close" fx:id="buttonCancel" defaultButton="true" mnemonicParsing="false" text="Cerrar" textAlignment="CENTER">
                <HBox.margin>
                   <Insets left="10.0" right="10.0" />
                </HBox.margin>

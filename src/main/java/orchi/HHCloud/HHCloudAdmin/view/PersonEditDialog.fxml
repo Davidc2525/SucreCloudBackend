@@ -30,7 +30,7 @@
           </children>
         </HBox>
         <TextField fx:id="passwordField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-        <ComboBox fx:id="genderSelect" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <ComboBox fx:id="genderSelect" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
       </children>
       <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" maxWidth="175.0" minWidth="10.0" prefWidth="129.0" />

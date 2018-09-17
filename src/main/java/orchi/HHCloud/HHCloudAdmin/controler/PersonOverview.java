@@ -4,6 +4,7 @@ import com.jfoenix.controls.JFXSpinner;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -16,7 +17,9 @@ import orchi.HHCloud.HHCloudAdmin.Main;
 import orchi.HHCloud.HHCloudAdmin.Util;
 import orchi.HHCloud.HHCloudAdmin.model.Person;
 import orchi.HHCloud.Start;
+import orchi.HHCloud.quota.Exceptions.QuotaException;
 import orchi.HHCloud.user.DataUser;
+import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Users;
 
 import java.io.IOException;
@@ -67,21 +70,31 @@ public class PersonOverview implements Initializable{
 
 
     private void loadUsers() {
-        Users users = Main.client.getService().getAllUsers();
-        users.getUsers().forEach((DataUser u) -> {
-            personData.add(new Person(
-                    u.getId(),
-                    u.getUsername(),
-                    u.getEmail(),
-                    u.getPassword(),
-                    u.getFirstName(),
-                    u.getLastName(),
-                    u.isEmailVerified(),
-                    u.getGender()
-            ));
+        Task<Users> task = new Task<Users>() {
+            @Override
+            protected Users call() throws Exception {
+                return Main.client.getService().getAllUsers();
+            }
+        };
+        task.setOnSucceeded(ws -> {
+            Users users = (Users) ws.getSource().getValue();
+            users.getUsers().forEach((DataUser u) -> {
+                personData.add(new Person(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getEmail(),
+                        u.getPassword(),
+                        u.getFirstName(),
+                        u.getLastName(),
+                        u.isEmailVerified(),
+                        u.getGender()
+                ));
+            });
         });
 
+        new Thread(task).start();
     }
+
     /**
      * Called to initialize a controller after its root element has been
      * completely processed.
@@ -93,7 +106,7 @@ public class PersonOverview implements Initializable{
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        loadUsers();
+
 
         //iniciar combobox de filtrar resultado de filtrado
         filterBy.setValue("Nombre");
@@ -171,7 +184,7 @@ public class PersonOverview implements Initializable{
                 (observable, oldValue, newValue) -> setPersonDetails(newValue));
 
 
-
+        loadUsers();
     }
 
     public void setPersons(ObservableList<Person> personData) {
@@ -241,11 +254,15 @@ public class PersonOverview implements Initializable{
         if (okClicked) {
             DataUser user = (DataUser) Util.personToUser(tempPerson);
 
-            if( Main.client.getService().createUser(user)!=null){
-                tempPerson.setPassword(Start.getCipherManager().getCipherProvider().encrypt(tempPerson.getPassword()));
-                personData.add(tempPerson);
-            }else{
-                tempPerson=null;
+            try {
+                if( Main.client.getService().createUser(user)!=null){
+                    tempPerson.setPassword(Start.getCipherManager().getCipherProvider().encrypt(tempPerson.getPassword()));
+                    personData.add(tempPerson);
+                }else{
+                    tempPerson=null;
+                }
+            } catch (UserException e) {
+                e.printStackTrace();
             }
 
         }
@@ -263,8 +280,14 @@ public class PersonOverview implements Initializable{
             boolean okClicked = showPersonEditDialog(selectedPerson,false);
             DataUser user = (DataUser) Util.personToUser(selectedPerson);
             if (okClicked) {
-                if (Main.client.getService().editUser(user) != null) {
-                    setPersonDetails(selectedPerson);
+                try {
+                    if (Main.client.getService().editUser(user) != null) {
+                        setPersonDetails(selectedPerson);
+                    }
+                } catch (UserException e) {
+                    e.printStackTrace();
+                } catch (QuotaException e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -278,20 +301,26 @@ public class PersonOverview implements Initializable{
      */
     @FXML
     private void handleDeletePerson() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Dialogo de confirmacion");
-        alert.setHeaderText("Eliminar datos de usuario");
-        alert.setContentText("Al eliminar este usuario no podras recuperar sus datos luego.");
 
-        Optional<ButtonType> confir = alert.showAndWait();
+        Optional<ButtonType> confir = Util.dialog(Alert.AlertType.CONFIRMATION,
+                "Dialogo de confirmacion",
+                "Eliminar datos de usuario",
+                "Al eliminar este usuario no podras recuperar sus datos luego.");
+
         if (confir.get() == ButtonType.OK) {
             int selectedIndex = personTable.getSelectionModel().getSelectedIndex();
             if (selectedIndex >= 0) {
                 Person person = personTable.getItems().get(selectedIndex);
                 DataUser user = (DataUser) Util.personToUser(person);
-                if (Main.client.getService().deleteUser(user)) {
-                    //personTable.getItems().remove(selectedIndex);
-                    personData.remove(selectedIndex);
+                try {
+                    if (Main.client.getService().deleteUser(user)) {
+                        //personTable.getItems().remove(selectedIndex);
+                        personData.remove(selectedIndex);
+                    }
+                } catch (UserException e) {
+                    e.printStackTrace();
+                } catch (QuotaException e) {
+                    e.printStackTrace();
                 }
 
             }
@@ -326,7 +355,7 @@ public class PersonOverview implements Initializable{
            spinnerWait.setVisible(true);
            personData.clear();
            try {
-               Thread.sleep(3000);
+               Thread.sleep(1000);
            } catch (InterruptedException e) {
                e.printStackTrace();
            }

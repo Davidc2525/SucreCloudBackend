@@ -1,6 +1,8 @@
 package orchi.HHCloud.quota;
 
-public class Quota {
+import java.io.Serializable;
+
+public class Quota implements Serializable{
 
     private Long _quota = 0L;
 
