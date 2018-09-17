@@ -12,7 +12,8 @@ public interface Service {
     public int suma(int a, int b);
 
     /**
-     * Servicio de usuario*/
+     * Servicio de usuario
+     */
     public DataUser getUser(String email) throws UserException;
 
     public DataUser editUser(DataUser user) throws UserException, QuotaException;
@@ -23,8 +24,10 @@ public interface Service {
 
     public Users getAllUsers();
 
-    /**Servicio de detalles almacenamiento*/
+    /**
+     * Servicio de detalles almacenamiento
+     */
     public ContentSummary getContentSummary(DataUser user);
 
-    public Quota setQuota(DataUser user,Quota q) throws QuotaException;
+    public Quota setQuota(DataUser user, Quota q) throws QuotaException;
 }

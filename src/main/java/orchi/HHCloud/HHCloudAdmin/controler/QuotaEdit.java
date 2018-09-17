@@ -9,9 +9,9 @@ import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextFormatter;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.util.converter.LongStringConverter;
@@ -25,8 +25,6 @@ import orchi.HHCloud.user.DataUser;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.WordUtils;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.regex.Pattern;
 
 public class QuotaEdit {

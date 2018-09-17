@@ -1,12 +1,6 @@
 package orchi.HHCloud.AdminService;
 
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import orchi.HHCloud.Start;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
@@ -18,32 +12,14 @@ import java.io.IOException;
 
 public class AdminServer {
     private WebServer webServer;
-    private IntegerProperty port = new SimpleIntegerProperty(Start.conf.getInt("admin.adminservice.port"));
-    private BooleanProperty adminEnable = new SimpleBooleanProperty(Start.conf.getBoolean("admin.adminservice.enable"));
+
+    private boolean adminEnabled = Start.conf.getBoolean("admin.adminservice.enable");
+    private int port = Start.conf.getInt("admin.adminservice.port");
 
     public AdminServer() throws IOException, XmlRpcException {
-        adminEnable.addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue) {
-                    start();
-                } else {
-                    stop();
-                }
-            }
-        });
 
-        port.addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if (oldValue != newValue) {
-                    stop();
-                    start();
-                }
-            }
-        });
 
-        webServer = new WebServer(port.getValue());
+        webServer = new WebServer(port);
 
         XmlRpcServer xmlRpcServer = webServer.getXmlRpcServer();
 
@@ -60,13 +36,13 @@ public class AdminServer {
         serverConfig.setContentLengthOptional(false);
         serverConfig.setEnabledForExceptions(true);
 
-        if (adminEnable.getValue()) {
+        if (adminEnabled) {
             start();
         }
     }
 
     private void start() {
-        System.out.println("Iniciando servidor de servicio en puerto: "+port.getValue());
+        System.out.println("Iniciando servidor de servicio en puerto: " + port);
         webServer.shutdown();
         try {
             webServer.start();
