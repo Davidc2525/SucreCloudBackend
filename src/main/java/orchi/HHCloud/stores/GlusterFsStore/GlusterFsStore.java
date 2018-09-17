@@ -1,6 +1,8 @@
 package orchi.HHCloud.stores.GlusterFsStore;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.quota.Exceptions.QuotaException;
+import orchi.HHCloud.quota.Quota;
 import orchi.HHCloud.store.ContentSummary;
 import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.stores.HdfsStore.HdfsManager;
@@ -29,11 +31,12 @@ public class GlusterFsStore extends HdfsStoreProvider implements StoreProvider {
 	}
 
 	@Override
-	public void setQuota(User user, Path path, long size) {
+	public Quota setQuota(User user, Path path, long size)throws QuotaException {
 		org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path+"" );
 		Path path1 = Paths.get(p.toString());
 		Path path2 = Paths.get("/",path1.subpath(1,path1.getNameCount()).toString()).normalize();
 		runProccess("sudo gluster volume quota hhcloud limit-usage "+path2.toString()+" "+size);
+		return new Quota(size);
 	}
 
 	@Override
@@ -53,10 +56,10 @@ public class GlusterFsStore extends HdfsStoreProvider implements StoreProvider {
 			org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path.toString());
 			FileSystem fs = HdfsManager.getInstance().getFs();
 			org.apache.hadoop.fs.ContentSummary fsCs = fs.getContentSummary(p);
-
+			Quota spaceQuota = Start.getQuotaManager().getProvider().getQuota(user);
 			cs.setDirectoryCount(fsCs.getDirectoryCount());
 			cs.setFileCount(fsCs.getFileCount());
-			cs.setSpaceQuota(verified ? Start.getStoreManager().SPACE_QUOTA_SIZE : Start.getStoreManager().SPACE_QUOTA_SIZE_NO_VERIFIED_USER);
+			cs.setSpaceQuota(spaceQuota.getQuota()/*verified ? Start.getStoreManager().SPACE_QUOTA_SIZE : Start.getStoreManager().SPACE_QUOTA_SIZE_NO_VERIFIED_USER*/);
 			cs.setSpaceConsumed(fsCs.getSpaceConsumed());
 			cs.setLength(fsCs.getLength());
 			cs.setQuota(fsCs.getQuota());

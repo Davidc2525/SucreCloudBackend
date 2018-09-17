@@ -21,11 +21,10 @@ import java.io.IOException;
 
 public class Main extends Application {
 
-
-    private static ObservableList<Person> personData = FXCollections.observableArrayList();
-    private Client client;
-    private BorderPane root;
-    private Window primaryStage;
+    public static ObservableList<Person> personData = FXCollections.observableArrayList();
+    public static Client client;
+    public static BorderPane root;
+    public static Window primaryStage;
 
     public static void main(String[] args) {
         launch(args);
@@ -47,7 +46,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         client = new Client();
 
-        loadUsers();
+        //loadUsers();
 
         this.primaryStage = primaryStage;
         FXMLLoader loader = new FXMLLoader();
@@ -70,9 +69,9 @@ public class Main extends Application {
         root.setCenter(personOverview);
 
         // Give the controller access to the main app.
-        PersonOverview controller = loader.getController();
-        controller.setPersons(personData);
-        controller.setAppMain(this);
+       //PersonOverview controller = loader.getController();
+        //controller.setPersons(personData);
+        //controller.setAppMain(this);
 
     }
 
@@ -94,7 +93,7 @@ public class Main extends Application {
             // Set the person into the controller.
             PersonEditDialog controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setPerson(person);
+            controller.setPerson(person,false);
 
             // Show the dialog and wait until the user closes it
             dialogStage.showAndWait();

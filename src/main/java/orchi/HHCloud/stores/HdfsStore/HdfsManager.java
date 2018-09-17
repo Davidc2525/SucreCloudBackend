@@ -9,7 +9,7 @@ import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import orchi.HHCloud.store.QuotaExceededException;
+import orchi.HHCloud.quota.Exceptions.QuotaExceededException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.*?>
+<?import javafx.scene.effect.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
 <?import javafx.scene.*?>
@@ -8,22 +10,31 @@
 
 <AnchorPane fx:id="personOverview" prefHeight="300.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="orchi.HHCloud.HHCloudAdmin.controler.PersonOverview">
   <children>
-    <SplitPane dividerPositions="0.4331103678929766" focusTraversable="true" prefHeight="264.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <ToolBar layoutX="-7.0" layoutY="-6.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+            <Button fx:id="updateButton" mnemonicParsing="false" onAction="#updateTalbePerson" text="Actualizar tabla" />
+            <TextField fx:id="filterInput" promptText="Filtrar" />
+            <ComboBox fx:id="filterBy" prefHeight="25.0" prefWidth="120.0" promptText="Filtrar por" />
+            <JFXSpinner fx:id="spinnerWait" prefHeight="30.0" prefWidth="30.0" visible="false" />
+        </items>
+      </ToolBar>
+    <SplitPane dividerPositions="0.4331103678929766" focusTraversable="true" layoutY="40.0" prefHeight="260.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
       <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
             <TableView fx:id="personTable" editable="false" prefHeight="262.0" prefWidth="256.0" tableMenuButtonVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <columns>
-                <TableColumn fx:id="firstNameColumn" prefWidth="75.0" text="Nobre" />
-                <TableColumn fx:id="lastNameColumn" prefWidth="75.0" text="Apelllido" />
+                <TableColumn fx:id="firstNameColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" text="Nombre" />
+                <TableColumn fx:id="lastNameColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" text="Apelllido" />
               </columns>
             </TableView>
           </children>
         </AnchorPane>
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" >
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
           <children>
-            <Label text="Datos de usuario" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
-            <GridPane AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="30.0">
+            <Label text="Datos de usuario" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="10.0" />
+                  <Button fx:id="openQuotaDialog" layoutX="137.0" layoutY="5.0" mnemonicParsing="false" onAction="#handleQuotaPerson" text="Ver quota" AnchorPane.topAnchor="5.0" />
+            <GridPane AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="35.0">
               <children>
                 <Label text="Id" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                 <Label text="Apellido" GridPane.columnIndex="0" GridPane.rowIndex="4" />
@@ -56,7 +67,7 @@
             </GridPane>
             <HBox id="HBox" alignment="CENTER" spacing="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0">
               <children>
-                <Button fx:id="createPersonButton" mnemonicParsing="false" onAction="#handleNewPerson" text="Crear" />
+                <Button fx:id="createPersonButton" defaultButton="true" mnemonicParsing="false" onAction="#handleNewPerson" text="Crear" />
                 <Button fx:id="editPersonButton" mnemonicParsing="false" onAction="#handleEditPerson" text="Editar" />
                 <Button fx:id="deletePersonButton" mnemonicParsing="false" onAction="#handleDeletePerson" text="Eliminar" />
               </children>

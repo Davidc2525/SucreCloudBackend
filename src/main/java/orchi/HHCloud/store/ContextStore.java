@@ -10,7 +10,7 @@ import orchi.HHCloud.user.User;
 
 public abstract class ContextStore {
 	public static Path rootPath = Paths.get(Start.conf.getString("store.contextstore.root.path.store.fs"));
-	public static String filesStorePath = Start.conf.getString("store.contextstore.root.path.store.fs.user.files.paths","/files/");
+	public static String filesStorePath = Start.conf.getString("store.contextstore.root.path.store.fs.user.files.paths");
 	
 	
 	public static void createUserContext(User user){

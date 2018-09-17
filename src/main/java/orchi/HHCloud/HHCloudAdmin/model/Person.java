@@ -2,6 +2,7 @@ package orchi.HHCloud.HHCloudAdmin.model;
 
 import java.time.LocalDate;
 
+import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import javafx.beans.property.*;
 
 /**
@@ -9,7 +10,7 @@ import javafx.beans.property.*;
  *
  * @author David
  */
-public class Person {
+public class Person extends RecursiveTreeObject<Person> {
 
 
     private final StringProperty id = new SimpleStringProperty("");

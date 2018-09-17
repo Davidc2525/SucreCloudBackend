@@ -1,4 +1,4 @@
-package orchi.HHCloud.store;
+package orchi.HHCloud.quota.Exceptions;
 
 public class QuotaExceededException extends Exception{
     public QuotaExceededException(String e){

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import orchi.HHCloud.quota.Exceptions.QuotaException;
 import orchi.HHCloud.store.ContextStore;
 import orchi.HHCloud.store.StoreManager;
 import org.slf4j.Logger;
@@ -151,13 +152,27 @@ public class DefaultAuthProvider implements AuthProvider {
 			revokeTokenToVerifyEmail(idToken);
 			up.setVerifyEmail(user,true);
 
-			Start.getStoreManager().getStoreProvider().setQuota(user, Paths.get(""), StoreManager.SPACE_QUOTA_SIZE);
+			//Start.getStoreManager().getStoreProvider().setQuota(user, Paths.get(""), StoreManager.SPACE_QUOTA_SIZE);
+			Start.getQuotaManager().getProvider().setQuota(user, Paths.get(""), StoreManager.SPACE_QUOTA_SIZE);
 		} catch (UserException e) {
 			e.printStackTrace();
+			try {
+				up.setVerifyEmail(user,false);
+			} catch (UserException e1) {
+				e1.printStackTrace();
+			}
 			throw new VerifyException(e.getMessage());
 		} catch (TokenException e) {
 			e.printStackTrace();
 			throw new VerifyException(e.getMessage());
+		} catch (QuotaException e) {
+			e.printStackTrace();
+			try {
+				up.setVerifyEmail(user,false);
+			} catch (UserException e1) {
+				e1.printStackTrace();
+			}
+			throw new VerifyException(e);
 		}
 	}
 

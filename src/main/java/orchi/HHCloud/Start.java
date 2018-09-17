@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import orchi.HHCloud.AdminService.AdminServer;
+import orchi.HHCloud.quota.QuotaManager;
 import org.apache.commons.configuration2.Configuration;
 import org.eclipse.jetty.server.session.*;
 import org.eclipse.jetty.server.Handler;
@@ -134,6 +135,10 @@ public class Start {
 
 	public static StoreManager getStoreManager() {
 		return StoreManager.getInstance();
+	}
+
+	public static QuotaManager getQuotaManager() {
+		return QuotaManager.getInstance();
 	}
 
 	public static DbConnectionManager getDbConnectionManager() {

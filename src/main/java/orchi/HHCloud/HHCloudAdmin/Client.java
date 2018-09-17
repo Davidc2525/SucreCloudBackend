@@ -31,11 +31,11 @@ public class Client {
         client.setConfig(config);
 
         // make the a regular call
-        Object[] params = new Object[]
+        /*Object[] params = new Object[]
                 { new Integer(2), new Integer(3) };
         Integer result = (Integer) client.execute("admin-service.suma", params);
         System.out.println("2 + 3 = " + result);
-
+*/
         // make a call using dynamic proxy
         ClientFactory factory = new ClientFactory(client);
         service = (Service) factory.newInstance(Service.class);

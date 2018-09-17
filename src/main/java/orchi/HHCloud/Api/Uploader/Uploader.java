@@ -5,7 +5,7 @@ import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.Start;
-import orchi.HHCloud.store.QuotaExceededException;
+import orchi.HHCloud.quota.Exceptions.QuotaExceededException;
 import orchi.HHCloud.store.response.UploaderResponse;
 import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.User;

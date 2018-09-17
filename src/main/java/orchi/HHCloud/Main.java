@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import orchi.HHCloud.AdminService.AdminServer;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
@@ -63,11 +64,12 @@ public class Main {
 
 		System.out.println("HHCloud pruebas!");
 		//orchi.HHCloud.HHCloudAdmin.Main.main(args);
+		System.out.println(FileUtils.byteCountToDisplaySize(7231242343L));
 		new AdminServer();
 		if (true) {
-
 			return;
 		}
+
 
 		System.out.printf(WordUtils.capitalize("david colmenares"));
 
