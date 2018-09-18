@@ -1,4 +1,4 @@
-package orchi.HHCloud.HHCloudAdmin.controler;
+package orchi.HHCloud.HHCloudAdmin.controller;
 
 import com.jfoenix.controls.JFXSpinner;
 import com.jfoenix.controls.JFXTextField;

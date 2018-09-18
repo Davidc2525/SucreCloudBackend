@@ -11,8 +11,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import orchi.HHCloud.HHCloudAdmin.controler.PersonEditDialog;
-import orchi.HHCloud.HHCloudAdmin.controler.PersonOverview;
+import orchi.HHCloud.HHCloudAdmin.controller.PersonEditDialog;
 import orchi.HHCloud.HHCloudAdmin.model.Person;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Users;
@@ -98,7 +97,7 @@ public class Main extends Application {
             // Show the dialog and wait until the user closes it
             dialogStage.showAndWait();
 
-            return controller.isOkClicked();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
             return false;

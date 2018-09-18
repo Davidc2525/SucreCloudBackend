@@ -10,7 +10,7 @@ import javafx.beans.property.*;
  *
  * @author David
  */
-public class Person extends RecursiveTreeObject<Person> {
+public class Person  {
 
 
     private final StringProperty id = new SimpleStringProperty("");

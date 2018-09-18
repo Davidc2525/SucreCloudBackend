@@ -1,4 +1,4 @@
-package orchi.HHCloud.HHCloudAdmin.controler;
+package orchi.HHCloud.HHCloudAdmin.controller;
 
 import com.jfoenix.controls.JFXSpinner;
 import javafx.collections.FXCollections;
@@ -187,15 +187,6 @@ public class PersonOverview implements Initializable{
         loadUsers();
     }
 
-    public void setPersons(ObservableList<Person> personData) {
-        personTable.setItems(personData);
-    }
-
-    public void setAppMain(Main appMain) {
-        this.mainApp = appMain;
-        setPersons(mainApp.getPersonData());
-    }
-
     private String toGenderString(String g) {
         String gender = "No espesificado";
         if (g != null) {
@@ -249,6 +240,11 @@ public class PersonOverview implements Initializable{
     @FXML
     private void handleNewPerson() {
         Person tempPerson = new Person();
+        showCreateOrEditUser(tempPerson,true);
+        personData.add(tempPerson);
+        if(true){
+            return;
+        }
         boolean okClicked = showPersonEditDialog(tempPerson,true);
 
         if (okClicked) {
@@ -276,7 +272,11 @@ public class PersonOverview implements Initializable{
     private void handleEditPerson() {
         Person selectedPerson = personTable.getSelectionModel().getSelectedItem();
         if (selectedPerson != null) {
-
+            showCreateOrEditUser(selectedPerson,false);
+            setPersonDetails(selectedPerson);
+            if(true){
+                return;
+            }
             boolean okClicked = showPersonEditDialog(selectedPerson,false);
             DataUser user = (DataUser) Util.personToUser(selectedPerson);
             if (okClicked) {
@@ -365,6 +365,35 @@ public class PersonOverview implements Initializable{
 
     }
 
+    public void showCreateOrEditUser(Person person,Boolean isCreate){
+        try {
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getClassLoader().getResource("./PersonEditDialog.fxml"));
+            AnchorPane page = (AnchorPane) loader.load();
+
+            // Create the dialog Stage.
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edicion de usuario");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(Main.primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            // Set the person into the controller.
+            PersonEditDialog controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setPerson(person,isCreate);
+
+            // Show the dialog and wait until the user closes it
+            dialogStage.showAndWait();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+    }
     /**dialogos de edicion*/
     /**
      * mostrar dialogo de edicion de usuario
@@ -392,7 +421,7 @@ public class PersonOverview implements Initializable{
             // Show the dialog and wait until the user closes it
             dialogStage.showAndWait();
 
-            return controller.isOkClicked();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
             return false;

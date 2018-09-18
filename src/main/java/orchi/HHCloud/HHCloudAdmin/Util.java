@@ -16,6 +16,33 @@ import java.util.Optional;
 
 public class Util {
 
+    public static Person setPersonInPerson(Person dst,Person src){
+        dst.setId(src.getId());
+        dst.setEmail(src.getEmail());
+        dst.setCreateAt(src.getCreateAt());
+        dst.setUsername(src.getUsername());
+        dst.setFirstName(src.getFirstName());
+        dst.setLastName(src.getLastName());
+        dst.setIsVerified(src.isIsVerified());
+        dst.setPassword(src.getPassword());
+        dst.setGender(src.getGender());
+        return dst;
+    }
+
+    public static Person clonePerson(Person p){
+        Person cp = new Person();
+        cp.setId(p.getId());
+        cp.setEmail(p.getEmail());
+        cp.setCreateAt(p.getCreateAt());
+        cp.setUsername(p.getUsername());
+        cp.setFirstName(p.getFirstName());
+        cp.setLastName(p.getLastName());
+        cp.setIsVerified(p.isIsVerified());
+        cp.setPassword(p.getPassword());
+        cp.setGender(p.getGender());
+        return cp;
+    }
+
     public static Person userToPerson(User user){
         Person p = null;
         DataUser u = (DataUser) user;
@@ -65,7 +92,7 @@ public class Util {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Exception Dialog");
         alert.setHeaderText("Error");
-        alert.setContentText("Error");
+        alert.setContentText(ex.getMessage());
 
         // Create expandable Exception.
         StringWriter sw = new StringWriter();

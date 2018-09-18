@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.*?>
 <?import java.lang.*?>
 <?import javafx.collections.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="300.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="orchi.HHCloud.HHCloudAdmin.controler.PersonEditDialog">
+<AnchorPane prefHeight="300.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="orchi.HHCloud.HHCloudAdmin.controller.PersonEditDialog">
   <children>
     <GridPane fx:id="gridPane" alignment="CENTER" prefHeight="200.0" prefWidth="360.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
       <children>
@@ -22,7 +23,7 @@
         <TextField fx:id="lastNameField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
         <Label text="Cuenta verificada" GridPane.columnIndex="0" GridPane.rowIndex="5" />
         <Label prefWidth="36.999908447265625" text="Sexo" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-        <Button fx:id="generateIdButton" defaultButton="true" mnemonicParsing="false" prefWidth="139.0" text="Generar nuevo id" textAlignment="CENTER" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="0" />
+        <Button fx:id="generateIdButton" onAction="#generateId" defaultButton="true" mnemonicParsing="false" prefWidth="139.0" text="Generar nuevo id" textAlignment="CENTER" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="0" />
 
         <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
           <children>
@@ -48,11 +49,12 @@
         <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
       </rowConstraints>
     </GridPane>
-    <HBox spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+    <HBox spacing="5.0" fx:id="actionButtos" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
       <children>
-        <Button mnemonicParsing="false" onAction="#handleOk" prefWidth="90.0" text="OK" />
-        <Button mnemonicParsing="false" onAction="#handleCancel" prefWidth="90.0" text="Cancel" />
+        <Button fx:id="buttonOk" defaultButton="true" mnemonicParsing="false" onAction="#handleOk" prefWidth="90.0" text="OK" />
+        <Button fx:id="buttonCancel" mnemonicParsing="false" onAction="#handleCancel" prefWidth="90.0" text="Cancel" />
       </children>
     </HBox>
+      <JFXSpinner fx:id="spinnerLoad" layoutX="309.0" layoutY="262.0" />
   </children>
 </AnchorPane>
