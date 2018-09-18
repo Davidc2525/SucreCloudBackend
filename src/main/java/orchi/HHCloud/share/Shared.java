@@ -16,45 +16,47 @@ import java.util.List;
  * @author david 14 ago. 2018
  */
 public class Shared implements Externalizable {
-	private List<Share> shared = new ArrayList<>();
+    private List<Share> shared = new ArrayList<>();
 
-	public List<Share> getShared() {
-		return shared;
-	}
+    public List<Share> getShared() {
+        return shared;
+    }
 
-	public void setShared(List<Share> shared) {
-		this.shared = shared;
-	}
-	
-	public void addShare(Share share){
-		shared.add(share);
-	}
-	
-	public boolean isShared(Path path){
-		boolean isShared = false;
-		Iterator<Share> iter = shared.iterator();
-		while(iter.hasNext()){
-			Share share = iter.next();
-			if(share.getPath().toString().equals(path.toString())){
-				isShared = true;
-			}
-		}
-		return isShared;
-	};
+    public void setShared(List<Share> shared) {
+        this.shared = shared;
+    }
 
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		setShared((List<Share>)in.readObject());
-	}
+    public void addShare(Share share) {
+        shared.add(share);
+    }
 
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(getShared());
-	}
+    public boolean isShared(Path path) {
+        boolean isShared = false;
+        Iterator<Share> iter = shared.iterator();
+        while (iter.hasNext()) {
+            Share share = iter.next();
+            if (share.getPath().toString().equals(path.toString())) {
+                isShared = true;
+            }
+        }
+        return isShared;
+    }
 
-	@Override
-	public String toString() {
-		return "Shared {shared=" + shared + "}";
-	}
-	
+    ;
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        setShared((List<Share>) in.readObject());
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(getShared());
+    }
+
+    @Override
+    public String toString() {
+        return "Shared {shared=" + shared + "}";
+    }
+
 }

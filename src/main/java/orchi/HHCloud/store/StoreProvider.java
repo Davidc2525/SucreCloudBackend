@@ -46,7 +46,7 @@ public interface StoreProvider extends QuotaProvider {
 
     public void create(User user, Path path, InputStream in) throws Exception;
 
-    public void delete(User user,Path path);
+    public void delete(User user, Path path);
 
     public void touch(User user, Path path);
 

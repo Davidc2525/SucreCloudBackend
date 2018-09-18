@@ -2,7 +2,7 @@ package orchi.HHCloud.store;
 
 import java.io.Serializable;
 
-public class ContentSummary implements Serializable{
+public class ContentSummary implements Serializable {
     private long directoryCount;
     private long fileCount;
     private long length;

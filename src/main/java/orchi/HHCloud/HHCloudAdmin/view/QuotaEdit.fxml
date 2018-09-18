@@ -13,68 +13,75 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="251.0" prefWidth="330.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="orchi.HHCloud.HHCloudAdmin.controller.QuotaEdit">
-   <children>
-      <GridPane AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="141.0" minWidth="10.0" prefWidth="90.0" />
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="247.0" minWidth="10.0" prefWidth="180.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <Label text="ID" />
-            <Label text="Nombre" GridPane.rowIndex="1" />
-            <Label fx:id="userId" text="Label" GridPane.columnIndex="1" />
-            <Label fx:id="userName" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-         </children>
-      </GridPane>
-      <AnchorPane layoutX="16.0" layoutY="82.0" prefHeight="203.0" prefWidth="300.0" AnchorPane.bottomAnchor="68.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="82.0">
-         <children>
-            <GridPane AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="129.0" minWidth="10.0" prefWidth="99.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="171.0" minWidth="10.0" prefWidth="171.0" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-               <children>
-                  <Label text="Consumido" />
-                  <Label text="Quota" GridPane.rowIndex="1" />
-                  <Label fx:id="quotaSize" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <JFXTextField fx:id="inputQuota" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <Label fx:id="spaceConsumed" text="Label" GridPane.columnIndex="1" />
-               </children>
-            </GridPane>
-            <Text layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Espacio" textAlignment="CENTER" wrappingWidth="107.99609375" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="162.00390625" AnchorPane.topAnchor="9.0">
-               <font>
-                  <Font size="25.0" />
-               </font>
-            </Text>
-            <JFXSpinner fx:id="spinnerLoadin" layoutX="108.0" layoutY="8.0" visible="false" />
-         </children>
-         <opaqueInsets>
-            <Insets />
-         </opaqueInsets>
-      </AnchorPane>
-      <HBox alignment="CENTER" layoutX="63.0" layoutY="353.0" prefHeight="52.0" prefWidth="330.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-         <children>
-            <Button onAction="#editQuota" fx:id="buttonEdit" defaultButton="true" mnemonicParsing="false" text="Cambiar" textAlignment="CENTER">
-               <HBox.margin>
-                  <Insets left="10.0" right="10.0" />
-               </HBox.margin>
-            </Button>
-            <Button onAction="#close" fx:id="buttonCancel" defaultButton="true" mnemonicParsing="false" text="Cerrar" textAlignment="CENTER">
-               <HBox.margin>
-                  <Insets left="10.0" right="10.0" />
-               </HBox.margin>
-            </Button>
-         </children>
-      </HBox>
-   </children>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="251.0" prefWidth="330.0" xmlns="http://javafx.com/javafx/8"
+            fx:controller="orchi.HHCloud.HHCloudAdmin.controller.QuotaEdit">
+    <children>
+        <GridPane AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="141.0" minWidth="10.0" prefWidth="90.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="247.0" minWidth="10.0" prefWidth="180.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <children>
+                <Label text="ID"/>
+                <Label text="Nombre" GridPane.rowIndex="1"/>
+                <Label fx:id="userId" text="Label" GridPane.columnIndex="1"/>
+                <Label fx:id="userName" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            </children>
+        </GridPane>
+        <AnchorPane layoutX="16.0" layoutY="82.0" prefHeight="203.0" prefWidth="300.0" AnchorPane.bottomAnchor="68.0"
+                    AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="82.0">
+            <children>
+                <GridPane AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="129.0" minWidth="10.0" prefWidth="99.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="171.0" minWidth="10.0" prefWidth="171.0"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    </rowConstraints>
+                    <children>
+                        <Label text="Consumido"/>
+                        <Label text="Quota" GridPane.rowIndex="1"/>
+                        <Label fx:id="quotaSize" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                        <JFXTextField fx:id="inputQuota" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label fx:id="spaceConsumed" text="Label" GridPane.columnIndex="1"/>
+                    </children>
+                </GridPane>
+                <Text layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Espacio" textAlignment="CENTER"
+                      wrappingWidth="107.99609375" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="162.00390625"
+                      AnchorPane.topAnchor="9.0">
+                    <font>
+                        <Font size="25.0"/>
+                    </font>
+                </Text>
+                <JFXSpinner fx:id="spinnerLoadin" layoutX="108.0" layoutY="8.0" visible="false"/>
+            </children>
+            <opaqueInsets>
+                <Insets/>
+            </opaqueInsets>
+        </AnchorPane>
+        <HBox alignment="CENTER" layoutX="63.0" layoutY="353.0" prefHeight="52.0" prefWidth="330.0"
+              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <children>
+                <Button onAction="#editQuota" fx:id="buttonEdit" defaultButton="true" mnemonicParsing="false"
+                        text="Cambiar" textAlignment="CENTER">
+                    <HBox.margin>
+                        <Insets left="10.0" right="10.0"/>
+                    </HBox.margin>
+                </Button>
+                <Button onAction="#close" fx:id="buttonCancel" defaultButton="true" mnemonicParsing="false"
+                        text="Cerrar" textAlignment="CENTER">
+                    <HBox.margin>
+                        <Insets left="10.0" right="10.0"/>
+                    </HBox.margin>
+                </Button>
+            </children>
+        </HBox>
+    </children>
 </AnchorPane>

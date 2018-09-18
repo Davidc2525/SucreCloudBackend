@@ -33,94 +33,92 @@ import java.util.List;
 import java.util.Properties;
 
 public class GoogleGmailProvider implements MailProvider {
-	private static final String APPLICATION_NAME = Start.conf.getString("app.name");
-	private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.admin");
-	private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-	private static final String TOKENS_DIRECTORY_PATH = "tokens";
+    private static final String APPLICATION_NAME = Start.conf.getString("app.name");
+    private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.admin");
+    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-	private static final List<String> SCOPES = Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.GMAIL_LABELS);
-	private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
-	private static Gmail service;
+    private static final List<String> SCOPES = Arrays.asList(GmailScopes.GMAIL_SEND, GmailScopes.GMAIL_LABELS);
+    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+    private static Gmail service;
 
-	private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
-		// Load client secrets.
-		InputStream in = GoogleGmailProvider.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+        // Load client secrets.
+        InputStream in = GoogleGmailProvider.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
-		// Build flow and trigger user authorization request.
-		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY,
-				clientSecrets, SCOPES)
-						.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-						.setAccessType("offline")
-						.build();
-		return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
-	}
+        // Build flow and trigger user authorization request.
+        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY,
+                clientSecrets, SCOPES)
+                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+                .setAccessType("offline")
+                .build();
+        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
+    }
 
-	public void init() {
+    private static MimeMessage createEmail(String from, String to, String subject, String bodyText)
+            throws MessagingException {
+        Properties props = new Properties();
+        Session session = Session.getDefaultInstance(props, null);
 
-		try {
-			final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-			service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-					.setApplicationName(APPLICATION_NAME)
-					.build();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (GeneralSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        MimeMessage email = new MimeMessage(session);
 
-	}
+        email.setFrom(new InternetAddress(from));
+        email.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
+        email.setSubject(subject);
+        email.setContent(bodyText, "text/html; charset=\"UTF-8\"");
+        return email;
+    }
 
-	private static MimeMessage createEmail(String from, String to, String subject, String bodyText)
-			throws MessagingException {
-		Properties props = new Properties();
-		Session session = Session.getDefaultInstance(props, null);
+    private static Message createMessageWithEmail(MimeMessage emailContent) throws MessagingException, IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        emailContent.writeTo(buffer);
+        byte[] bytes = buffer.toByteArray();
+        String encodedEmail = Base64.encodeBase64URLSafeString(bytes);
+        Message message = new Message();
+        message.setRaw(encodedEmail);
+        return message;
+    }
 
-		MimeMessage email = new MimeMessage(session);
+    private static Message sendMessage(Gmail service, String userId, MimeMessage emailContent)
+            throws MessagingException, IOException {
+        Message message = createMessageWithEmail(emailContent);
+        message = service.users().messages().send(userId, message).execute();
 
-		email.setFrom(new InternetAddress(from));
-		email.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
-		email.setSubject(subject);
-		email.setContent(bodyText, "text/html; charset=\"UTF-8\"");
-		return email;
-	}
+        System.out.println("Message id: " + message.getId());
+        System.out.println(message.toPrettyString());
+        return message;
+    }
 
-	private static Message createMessageWithEmail(MimeMessage emailContent) throws MessagingException, IOException {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		emailContent.writeTo(buffer);
-		byte[] bytes = buffer.toByteArray();
-		String encodedEmail = Base64.encodeBase64URLSafeString(bytes);
-		Message message = new Message();
-		message.setRaw(encodedEmail);
-		return message;
-	}
+    public void init() {
 
-	private static Message sendMessage(Gmail service, String userId, MimeMessage emailContent)
-			throws MessagingException, IOException {
-		Message message = createMessageWithEmail(emailContent);
-		message = service.users().messages().send(userId, message).execute();
+        try {
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        }
 
-		System.out.println("Message id: " + message.getId());
-		System.out.println(message.toPrettyString());
-		return message;
-	}
+    }
 
-	@Override
-	public void sendEmail(String from, String to, String subject, String body) throws SendEmailException{
-		try {
-			sendMessage(service, APPLICATION_ADMIN, createEmail(from, to, subject, body));
-		} catch (SocketTimeoutException e){
-			e.printStackTrace();
-			throw new SendEmailException(e);
-		} catch (MessagingException e) {
-			e.printStackTrace();
-			throw new SendEmailException(e);			
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new SendEmailException(e);			
-		}
+    @Override
+    public void sendEmail(String from, String to, String subject, String body) throws SendEmailException {
+        try {
+            sendMessage(service, APPLICATION_ADMIN, createEmail(from, to, subject, body));
+        } catch (SocketTimeoutException e) {
+            e.printStackTrace();
+            throw new SendEmailException(e);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            throw new SendEmailException(e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new SendEmailException(e);
+        }
 
-	}
+    }
 }

@@ -27,10 +27,10 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class PersonOverview implements Initializable{
+public class PersonOverview implements Initializable {
 
     public static ObservableList<Person> personData = FXCollections.observableArrayList();
-    public static ObservableList<String> itemsComboBoxFilterBy = FXCollections.observableArrayList("Nombre","Usuario","Id","Correo");
+    public static ObservableList<String> itemsComboBoxFilterBy = FXCollections.observableArrayList("Nombre", "Usuario", "Id", "Correo");
 
     @FXML
     private AnchorPane personOverview;
@@ -65,8 +65,6 @@ public class PersonOverview implements Initializable{
     private ComboBox filterBy;
 
     private Main mainApp;
-
-
 
 
     private void loadUsers() {
@@ -107,7 +105,6 @@ public class PersonOverview implements Initializable{
     public void initialize(URL location, ResourceBundle resources) {
 
 
-
         //iniciar combobox de filtrar resultado de filtrado
         filterBy.setValue("Nombre");
         filterBy.setItems(itemsComboBoxFilterBy);
@@ -120,14 +117,14 @@ public class PersonOverview implements Initializable{
 
         // 1. Wrap the ObservableList in a FilteredList (initially display all data).
         FilteredList<Person> filteredData = new FilteredList<>(personData, p -> true);
-        filterBy.valueProperty().addListener( (os,ov,nv)->{
+        filterBy.valueProperty().addListener((os, ov, nv) -> {
             filteredData.setPredicate(p -> true);
         });
 
         filterInput.textProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println("escibiendo");
             String filterby = (String) filterBy.getValue();
-            System.out.println("filtrando por "+filterby);
+            System.out.println("filtrando por " + filterby);
             filterby = filterby.toLowerCase();
             String finalFilterby = filterby;
             filteredData.setPredicate(person -> {
@@ -175,7 +172,7 @@ public class PersonOverview implements Initializable{
             });
         });
 
-       personTable.setItems(filteredData);
+        personTable.setItems(filteredData);
         // limpiar detalle de persona
         setPersonDetails(null);
 
@@ -240,22 +237,22 @@ public class PersonOverview implements Initializable{
     @FXML
     private void handleNewPerson() {
         Person tempPerson = new Person();
-        showCreateOrEditUser(tempPerson,true);
+        showCreateOrEditUser(tempPerson, true);
         personData.add(tempPerson);
-        if(true){
+        if (true) {
             return;
         }
-        boolean okClicked = showPersonEditDialog(tempPerson,true);
+        boolean okClicked = showPersonEditDialog(tempPerson, true);
 
         if (okClicked) {
             DataUser user = (DataUser) Util.personToUser(tempPerson);
 
             try {
-                if( Main.client.getService().createUser(user)!=null){
+                if (Main.client.getService().createUser(user) != null) {
                     tempPerson.setPassword(Start.getCipherManager().getCipherProvider().encrypt(tempPerson.getPassword()));
                     personData.add(tempPerson);
-                }else{
-                    tempPerson=null;
+                } else {
+                    tempPerson = null;
                 }
             } catch (UserException e) {
                 e.printStackTrace();
@@ -272,12 +269,12 @@ public class PersonOverview implements Initializable{
     private void handleEditPerson() {
         Person selectedPerson = personTable.getSelectionModel().getSelectedItem();
         if (selectedPerson != null) {
-            showCreateOrEditUser(selectedPerson,false);
+            showCreateOrEditUser(selectedPerson, false);
             setPersonDetails(selectedPerson);
-            if(true){
+            if (true) {
                 return;
             }
-            boolean okClicked = showPersonEditDialog(selectedPerson,false);
+            boolean okClicked = showPersonEditDialog(selectedPerson, false);
             DataUser user = (DataUser) Util.personToUser(selectedPerson);
             if (okClicked) {
                 try {
@@ -349,23 +346,24 @@ public class PersonOverview implements Initializable{
 
     }
 
-    public void updateTalbePerson(){
+    public void updateTalbePerson() {
         setPersonDetails(null);
-       new Thread(()->{
-           spinnerWait.setVisible(true);
-           personData.clear();
-           try {
-               Thread.sleep(1000);
-           } catch (InterruptedException e) {
-               e.printStackTrace();
-           }
-           loadUsers();;
-           spinnerWait.setVisible(false);
-       }).start();
+        new Thread(() -> {
+            spinnerWait.setVisible(true);
+            personData.clear();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            loadUsers();
+            ;
+            spinnerWait.setVisible(false);
+        }).start();
 
     }
 
-    public void showCreateOrEditUser(Person person,Boolean isCreate){
+    public void showCreateOrEditUser(Person person, Boolean isCreate) {
         try {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
@@ -383,7 +381,7 @@ public class PersonOverview implements Initializable{
             // Set the person into the controller.
             PersonEditDialog controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setPerson(person,isCreate);
+            controller.setPerson(person, isCreate);
 
             // Show the dialog and wait until the user closes it
             dialogStage.showAndWait();
@@ -397,8 +395,8 @@ public class PersonOverview implements Initializable{
     /**dialogos de edicion*/
     /**
      * mostrar dialogo de edicion de usuario
-     * */
-    public boolean showPersonEditDialog(Person person,boolean isCreate) {
+     */
+    public boolean showPersonEditDialog(Person person, boolean isCreate) {
         try {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
@@ -416,7 +414,7 @@ public class PersonOverview implements Initializable{
             // Set the person into the controller.
             PersonEditDialog controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setPerson(person,isCreate);
+            controller.setPerson(person, isCreate);
 
             // Show the dialog and wait until the user closes it
             dialogStage.showAndWait();
@@ -430,7 +428,7 @@ public class PersonOverview implements Initializable{
 
     /**
      * mostrar dialogo de quota de usuario
-     * */
+     */
     public boolean showQuotaDialog(Person person) {
         try {
             // Load the fxml file and create a new stage for the popup dialog.

@@ -3,8 +3,6 @@ package orchi.HHCloud.HHCloudAdmin.controller;
 import com.jfoenix.controls.JFXSpinner;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -27,9 +25,7 @@ import orchi.HHCloud.HHCloudAdmin.Util;
 import orchi.HHCloud.HHCloudAdmin.model.Person;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.cipher.CipherProvider;
-import orchi.HHCloud.quota.Exceptions.QuotaException;
 import orchi.HHCloud.user.DataUser;
-import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Exceptions.ValidationException;
 
 
@@ -274,7 +270,7 @@ public class PersonEditDialog {
      * Genera un nuevo id de usuario
      */
     public void generateId() {
-        if(isCreate) idField.setText(Long.toString(System.currentTimeMillis()));
+        if (isCreate) idField.setText(Long.toString(System.currentTimeMillis()));
     }
 
     /**
@@ -288,10 +284,10 @@ public class PersonEditDialog {
             protected Void call() throws Exception {
                 isInputValid();
                 Thread.sleep(2000);
-                if(isCreate){
+                if (isCreate) {
                     Main.client.getService().createUser((DataUser) Util.personToUser(tmpPerson));
                 }
-                if(!isCreate){
+                if (!isCreate) {
                     Main.client.getService().editUser((DataUser) Util.personToUser(tmpPerson));
                 }
                 return null;
@@ -330,7 +326,6 @@ public class PersonEditDialog {
 
     /**
      * Validacion de datos
-     * TODO falta por terminar
      */
     private void isInputValid() throws Exception {
         String errorMessage = "";
@@ -353,10 +348,9 @@ public class PersonEditDialog {
         if (usernameField.getText() == null || lastNameField.getText().length() == 0) {
             errorMessage += "No valid last name!\n";
         }
-        if(errorMessage.length()>0){
+        if (errorMessage.length() > 0) {
             throw new Exception(errorMessage);
         }
-
 
 
     }

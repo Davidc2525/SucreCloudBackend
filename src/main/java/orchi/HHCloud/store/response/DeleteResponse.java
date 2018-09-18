@@ -6,19 +6,19 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 public class DeleteResponse extends Response {
-	@JsonIgnore
-	private Path parent;
+    @JsonIgnore
+    private Path parent;
 
-	@JsonProperty(value = "parent")
-	public String getStringParent() {
-		return parent != null ? parent.toString() : "/";
-	}
+    @JsonProperty(value = "parent")
+    public String getStringParent() {
+        return parent != null ? parent.toString() : "/";
+    }
 
-	public Path getParent() {
-		return parent;
-	}
+    public Path getParent() {
+        return parent;
+    }
 
-	public void setParent(Path parent) {
-		this.parent = parent;
-	}
+    public void setParent(Path parent) {
+        this.parent = parent;
+    }
 }

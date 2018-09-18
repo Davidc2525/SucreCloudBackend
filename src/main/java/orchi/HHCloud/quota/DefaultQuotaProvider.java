@@ -72,7 +72,7 @@ public class DefaultQuotaProvider extends ProxyQuotaProvider {
 
     @Override
     public void removeQuota(User user, Path path) throws QuotaException {
-        log.debug("removeQuota {} {} ",user,path);
+        log.debug("removeQuota {} {} ", user, path);
         super.removeQuota(user, path);
         PreparedStatement stm = null;
         Connection conn = null;

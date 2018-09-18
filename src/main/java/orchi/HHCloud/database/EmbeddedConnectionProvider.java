@@ -1,82 +1,80 @@
 package orchi.HHCloud.database;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- *
  * @author David Colmenares
  */
 public class EmbeddedConnectionProvider implements ConnectionProvider {
 
-	private static final Logger Log = LoggerFactory.getLogger(EmbeddedConnectionProvider.class);
+    private static final Logger Log = LoggerFactory.getLogger(EmbeddedConnectionProvider.class);
 
-	private Properties settings;
+    private Properties settings;
 
-	private String driver = !true ? "org.hsqldb.jdbcDriver" : "org.apache.derby.jdbc.EmbeddedDriver";
-	private String protocol = !true ? "jdbc:hsqldb:file:" : "jdbc:derby:";
-	private Connection conn;
-	private MiniConnectionPoolManager poolMgr;
-	
-	@Override
-	public void start() {
-		Log.debug("Iniciando base de datos empotrada.");
+    private String driver = !true ? "org.hsqldb.jdbcDriver" : "org.apache.derby.jdbc.EmbeddedDriver";
+    private String protocol = !true ? "jdbc:hsqldb:file:" : "jdbc:derby:";
+    private Connection conn;
+    private MiniConnectionPoolManager poolMgr;
 
-		org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource dataSource = new org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource();
-		dataSource.setDatabaseName("db/HHCloud");
-		// dataSource.setCreateDatabase("create");
-		poolMgr = new MiniConnectionPoolManager(dataSource, 2000);
-	}
+    @Override
+    public void start() {
+        Log.debug("Iniciando base de datos empotrada.");
 
-	@Override
-	public boolean isPooled() {
-		return true;
-	}
+        org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource dataSource = new org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource();
+        dataSource.setDatabaseName("db/HHCloud");
+        // dataSource.setCreateDatabase("create");
+        poolMgr = new MiniConnectionPoolManager(dataSource, 2000);
+    }
 
-	@Override
-	public Connection getConnection() throws SQLException {
-		Log.debug("Octener conexion de base datos empotrada.");
-		Connection con = poolMgr.getConnection();
-		Log.debug("Connexion {}", con);
-		return con;
-	}
+    @Override
+    public boolean isPooled() {
+        return true;
+    }
 
-	@Override
-	public void restart() {
+    @Override
+    public Connection getConnection() throws SQLException {
+        Log.debug("Octener conexion de base datos empotrada.");
+        Connection con = poolMgr.getConnection();
+        Log.debug("Connexion {}", con);
+        return con;
+    }
 
-		destroy();
+    @Override
+    public void restart() {
 
-		start();
-	}
+        destroy();
 
-	@Override
-	public void destroy() {
+        start();
+    }
 
-		Connection con = null;
-		PreparedStatement pstmt = null;
-		try {
-			con = getConnection();
-			pstmt = con.prepareStatement("DISCONNECT");
-			pstmt.execute();
-		} catch (SQLException sqle) {
-			Log.error(sqle.getMessage(), sqle);
-		} finally {
+    @Override
+    public void destroy() {
 
-		}
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        try {
+            con = getConnection();
+            pstmt = con.prepareStatement("DISCONNECT");
+            pstmt.execute();
+        } catch (SQLException sqle) {
+            Log.error(sqle.getMessage(), sqle);
+        } finally {
 
-		settings = null;
-		conn = null;
-	}
+        }
 
-	@Override
-	public void finalize() throws Throwable {
-		super.finalize();
-		destroy();
-	}
+        settings = null;
+        conn = null;
+    }
+
+    @Override
+    public void finalize() throws Throwable {
+        super.finalize();
+        destroy();
+    }
 }

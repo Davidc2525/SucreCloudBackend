@@ -3,40 +3,40 @@ package orchi.HHCloud.store.arguments;
 import java.nio.file.Path;
 import java.util.List;
 
-public class GetStatusArguments extends Arguments{
-	private Path path;
-	private List<Path> paths;
-	
-	public GetStatusArguments() {
-	}
+public class GetStatusArguments extends Arguments {
+    private Path path;
+    private List<Path> paths;
 
-	public GetStatusArguments(Path path) {
-		this.path = path;
-	}
+    public GetStatusArguments() {
+    }
 
-	public GetStatusArguments(Path path, List<Path> paths) {
+    public GetStatusArguments(Path path) {
+        this.path = path;
+    }
 
-		this.path = path;
-		this.paths = paths;
-	}
+    public GetStatusArguments(Path path, List<Path> paths) {
 
-	public Path getPath() {
-		return path;
-	}
+        this.path = path;
+        this.paths = paths;
+    }
 
-	public void setPath(Path path) {
-		this.path = path;
-	}
+    public Path getPath() {
+        return path;
+    }
 
-	public List<Path> getPaths() {
-		return paths;
-	}
+    public void setPath(Path path) {
+        this.path = path;
+    }
 
-	public void setPaths(List<Path> paths) {
-		this.paths = paths;
-	}
+    public List<Path> getPaths() {
+        return paths;
+    }
 
-	public boolean isMultiple() {
-		return paths != null;
-	}
+    public void setPaths(List<Path> paths) {
+        this.paths = paths;
+    }
+
+    public boolean isMultiple() {
+        return paths != null;
+    }
 }

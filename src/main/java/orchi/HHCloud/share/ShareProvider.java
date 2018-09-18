@@ -1,9 +1,9 @@
 package orchi.HHCloud.share;
 
+import orchi.HHCloud.user.User;
+
 import java.nio.file.Path;
 import java.util.List;
-
-import orchi.HHCloud.user.User;
 
 /**
  * Con esta interface se podra crear crea un api, para administrar las carpetas
@@ -16,15 +16,15 @@ import orchi.HHCloud.user.User;
  */
 public interface ShareProvider {
 
-	public void init();
+    public void init();
 
-	public Shared sharedInDirectory(User user, Path path);
+    public Shared sharedInDirectory(User user, Path path);
 
-	public void deleteShares(User user, List<Path> paths);
+    public void deleteShares(User user, List<Path> paths);
 
-	public boolean isShared(User user, Path path);
+    public boolean isShared(User user, Path path);
 
-	public void createShare(User user, Path path);
+    public void createShare(User user, Path path);
 
-	public void deleteShare(User user, Path path);
+    public void deleteShare(User user, Path path);
 }

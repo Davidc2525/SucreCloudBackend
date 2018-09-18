@@ -6,83 +6,83 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 public abstract class Response {
-	private boolean shared = false;
-	private String status;
-	private String error;
-	private String msg;
-	private boolean multiple;
-	private Object payload;
-	private boolean file;
-	@JsonIgnore
-	private Path path;
-	
+    private boolean shared = false;
+    private String status;
+    private String error;
+    private String msg;
+    private boolean multiple;
+    private Object payload;
+    private boolean file;
+    @JsonIgnore
+    private Path path;
 
-	public String getStatus() {
-		return status;
-	}
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public String getStatus() {
+        return status;
+    }
 
-	public String getError() {
-		return error;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	public void setError(String error) {
-		this.error = error;
-	}
+    public String getError() {
+        return error;
+    }
 
-	public String getMsg() {
-		return msg;
-	}
+    public void setError(String error) {
+        this.error = error;
+    }
 
-	public void setMsg(String msg) {
-		this.msg = msg;
-	}
+    public String getMsg() {
+        return msg;
+    }
 
-	public boolean isMultiple() {
-		return multiple;
-	}
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
 
-	public void setMultiple(boolean multiple) {
-		this.multiple = multiple;
-	}
+    public boolean isMultiple() {
+        return multiple;
+    }
 
-	public Object getPayload() {
-		return payload;
-	}
+    public void setMultiple(boolean multiple) {
+        this.multiple = multiple;
+    }
 
-	public void setPayload(Object payload) {
-		this.payload = payload;
-	}
+    public Object getPayload() {
+        return payload;
+    }
 
-	public boolean isFile() {
-		return file;
-	}
+    public void setPayload(Object payload) {
+        this.payload = payload;
+    }
 
-	public void setFile(boolean file) {
-		this.file = file;
-	}
+    public boolean isFile() {
+        return file;
+    }
 
-	@JsonProperty(value = "path")
-	public String getStringPath() {
-		return path != null ? path.toString() == null ? "/" : path.toString() : "/";
-	}
+    public void setFile(boolean file) {
+        this.file = file;
+    }
 
-	public Path getPath() {
-		return path;
-	}
+    @JsonProperty(value = "path")
+    public String getStringPath() {
+        return path != null ? path.toString() == null ? "/" : path.toString() : "/";
+    }
 
-	public void setPath(Path path) {
-		this.path = path;
-	}
+    public Path getPath() {
+        return path;
+    }
 
-	public boolean isShared() {
-		return shared;
-	}
+    public void setPath(Path path) {
+        this.path = path;
+    }
 
-	public void setShared(boolean shared) {
-		this.shared = shared;
-	}
+    public boolean isShared() {
+        return shared;
+    }
+
+    public void setShared(boolean shared) {
+        this.shared = shared;
+    }
 }

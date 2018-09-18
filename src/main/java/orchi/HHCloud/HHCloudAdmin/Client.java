@@ -6,7 +6,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import orchi.HHCloud.AdminService.Service;
 import orchi.HHCloud.Start;
-import orchi.HHCloud.user.DataUser;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -23,7 +22,7 @@ public class Client {
     private BooleanProperty adminEnable = new SimpleBooleanProperty(Start.conf.getBoolean("admin.adminservice.enable"));
 
     public Client() throws MalformedURLException, XmlRpcException {
-        if(!adminEnable.getValue()){
+        if (!adminEnable.getValue()) {
             System.out.println("---------------------------------------------------");
             System.out.println("| EL SERVICIO DE ADMINISTRACION NO ESTA ACTIVADO. |");
             System.out.println("---------------------------------------------------");
@@ -32,7 +31,7 @@ public class Client {
         }
         // create configuration
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-        config.setServerURL(new URL("http://localhost:"+port.getValue()+"/xmlrpc"));
+        config.setServerURL(new URL("http://localhost:" + port.getValue() + "/xmlrpc"));
         config.setEnabledForExtensions(true);
         config.setConnectionTimeout(60 * 1000);
         config.setReplyTimeout(60 * 1000);
@@ -47,7 +46,7 @@ public class Client {
 
         // make the a regular call
         Object[] params = new Object[]
-                { new Integer(2), new Integer(3) };
+                {new Integer(2), new Integer(3)};
         Integer result = (Integer) client.execute("admin-service.suma", params);
         System.out.println("2 + 3 = " + result);
 
@@ -57,7 +56,7 @@ public class Client {
         int sum = service.suma(2, 4);
     }
 
-    public Service getService(){
+    public Service getService() {
         return service;
     }
 }

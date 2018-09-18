@@ -68,7 +68,7 @@ public class Main extends Application {
         root.setCenter(personOverview);
 
         // Give the controller access to the main app.
-       //PersonOverview controller = loader.getController();
+        //PersonOverview controller = loader.getController();
         //controller.setPersons(personData);
         //controller.setAppMain(this);
 
@@ -92,7 +92,7 @@ public class Main extends Application {
             // Set the person into the controller.
             PersonEditDialog controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setPerson(person,false);
+            controller.setPerson(person, false);
 
             // Show the dialog and wait until the user closes it
             dialogStage.showAndWait();
@@ -104,8 +104,9 @@ public class Main extends Application {
         }
     }
 
-    public ObservableList<Person> getUsers(){
-        ObservableList<Person>  persons  =FXCollections.observableArrayList();;
+    public ObservableList<Person> getUsers() {
+        ObservableList<Person> persons = FXCollections.observableArrayList();
+        ;
         Users users = client.getService().getAllUsers();
         users.getUsers().forEach((DataUser u) -> {
             persons.add(new Person(

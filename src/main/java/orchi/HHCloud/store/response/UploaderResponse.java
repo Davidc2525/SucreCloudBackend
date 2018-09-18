@@ -1,5 +1,5 @@
 package orchi.HHCloud.store.response;
 
-public class UploaderResponse extends Response{
+public class UploaderResponse extends Response {
 
 }

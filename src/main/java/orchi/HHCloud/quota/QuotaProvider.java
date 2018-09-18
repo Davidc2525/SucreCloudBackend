@@ -11,9 +11,9 @@ public interface QuotaProvider {
 
     public Quota setQuota(User user, Path path, long size) throws QuotaException;
 
-    public boolean quotaIsSet(User user) throws  QuotaException;
+    public boolean quotaIsSet(User user) throws QuotaException;
 
     public Quota getQuota(User user) throws QuotaException;
 
-    public void removeQuota(User user,Path path) throws QuotaException;
+    public void removeQuota(User user, Path path) throws QuotaException;
 }

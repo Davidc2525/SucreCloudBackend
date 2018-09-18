@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public class Util {
 
-    public static Person setPersonInPerson(Person dst,Person src){
+    public static Person setPersonInPerson(Person dst, Person src) {
         dst.setId(src.getId());
         dst.setEmail(src.getEmail());
         dst.setCreateAt(src.getCreateAt());
@@ -29,7 +29,7 @@ public class Util {
         return dst;
     }
 
-    public static Person clonePerson(Person p){
+    public static Person clonePerson(Person p) {
         Person cp = new Person();
         cp.setId(p.getId());
         cp.setEmail(p.getEmail());
@@ -43,7 +43,7 @@ public class Util {
         return cp;
     }
 
-    public static Person userToPerson(User user){
+    public static Person userToPerson(User user) {
         Person p = null;
         DataUser u = (DataUser) user;
         p = new Person();
@@ -59,7 +59,7 @@ public class Util {
         return p;
     }
 
-    public static User personToUser(Person person){
+    public static User personToUser(Person person) {
         DataUser u = null;
         u = new DataUser();
         u.setId(person.getId());
@@ -75,7 +75,7 @@ public class Util {
     }
 
     /*Dialogs*/
-    public static Optional<ButtonType> dialog(Alert.AlertType type, String title, String header, String context){
+    public static Optional<ButtonType> dialog(Alert.AlertType type, String title, String header, String context) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(header);
@@ -83,12 +83,13 @@ public class Util {
 
         return alert.showAndWait();
     }
-    public static Optional<ButtonType> dialog(String title,String header,String context){
-       return dialog(Alert.AlertType.CONFIRMATION,title ,header ,context);
+
+    public static Optional<ButtonType> dialog(String title, String header, String context) {
+        return dialog(Alert.AlertType.CONFIRMATION, title, header, context);
     }
 
 
-    public static Optional<ButtonType> exceptionDialog(Throwable ex){
+    public static Optional<ButtonType> exceptionDialog(Throwable ex) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Exception Dialog");
         alert.setHeaderText("Error");

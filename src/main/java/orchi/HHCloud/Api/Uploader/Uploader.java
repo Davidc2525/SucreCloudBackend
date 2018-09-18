@@ -36,11 +36,11 @@ import java.util.concurrent.TimeUnit;
 @Ignore
 @SessionRequired
 public class Uploader extends API {
-    private static Logger log = LoggerFactory.getLogger(Uploader.class);
     public static String apiName = "/uploader";
+    private static Logger log = LoggerFactory.getLogger(Uploader.class);
     private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
-    private ThreadPoolExecutor executor;
     private static ObjectMapper om;
+    private ThreadPoolExecutor executor;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -54,18 +54,18 @@ public class Uploader extends API {
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-       /**Access-Control-Request-Method: POST
-        Access-Control-Request-Headers: X-PINGOTHER, Content-Type
+        /**Access-Control-Request-Method: POST
+         Access-Control-Request-Headers: X-PINGOTHER, Content-Type
 
-        Access-Control-Allow-Origin: http://foo.example
-        Access-Control-Allow-Methods: POST
-        Access-Control-Allow-Headers: X-PINGOTHER, Content-Type
-        Access-Control-Max-Age: 86400*/
+         Access-Control-Allow-Origin: http://foo.example
+         Access-Control-Allow-Methods: POST
+         Access-Control-Allow-Headers: X-PINGOTHER, Content-Type
+         Access-Control-Max-Age: 86400*/
 
         resp.setHeader("Access-Control-Allow-Credentials", "true");
         resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
-        resp.setHeader("Access-Control-Allow-Headers","X-PINGOTHER, Content-Type");
-        resp.setHeader("Access-Control-Allow-Methods","POST");
+        resp.setHeader("Access-Control-Allow-Headers", "X-PINGOTHER, Content-Type");
+        resp.setHeader("Access-Control-Allow-Methods", "POST");
 
     }
 

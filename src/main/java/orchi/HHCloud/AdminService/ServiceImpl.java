@@ -81,17 +81,16 @@ public class ServiceImpl implements Service {
     }
 
     /**
-     *
      * @param user
      */
     @Override
     public ContentSummary getContentSummary(DataUser user) {
-        return sp.getContentSummary(user,Paths.get("/"));
+        return sp.getContentSummary(user, Paths.get("/"));
     }
 
     @Override
-    public Quota setQuota(DataUser user,Quota q) throws QuotaException {
-        return qp.setQuota(user,Paths.get(""),q.getQuota());
+    public Quota setQuota(DataUser user, Quota q) throws QuotaException {
+        return qp.setQuota(user, Paths.get(""), q.getQuota());
 
     }
 
