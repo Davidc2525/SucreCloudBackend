@@ -7,7 +7,7 @@ import orchi.HHCloud.Start;
 import orchi.HHCloud.database.ConnectionProvider;
 import orchi.HHCloud.store.RestrictedNames;
 import orchi.HHCloud.store.StoreProvider;
-import orchi.HHCloud.user.BasicUser;
+import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,7 +195,7 @@ public class DefaultShareProvider implements ShareProvider {
                 ResultSet r = stm.executeQuery();
                 while (r.next()) {
                     log.debug("Ruta compartida {} en {}", r.getString("PATH"), path + "");
-                    BasicUser newUser = new BasicUser();
+                    DataUser newUser = new DataUser();
                     newUser.setId(r.getString("OWNERUSER"));
                     Share share = BuildShare.createShare("", newUser, Paths.get(r.getString("PATH")), r.getLong("CREATEAT"));
                     shared.addShare(share);

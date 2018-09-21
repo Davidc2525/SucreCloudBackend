@@ -249,6 +249,18 @@
             <artifactId>project</artifactId>
             <version>31</version>
         </dependency>-->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.8.13</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.8.13</version>
+        </dependency>
+
 
 
     </dependencies>
@@ -304,6 +316,34 @@
                 </executions>
             </plugin>
 
+            <!-- execution -->
+
+               <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>java</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                  <mainClass>orchi.HHCloud.Start</mainClass>
+                  <!--<arguments>
+                    <argument>argument1</argument>
+                  </arguments>-->
+                  <workingDirectory>target/classes/</workingDirectory>
+                  <systemProperties>
+                    <systemProperty>
+                      <key>myproperty</key>
+                      <value>myvalue</value>
+                    </systemProperty>
+                  </systemProperties>
+                </configuration>
+              </plugin>
+
             <!--<plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -314,6 +354,31 @@
 
                 </configuration>
             </plugin>-->
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.11</version>
+                <configuration>
+                    <complianceLevel>1.8</complianceLevel>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <showWeaveInfo>true</showWeaveInfo>
+                    <verbose>true</verbose>
+                    <Xlint>ignore</Xlint>
+                    <encoding>UTF-8 </encoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <!-- use this goal to weave all your main classes -->
+                            <goal>compile</goal>
+                            <!-- use this goal to weave all your test classes
+                            <goal>test-compile</goal>-->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
         <resources>

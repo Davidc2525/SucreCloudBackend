@@ -11,12 +11,17 @@ import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Users;
+import orchi.HHCloud.user.userAvailable.AvailableDescriptor;
+import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
+import orchi.HHCloud.user.userAvailable.Exceptions.EnablingException;
+import orchi.HHCloud.user.userAvailable.UserAvailableProvider;
 
 import java.nio.file.Paths;
 
 public class ServiceImpl implements Service {
     private QuotaProvider qp = Start.getQuotaManager().getProvider();
     private StoreProvider sp = Start.getStoreManager().getStoreProvider();
+    private UserAvailableProvider avp = Start.getUserManager().getUserAvailableProvider();
 
     @Override
     public int suma(int a, int b) {
@@ -78,6 +83,23 @@ public class ServiceImpl implements Service {
             e.printStackTrace();
         }
         return u;
+    }
+
+    @Override
+    public AvailableDescriptor disableUser(DataUser user, String reason) throws DisablingException, UserException {
+        avp.disableUser(user,reason);
+        return getAvialableDescriptor(user);
+    }
+
+    @Override
+    public AvailableDescriptor enableUser(DataUser user) throws EnablingException, UserException {
+        avp.enableUser(user);
+        return getAvialableDescriptor(user);
+    }
+
+    @Override
+    public AvailableDescriptor getAvialableDescriptor(DataUser user) throws UserException {
+        return avp.getDescriptor(user);
     }
 
     /**

@@ -1,0 +1,8 @@
+<aspectj>
+    <aspects>
+        <aspect  name="orchi.HHCloud.aspects.user.available.Aspect"/>
+        <weaver options="-verbose -showWeaveInfo">
+            <include within="com.baeldung.aspectj.*"/>
+        </weaver>
+    </aspects>
+</aspectj>

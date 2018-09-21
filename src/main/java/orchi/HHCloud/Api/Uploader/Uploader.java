@@ -7,7 +7,7 @@ import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.quota.Exceptions.QuotaExceededException;
 import orchi.HHCloud.store.response.UploaderResponse;
-import orchi.HHCloud.user.BasicUser;
+import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -194,7 +194,7 @@ public class Uploader extends API {
             if (session != null) {
                 java.nio.file.Path p = Paths.get(pathArgs, path);
                 String root = (String) session.getAttribute("uid");
-                User user = new BasicUser();
+                User user = new DataUser();
                 user.setId(root);
                 Start.getStoreManager().getStoreProvider().create(user, p, in);
             }

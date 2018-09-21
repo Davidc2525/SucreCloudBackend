@@ -1,7 +1,7 @@
 package orchi.HHCloud.store;
 
 import orchi.HHCloud.Start;
-import orchi.HHCloud.user.BasicUser;
+import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ public abstract class ContextStore {
     }
 
     public static java.nio.file.Path toUserContext(String idUser, String path) {
-        BasicUser u = new BasicUser();
+        DataUser u = new DataUser();
         u.setId(idUser);
         return toUserContext(u, path);
     }

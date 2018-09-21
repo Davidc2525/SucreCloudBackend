@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-public class LoginDataUser extends BasicUser {
+public class LoginDataUser extends DataUser {
 
     private boolean remember;
 
@@ -15,7 +15,7 @@ public class LoginDataUser extends BasicUser {
     }
 
     public LoginDataUser bind(String username, String password, Boolean remember) {
-        super.bind("", username, username, password);
+        super.bind("", "", username, password);
 
         this.remember = remember == null ? false : remember;
         return this;

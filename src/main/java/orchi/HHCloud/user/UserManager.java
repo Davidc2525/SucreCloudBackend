@@ -1,5 +1,7 @@
 package orchi.HHCloud.user;
 
+import orchi.HHCloud.Start;
+import orchi.HHCloud.user.userAvailable.UserAvailableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,35 +12,32 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class UserManager {
     private static UserManager instance;
+    private static String classNameUserProvider = Start.conf.getString("user.usermanager.provider.user");
+    private static String classNameUserAvailableProvider = Start.conf.getString("user.usermanager.provider.user.available");
     private Logger logger = LoggerFactory.getLogger(UserManager.class);
     private UserProvider userProvider;
+    private UserAvailableProvider userAvailableProvider;
 
     /**
-     * inicia con proveedor por defecto {@link orchi.HHCloud.user.DefaultUserProvider}
+     * inicia con proveedor por defecto {@link orchi.HHCloud.user.EmbeddedUserProvider}
      */
     public UserManager() throws InstantiationException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException, NoSuchMethodException, SecurityException {
+        try {
+            Class<UserProvider> clazzUP = (Class<UserProvider>) Class.forName(classNameUserProvider);
 
-        this(DefaultUserProvider.class);
-    }
+            Class<UserAvailableProvider> clazzUAP = (Class<UserAvailableProvider>) Class.forName(classNameUserAvailableProvider);
 
-    /**
-     * inicia con un proveedor pasado como String
-     */
-    @SuppressWarnings("unchecked")
-    public UserManager(String provider) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+            userProvider = clazzUP.newInstance();
+            userAvailableProvider = clazzUAP.newInstance();
 
-        this((Class<? extends UserProvider>) Class.forName(provider));
-    }
+            userProvider.init();
+            userAvailableProvider.init();
 
-    /**
-     * inicia con un proveedor pasado como Class<? extends UserProvider>
-     */
-    public UserManager(Class<? extends UserProvider> provider) throws InstantiationException, IllegalAccessException {
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
-        userProvider = (UserProvider) provider.newInstance();
-        logger.info("UserProvider: " + provider.getName());
-        UserManager.instance = this;
     }
 
     /**
@@ -47,7 +46,7 @@ public class UserManager {
     public static UserManager getInstance() {
         if (instance == null) {
             try {
-                new UserManager();
+                instance = new UserManager();
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 e.printStackTrace();
@@ -71,4 +70,7 @@ public class UserManager {
         this.userProvider = userProvider;
     }
 
+    public UserAvailableProvider getUserAvailableProvider() {
+        return userAvailableProvider;
+    }
 }

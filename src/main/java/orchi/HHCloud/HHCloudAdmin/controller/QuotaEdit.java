@@ -165,9 +165,7 @@ public class QuotaEdit {
 
                 @Override
                 protected ContentSummary call() throws Exception {
-                    Thread.sleep(1000);
-
-                    return client.getService().getContentSummary(u);
+                   return client.getService().getContentSummary(u);
                 }
             };
 

@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 public class EmbeddedUserProvider implements UserProvider {
     private static final Logger log = LoggerFactory.getLogger(EmbeddedUserProvider.class);
     private static final String GET_ALL_USERS = "SELECT * FROM USERS";
-    private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.admin");
+    private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.mail.admin");
     private static final String UPDATE_PASS_USER = "UPDATE USERS SET PASS=(?) WHERE ID=(?)";
     private static final String DELETE_USERS_WHERE_ID = "DELETE FROM USERS WHERE ID=(?)";
     private static final String SELECT_USERS_WHERE_USERNAME = "SELECT * FROM USERS where username=(?)";
@@ -63,7 +63,7 @@ public class EmbeddedUserProvider implements UserProvider {
             + "UPDATE USERS SET "
             + "EMAILVERIFIED=(?)"
             + "WHERE ID=(?)";
-    private final ThreadPoolExecutor executor;
+    private ThreadPoolExecutor executor;
     private CipherProvider ciplherProvider = Start.getCipherManager().getCipherProvider();
     private ConnectionProvider provider;
     //private Connection conn;
@@ -71,8 +71,9 @@ public class EmbeddedUserProvider implements UserProvider {
     private String templateEmailVerify;
     private String templateRecoveryPassword;
 
-    public EmbeddedUserProvider() {
-        log.debug("Iniciando EmbeddedUserProvider");
+    @Override
+    public void init() {
+        log.info("iniciando proveedor de usuario");
         try {
             templateEmailVerify = Streams.asString(EmbeddedUserProvider.class.getResourceAsStream("/templateVerifyEmail.html"));
             templateRecoveryPassword = Streams.asString(EmbeddedUserProvider.class.getResourceAsStream("/templateRecoveryPasswordEmail.html"));
@@ -392,6 +393,7 @@ public class EmbeddedUserProvider implements UserProvider {
 
         return getUserById(oldUser.getId());
     }
+
 
     @Override
     public UserValidator getValidator() {

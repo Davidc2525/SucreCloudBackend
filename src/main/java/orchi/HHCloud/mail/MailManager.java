@@ -4,7 +4,7 @@ import orchi.HHCloud.Start;
 
 public class MailManager {
     private static MailManager instance;
-    private static String nameProvider = Start.conf.getString("mail.mailmanager.defaultmailprovider");
+    private static String nameProvider = Start.conf.getString("mail.mailmanager.mail.provider");
     private MailProvider provider;
 
 

@@ -6,6 +6,9 @@ import orchi.HHCloud.store.ContentSummary;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Users;
+import orchi.HHCloud.user.userAvailable.AvailableDescriptor;
+import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
+import orchi.HHCloud.user.userAvailable.Exceptions.EnablingException;
 
 public interface Service {
 
@@ -23,6 +26,13 @@ public interface Service {
     public boolean deleteUser(DataUser user) throws UserException, QuotaException;
 
     public Users getAllUsers();
+
+    /**Disponibilidad de usuario*/
+    public AvailableDescriptor disableUser(DataUser user, String reason) throws DisablingException, UserException;
+
+    public AvailableDescriptor enableUser(DataUser user) throws EnablingException, UserException;
+
+    public AvailableDescriptor getAvialableDescriptor(DataUser user) throws UserException;
 
     /**
      * Servicio de detalles almacenamiento

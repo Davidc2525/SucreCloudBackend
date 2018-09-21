@@ -58,6 +58,8 @@ public class PersonOverview implements Initializable {
     @FXML
     private Button openQuotaDialog;
     @FXML
+    private Button userAvailable;
+    @FXML
     private TextField filterInput;
     @FXML
     private JFXSpinner spinnerWait;
@@ -210,6 +212,7 @@ public class PersonOverview implements Initializable {
     private void setPersonDetails(Person person) {
         if (person != null) {
             openQuotaDialog.setDisable(false);
+            userAvailable.setDisable(false);
             idLabel.setText(person.getId());
             firstNameLabel.setText(person.getFirstName());
             lastNameLabel.setText(person.getLastName());
@@ -219,6 +222,7 @@ public class PersonOverview implements Initializable {
             userNameLabel.setText(person.getUsername());
         } else {
             openQuotaDialog.setDisable(true);
+            userAvailable.setDisable(true);
             idLabel.setText("");
             firstNameLabel.setText("");
             lastNameLabel.setText("");
@@ -238,7 +242,6 @@ public class PersonOverview implements Initializable {
     private void handleNewPerson() {
         Person tempPerson = new Person();
         showCreateOrEditUser(tempPerson, true);
-        personData.add(tempPerson);
         if (true) {
             return;
         }
@@ -345,17 +348,33 @@ public class PersonOverview implements Initializable {
         }
 
     }
+    /**
+     * Llamada cuando se clickea en boton edicion de disponibilidad de usuario
+     */
+    @FXML
+    private void handleAvailableUser() {
+
+        Person selectedPerson = personTable.getSelectionModel().getSelectedItem();
+        if (selectedPerson != null) {
+
+            boolean okClicked = showAvailableDialog(selectedPerson);
+            DataUser user = (DataUser) Util.personToUser(selectedPerson);
+            if (okClicked) {
+                /*if (mainApp.getClient().getService().editUser(user) != null) {
+                    setPersonDetails(selectedPerson);
+                }*/
+            }
+
+        }
+
+    }
 
     public void updateTalbePerson() {
         setPersonDetails(null);
         new Thread(() -> {
             spinnerWait.setVisible(true);
             personData.clear();
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
             loadUsers();
             ;
             spinnerWait.setVisible(false);
@@ -367,7 +386,7 @@ public class PersonOverview implements Initializable {
         try {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Main.class.getClassLoader().getResource("./PersonEditDialog.fxml"));
+            loader.setLocation(Main.class.getClassLoader().getResource("PersonEditDialog.fxml"));
             AnchorPane page = (AnchorPane) loader.load();
 
             // Create the dialog Stage.
@@ -400,7 +419,7 @@ public class PersonOverview implements Initializable {
         try {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Main.class.getClassLoader().getResource("./PersonEditDialog.fxml"));
+            loader.setLocation(Main.class.getClassLoader().getResource("PersonEditDialog.fxml"));
             AnchorPane page = (AnchorPane) loader.load();
 
             // Create the dialog Stage.
@@ -433,7 +452,7 @@ public class PersonOverview implements Initializable {
         try {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Main.class.getClassLoader().getResource("./QuotaEdit.fxml"));
+            loader.setLocation(Main.class.getClassLoader().getResource("QuotaEdit.fxml"));
             AnchorPane page = (AnchorPane) loader.load();
 
             // Create the dialog Stage.
@@ -453,6 +472,39 @@ public class PersonOverview implements Initializable {
             dialogStage.showAndWait();
 
             return controller.isOkClicked();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * mostrar dialogo de quota de usuario
+     */
+    public boolean showAvailableDialog(Person person) {
+        try {
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getClassLoader().getResource("AvailableUser.fxml"));
+            AnchorPane page = (AnchorPane) loader.load();
+
+            // Create the dialog Stage.
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edicion de disponibilidad de usuario");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(Main.primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            // Set the person into the controller.
+            Available controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setPerson(person);
+
+            // Show the dialog and wait until the user closes it
+            dialogStage.showAndWait();
+
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
             return false;

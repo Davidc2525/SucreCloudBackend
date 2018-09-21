@@ -283,7 +283,6 @@ public class PersonEditDialog {
             @Override
             protected Void call() throws Exception {
                 isInputValid();
-                Thread.sleep(2000);
                 if (isCreate) {
                     Main.client.getService().createUser((DataUser) Util.personToUser(tmpPerson));
                 }
@@ -303,6 +302,7 @@ public class PersonEditDialog {
             Util.setPersonInPerson(person, tmpPerson);
             if (isCreate) {
                 person.setPassword(cp.encrypt(tmpPerson.getPassword()));
+                PersonOverview.personData.add(person);
             }
             model.loadin.setValue(false);
             okClicked = true;

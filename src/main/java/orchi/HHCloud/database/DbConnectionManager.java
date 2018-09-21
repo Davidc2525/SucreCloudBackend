@@ -1,5 +1,6 @@
 package orchi.HHCloud.database;
 
+import orchi.HHCloud.Start;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +12,7 @@ public class DbConnectionManager {
 
     private static final Logger Log = LoggerFactory.getLogger(DbConnectionManager.class);
     private static final Object providerLock = new Object();
-    private static String defaultProvider = "orchi.HHCloud.database.EmbeddedConnectionProvider";
+    private static String defaultProvider = Start.conf.getString("db.dbmanager.connection.provider");
     private static ConnectionProvider connectionProvider;
     private static DbConnectionManager instance;
 

@@ -6,7 +6,7 @@ import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.Api.annotations.SessionRequired;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.store.StoreProvider;
-import orchi.HHCloud.user.BasicUser;
+import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
@@ -88,7 +88,7 @@ public class Opener extends API {
             log.debug("Abrir contenido de archivo.");
 
             try {
-                User user = new BasicUser();
+                User user = new DataUser();
                 user.setId((String) session.getAttribute("uid"));
                 ParseOpenerHeaders headers = new ParseOpenerHeaders(req);
                 if (headers.headers.containsKey("Range")) {

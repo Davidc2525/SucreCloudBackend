@@ -237,6 +237,8 @@ public class Login extends HttpServlet {
                         writeResponse(new AuthJsonResponse(e.getMessage(), false).setPasswordError(e.getMessage()).setStatus("error"));
                     } catch (AuthException e) {
                         writeResponse(new AuthJsonResponse(e.getMessage(), false).setStatus("error"));
+                    } catch (Exception e) {
+                        writeResponse(new AuthJsonResponse(e.getMessage(), false).setStatus("error"));
                     }
 
                 } else {

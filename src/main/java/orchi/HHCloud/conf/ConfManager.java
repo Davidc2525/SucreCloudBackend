@@ -8,6 +8,7 @@ import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
+import java.io.File;
 import java.util.Iterator;
 
 public class ConfManager {
@@ -15,17 +16,19 @@ public class ConfManager {
     private Configuration config;
 
     public ConfManager() {
-        System.out.printf(ConfManager.class.getClassLoader().getResource("application.properties").getPath());
+        System.out.printf(String.valueOf(new File("./application.properties")));
         Configurations configs = new Configurations();
         try {
+            PropertiesConfiguration c = configs.properties(new File("./application.properties"));
+            c.setListDelimiterHandler(new DefaultListDelimiterHandler(','));
+            setConfig(c);
             //setConfig(configs.properties(new File("./application.properties")));
-            prepare();
+           // prepare();
             Iterator<String> iter = config.getKeys();
             while (iter.hasNext()) {
                 String key = iter.next();
                 System.out.println(key + ": " + getConfig().getString(key));
             }
-
 
         } catch (ConfigurationException cex) {
             cex.printStackTrace();
@@ -47,7 +50,7 @@ public class ConfManager {
                 new FileBasedConfigurationBuilder<PropertiesConfiguration>(
                         PropertiesConfiguration.class)
                         .configure(params.properties()
-                                .setFileName(ConfManager.class.getClassLoader().getResource("application.properties").getPath())
+                                .setFile(new File("./application.properties"))
                                 .setListDelimiterHandler(new DefaultListDelimiterHandler(',')));
         // Configuration config = builder.getConfiguration();
 

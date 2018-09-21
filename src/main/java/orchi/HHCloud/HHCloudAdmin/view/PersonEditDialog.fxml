@@ -1,67 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
 <?import com.jfoenix.controls.*?>
 <?import java.lang.*?>
 <?import javafx.collections.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="300.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8"
-            fx:controller="orchi.HHCloud.HHCloudAdmin.controller.PersonEditDialog">
+<AnchorPane prefHeight="300.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="orchi.HHCloud.HHCloudAdmin.controller.PersonEditDialog">
     <children>
-        <GridPane fx:id="gridPane" alignment="CENTER" prefHeight="200.0" prefWidth="360.0" AnchorPane.leftAnchor="10.0"
-                  AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+        <GridPane fx:id="gridPane" alignment="CENTER" layoutX="10.0" layoutY="7.0" prefHeight="255.0" prefWidth="530.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="7.0">
             <children>
-                <Label text="Id"/>
-                <TextField fx:id="idField" GridPane.columnIndex="1"/>
-                <Label text="Nombre de usuario" GridPane.rowIndex="1"/>
-                <Label text="Email" GridPane.rowIndex="2"/>
-                <Label text="Nombre" GridPane.rowIndex="3"/>
-                <Label text="Apellido" GridPane.rowIndex="4"/>
-                <Label text="Contraseña" GridPane.rowIndex="7"/>
-                <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                <TextField fx:id="emailField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                <TextField fx:id="firstNameField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                <TextField fx:id="lastNameField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                <Label text="Cuenta verificada" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                <Label prefWidth="36.999908447265625" text="Sexo" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                <Button fx:id="generateIdButton" onAction="#generateId" defaultButton="true" mnemonicParsing="false"
-                        prefWidth="139.0" text="Generar nuevo id" textAlignment="CENTER" GridPane.columnIndex="2"
-                        GridPane.halignment="CENTER" GridPane.rowIndex="0"/>
-
-                <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                    <children>
-                        <ToggleButton fx:id="verifiedButton" mnemonicParsing="true" selected="true"
-                                      text="Cuenta verificada" underline="false"/>
-                    </children>
-                </HBox>
-                <TextField fx:id="passwordField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-                <ComboBox fx:id="genderSelect" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                <Label text="ID" />
+                <TextField fx:id="idField" GridPane.columnIndex="2" />
+                <Label text="Nombre de usuario" GridPane.rowIndex="1" />
+                <Label text="Email" GridPane.rowIndex="2" />
+                <Label text="Nombre" GridPane.rowIndex="3" />
+                <Label text="Apellido" GridPane.rowIndex="4" />
+                <Label text="Contraseña" GridPane.rowIndex="7" />
+                <TextField fx:id="usernameField" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                <TextField fx:id="emailField" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                <TextField fx:id="firstNameField" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                <TextField fx:id="lastNameField" prefHeight="20.0" prefWidth="241.0" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                <Label text="Cuenta verificada" GridPane.rowIndex="5" />
+                <Label prefWidth="36.999908447265625" text="Sexo" GridPane.rowIndex="6" />
+                <Button fx:id="generateIdButton" defaultButton="true" mnemonicParsing="false" onAction="#generateId" prefHeight="25.0" prefWidth="138.0" text="Generar nuevo id" textAlignment="CENTER" GridPane.columnIndex="4" GridPane.halignment="CENTER" GridPane.rowIndex="0">
+               <GridPane.margin>
+                  <Insets />
+               </GridPane.margin></Button>
+                  <ToggleButton fx:id="verifiedButton" mnemonicParsing="true" prefHeight="25.0" prefWidth="150.0" selected="true" text="Cuenta verificada" underline="false" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+                <TextField fx:id="passwordField" prefHeight="24.0" prefWidth="241.0" GridPane.columnIndex="2" GridPane.rowIndex="7" />
+                <ComboBox fx:id="genderSelect" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="6">
+               <GridPane.margin>
+                  <Insets top="5.0" />
+               </GridPane.margin></ComboBox>
             </children>
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="175.0" minWidth="10.0" prefWidth="129.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="249.0" minWidth="10.0" prefWidth="220.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="240.0" minWidth="10.0" prefWidth="131.0"/>
+                <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="175.0" minWidth="10.0" prefWidth="134.0" />
+            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="175.0" minWidth="10.0" prefWidth="11.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="277.0" minWidth="10.0" prefWidth="243.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="240.0" minWidth="10.0" prefWidth="22.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="240.0" minWidth="10.0" prefWidth="162.0" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="25.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES"/>
+                <RowConstraints maxHeight="42.0" minHeight="10.0" prefHeight="27.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="52.0" minHeight="8.0" prefHeight="34.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="65.0" minHeight="10.0" prefHeight="27.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="65.0" minHeight="5.0" prefHeight="32.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="56.0" minHeight="9.0" prefHeight="34.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="55.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="56.0" minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="50.0" minHeight="10.0" prefHeight="43.0" vgrow="SOMETIMES" />
             </rowConstraints>
         </GridPane>
-        <HBox spacing="5.0" fx:id="actionButtos" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+        <HBox fx:id="actionButtos" spacing="5.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
             <children>
-                <Button fx:id="buttonOk" defaultButton="true" mnemonicParsing="false" onAction="#handleOk"
-                        prefWidth="90.0" text="OK"/>
-                <Button fx:id="buttonCancel" mnemonicParsing="false" onAction="#handleCancel" prefWidth="90.0"
-                        text="Cancel"/>
+                <Button fx:id="buttonOk" defaultButton="true" mnemonicParsing="false" onAction="#handleOk" prefWidth="90.0" text="OK" />
+                <Button fx:id="buttonCancel" mnemonicParsing="false" onAction="#handleCancel" prefWidth="90.0" text="Cancel" />
             </children>
         </HBox>
-        <JFXSpinner fx:id="spinnerLoad" layoutX="309.0" layoutY="262.0"/>
+        <JFXSpinner fx:id="spinnerLoad" layoutX="309.0" layoutY="262.0" visible="false" />
     </children>
 </AnchorPane>

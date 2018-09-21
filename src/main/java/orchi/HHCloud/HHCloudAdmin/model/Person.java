@@ -12,7 +12,6 @@ import javafx.beans.property.*;
  */
 public class Person {
 
-
     private final StringProperty id = new SimpleStringProperty("");
     private final StringProperty username = new SimpleStringProperty("");
     private final StringProperty email = new SimpleStringProperty("");
@@ -20,7 +19,6 @@ public class Person {
     private final StringProperty gender = new SimpleStringProperty("");
     private final StringProperty firstName = new SimpleStringProperty("");
     private final StringProperty lastName = new SimpleStringProperty("");
-    ;
     private final StringProperty password = new SimpleStringProperty("");
 
 
@@ -28,8 +26,6 @@ public class Person {
 
     public Person() {
     }
-
-    ;
 
     public Person(String id, String username, String email, String password, String firstName, String lastName, boolean isVerified, String gender) {
 

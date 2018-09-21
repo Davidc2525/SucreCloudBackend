@@ -17,6 +17,14 @@ CREATE UNIQUE INDEX email ON USERS (EMAIL);
 
 CREATE UNIQUE INDEX username ON USERS (USERNAME);
 
+CREATE TABLE USER_AVAILABLE(
+    IDUSER VARCHAR(100) NOT NULL,
+    REASON VARCHAR(1000) NOT NULL,
+    CREATEDAT BIGINT NOT NULL
+);
+
+CREATE UNIQUE INDEX UAID ON USER_AVAILABLE (IDUSER);
+insert into USER_AVAILABLE values ('123','por mmg',123124123);
 --INSERT INTO USERS VALUES
 --('123', 'luisa@gmail.com', true, 'luisa.s','luisa','gomes','f', 1533252085955,'AUQk/iNJ+0h0xfHhyTwlUVuIXu7VofOHaS9J1HOtbvrd9KQmcNK7mlk='),
 --('1234', 'david@gmail.com', true, 'david.c', 'david','colmenares','m',1533252085955,'AUQk/iNJ+0h0xfHhyTwlUVuIXu7VofOHaS9J1HOtbvrd9KQmcNK7mlk=');

@@ -87,11 +87,11 @@ public class DefaultAuthProvider implements AuthProvider {
     @Override
     public void authenticate(User authUser, WraperLoginCallback callback) throws AuthException {
 
-        commonValidation(authUser.getUsername(), authUser.getPassword());
+        commonValidation(authUser.getEmail(), authUser.getPassword());
 
         User user = null;
         try {
-            user = up.getUserByEmail(authUser.getUsername());
+            user = up.getUserByEmail(authUser.getEmail());
         } catch (UserNotExistException e) {
             throw new AuthUserNotExistsException(e.getMessage());
         } catch (UserException e) {
@@ -108,25 +108,25 @@ public class DefaultAuthProvider implements AuthProvider {
         String userPassword = userStore.getPassword();
 
         if (userPassword == null) {
-            throw new AuthUserNotExistsException(authUser.getUsername() + " no exist");
+            throw new AuthUserNotExistsException(authUser.getEmail() + " no exist");
         }
 
         String userStorePasswordDecrypt = cipherProvider.decrypt(userPassword);
 
         if (!userStorePasswordDecrypt.equals(authUser.getPassword())) {
-            Integer countFails = usersAuthFails.get(authUser.getUsername());
+            Integer countFails = usersAuthFails.get(authUser.getEmail());
             if (countFails == null) {
                 countFails = 0;
             }
             ++countFails;
-            usersAuthFails.put(authUser.getUsername(), countFails);
+            usersAuthFails.put(authUser.getEmail(), countFails);
             if (countFails >= 50) {
                 throw new AuthExceededCountFaildException(
-                        authUser.getUsername() + " exeedec the count retry auth " + countFails + " > 4, its locket.");
+                        authUser.getEmail() + " exeedec the count retry auth " + countFails + " > 4, its locket.");
             }
 
             throw new AuthPasswordException(
-                    "password: " + authUser.getPassword() + ", for " + authUser.getUsername() + " is incorrect");
+                    "password: " + authUser.getPassword() + ", for " + authUser.getEmail() + " is incorrect");
 
         }
     }

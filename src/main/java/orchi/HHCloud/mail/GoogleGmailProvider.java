@@ -34,7 +34,7 @@ import java.util.Properties;
 
 public class GoogleGmailProvider implements MailProvider {
     private static final String APPLICATION_NAME = Start.conf.getString("app.name");
-    private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.admin");
+    private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.mail.admin");
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 

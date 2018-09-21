@@ -19,6 +19,9 @@ import orchi.HHCloud.stores.HdfsStore.HdfsStoreProvider;
 import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Exceptions.UserException;
+import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
+import orchi.HHCloud.user.userAvailable.Exceptions.EnablingException;
+import orchi.HHCloud.user.userAvailable.UserAvailableProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.hadoop.fs.*;
@@ -48,15 +51,30 @@ import java.util.*;
 public class Main {
     private static Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException, XmlRpcException {
+    public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException, XmlRpcException, UserException, DisablingException, EnablingException {
 
         System.out.println("HHCloud pruebas!");
         //orchi.HHCloud.HHCloudAdmin.Main.main(args);
-        System.out.println(FileUtils.byteCountToDisplaySize(7231242343L));
         new AdminServer();
         if (true) {
             return;
         }
+        UserAvailableProvider uap = Start.getUserManager().getUserAvailableProvider();
+        DataUser tuav = new DataUser();
+        tuav.setId("123");
+        log.info("USER {} IS AVAILABLE {}",tuav,uap.userIsEnable(tuav));
+
+        DataUser tuav2 = new DataUser();
+        tuav2.setId("1536707461371");
+        log.info("USER {} IS AVAILABLE 1 {}",tuav2,uap.userIsEnable(tuav2));
+        uap.disableUser(tuav2,"n/a");
+        log.info("USER {} IS AVAILABLE 2 {}",tuav2,uap.userIsEnable(tuav2));
+        //uap.enableUser(tuav2);
+        log.info("USER {} IS AVAILABLE 3 {}",tuav2,uap.userIsEnable(tuav2));
+
+        System.out.println(FileUtils.byteCountToDisplaySize(7231242343L));
+
+
 
 
         System.out.printf(WordUtils.capitalize("david colmenares"));

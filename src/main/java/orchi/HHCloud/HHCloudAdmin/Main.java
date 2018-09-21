@@ -49,7 +49,7 @@ public class Main extends Application {
 
         this.primaryStage = primaryStage;
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(Main.class.getClassLoader().getResource("./RootLayout.fxml"));
+        loader.setLocation(Main.class.getClassLoader().getResource("RootLayout.fxml"));
         root = (BorderPane) loader.load();
         primaryStage.setTitle("HHCloud admin");
         primaryStage.setScene(new Scene(root, 600, 400));
@@ -61,7 +61,7 @@ public class Main extends Application {
     public void showPersonPreview() throws IOException {
         // Load person overview.
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getClassLoader().getResource("./PersonOverview.fxml"));
+        loader.setLocation(getClass().getClassLoader().getResource("PersonOverview.fxml"));
         AnchorPane personOverview = (AnchorPane) loader.load();
 
         // Set person overview into the center of root layout.
@@ -78,7 +78,7 @@ public class Main extends Application {
         try {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Main.class.getClassLoader().getResource("./PersonEditDialog.fxml"));
+            loader.setLocation(Main.class.getClassLoader().getResource("PersonEditDialog.fxml"));
             AnchorPane page = (AnchorPane) loader.load();
 
             // Create the dialog Stage.

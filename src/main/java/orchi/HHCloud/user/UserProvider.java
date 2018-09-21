@@ -13,6 +13,8 @@ import orchi.HHCloud.user.Exceptions.UserNotExistException;
  */
 public interface UserProvider {
 
+    public void init();
+
     /**
      * Validador de usuario
      * valida emain, username, nombre, apellido, clave ...

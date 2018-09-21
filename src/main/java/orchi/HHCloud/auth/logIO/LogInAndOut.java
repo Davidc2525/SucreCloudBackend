@@ -18,12 +18,11 @@ public class LogInAndOut implements LoginAndLogoutInterface {
     }
 
     @Override
-    public void logInCallBack(AsyncContext ctx, User user, LoginCallback callback) throws AuthException {
+    public void logInCallBack(AsyncContext ctx, User user, LoginCallback callback) throws Exception {
 
         Start.getAuthProvider().authenticate(user, (authUser) -> {
 
             HttpSession session = ((HttpServletRequest) ctx.getRequest()).getSession(true);
-
             callback.call(new LoginDataSuccess(authUser, ctx));
 
         });

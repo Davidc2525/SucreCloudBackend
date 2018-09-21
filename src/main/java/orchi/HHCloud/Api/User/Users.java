@@ -114,7 +114,7 @@ public class Users extends API {
             response.setMsg("Debe suministrar su email");
         }
         try {
-            User tmpUser = new BasicUser();
+            User tmpUser = new DataUser();
             tmpUser.setPassword(npassword);
             validator.validatePassword(tmpUser);
         } catch (PasswordValidationException e) {
@@ -445,7 +445,7 @@ public class Users extends API {
             e1.printStackTrace();
         }
 
-        User user = new BasicUser();
+        User user = new DataUser();
         user.setId(id);
         if (!hasError) {
             try {
@@ -790,8 +790,8 @@ public class Users extends API {
         String nPassword = jsonArgs.has("password") ? jsonArgs.getString("password") : "";
         String currentPassword = jsonArgs.has("currentPassword") ? jsonArgs.getString("currentPassword") : "";
         nPassword = nPassword != null ? nPassword : "";
-        BasicUser tmpPassUser = new BasicUser();
-        BasicUser tmpPassUser2 = new BasicUser();
+        DataUser tmpPassUser = new DataUser();
+        DataUser tmpPassUser2 = new DataUser();
         tmpPassUser.setPassword(nPassword);
         tmpPassUser2.setPassword(currentPassword);
 

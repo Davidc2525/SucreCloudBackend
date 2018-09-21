@@ -27,7 +27,7 @@ public interface LoginAndLogoutInterface {
      * @param callback {@link LoginCallback}, funcion a ejecutar luego de autenticar
      *                 y hacer logica de negocio.
      */
-    public void logInCallBack(AsyncContext ctx, User user, LoginCallback callback) throws AuthException;
+    public void logInCallBack(AsyncContext ctx, User user, LoginCallback callback) throws AuthException, Exception;
 
 
     /**

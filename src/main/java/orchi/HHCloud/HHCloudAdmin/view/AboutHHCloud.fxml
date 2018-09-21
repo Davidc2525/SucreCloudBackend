@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="217.0" prefWidth="356.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="orchi.HHCloud.HHCloudAdmin.controller.About">
+   <children>
+      <ImageView fitHeight="227.0" fitWidth="356.0" pickOnBounds="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <image>
+            <Image url="@/hhcloudWall.jpg" />
+         </image>
+      </ImageView>
+      <Text layoutX="49.0" layoutY="65.0" stroke="#46d0c0" strokeType="OUTSIDE" strokeWidth="2.0" text="HHCloud" textAlignment="CENTER">
+         <font>
+            <Font name="System Bold" size="53.0" />
+         </font>
+         <fill>
+            <RadialGradient fx:id="radialGTitle" centerX="0.50561797752809" centerY="1.0" focusAngle="-29.05" focusDistance="-0.6428571428571428" radius="0.7380952380952381">
+               <stops>
+                  <Stop fx:id="nc" color="#2dc0fa" />
+                  <Stop fx:id="nc2" color="WHITE" offset="1.0" />
+               </stops>
+            </RadialGradient>
+         </fill>
+      </Text>
+      <Hyperlink layoutX="283.0" layoutY="196.0"  text="HHCloud">
+         <tooltip>
+            <Tooltip text="Visitar pagina del software" />
+         </tooltip>
+      </Hyperlink>
+      <VBox alignment="CENTER" layoutX="14.0" layoutY="75.0" prefHeight="123.0" prefWidth="336.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
+         <children>
+            <Text fill="#403e3e" strokeType="OUTSIDE" strokeWidth="0.0" text="Te damos el poder de crear tu propia nube" />
+            <Text fill="#403e3e" strokeType="OUTSIDE" strokeWidth="0.0" text="Impulzado por el software libre" />
+         </children>
+      </VBox>
+      <Text fill="GREY" layoutX="151.0" layoutY="212.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tu nube" />
+   </children>
+</AnchorPane>

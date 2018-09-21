@@ -11,19 +11,18 @@
     <top>
         <MenuBar>
             <menus>
-                <Menu mnemonicParsing="false" text="File">
+                <Menu mnemonicParsing="false" text="Archivo">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Close"/>
+                        <MenuItem onAction="#close" mnemonicParsing="false" text="Cerrar"/>
                     </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Edit">
+
+                <Menu mnemonicParsing="false" text="Ayuda">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Delete"/>
+                        <MenuItem onAction="#showAboutHHCloud" mnemonicParsing="false" text="Acerca de HHCLoud"/>
                     </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="Help">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="About"/>
+                        <MenuItem onAction="#showAboutHHCloudAdmin" mnemonicParsing="false" text="Ascrca de HHCloudAdmin"/>
                     </items>
                 </Menu>
             </menus>

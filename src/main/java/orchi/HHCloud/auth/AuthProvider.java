@@ -3,6 +3,7 @@ package orchi.HHCloud.auth;
 import orchi.HHCloud.auth.Exceptions.*;
 import orchi.HHCloud.auth.logIO.WraperLoginCallback;
 import orchi.HHCloud.user.BasicUser;
+import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
 
 /**
@@ -42,7 +43,7 @@ public interface AuthProvider {
      * (de hacer la logica de negocio)
      */
     default public void authenticate(String username, String password) throws AuthException {
-        authenticate(new BasicUser().bind(null, username, null, password), (user) -> {
+        authenticate(new DataUser().bind(null, username, null, password), (user) -> {
 
         });
     }

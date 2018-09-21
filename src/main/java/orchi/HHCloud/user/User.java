@@ -6,7 +6,7 @@ import java.io.Externalizable;
  * Todas las clases tengan q ver con contenido de usuario deben heredar esta
  * clase, para poder funcionar en el programa ya q en to-do el programa se hace
  * referencia a esta. Es abstracta asi q para poder hacer instancias puedes usar
- * {@link BasicUser}, si se necesita algo mas espesifico, se puede espesialisar
+ * {@link DataUser}, si se necesita algo mas espesifico, se puede espesialisar
  * heredando esta.
  * Todas las clases q herenden esta clase, tienen q ser serialisables
  */

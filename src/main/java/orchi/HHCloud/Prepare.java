@@ -15,7 +15,7 @@ public class Prepare {
         /**preparar el api de gmail*/
         MailProvider mp = Start.getMailManager().getProvider();
         try {
-            String admin = Start.conf.getString("mail.mailmanager.admin");
+            String admin = Start.conf.getString("mail.mailmanager.mail.admin");
             mp.sendEmail(admin, admin, "activate service", "active service.");
         } catch (SendEmailException e1) {
             e1.printStackTrace();

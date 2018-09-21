@@ -10,6 +10,7 @@ import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import orchi.HHCloud.user.DataUser;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 
@@ -24,7 +25,7 @@ import orchi.HHCloud.store.arguments.MkDirArguments;
 import orchi.HHCloud.store.arguments.MoveOrCopyArguments;
 import orchi.HHCloud.store.arguments.RenameArguments;
 import orchi.HHCloud.store.response.Response;
-import orchi.HHCloud.user.BasicUser;
+
 
 /**
  * @author david
@@ -94,7 +95,7 @@ public class OperationsManager {
         JSONObject response = null;
         String operation = arg.getString("op");
         Response res = null;
-        BasicUser u;
+        DataUser u;
         try {
             /** Operacion de listar directorio */
             if (Operation.LIST.equalsName(operation)) {
@@ -102,7 +103,7 @@ public class OperationsManager {
 
                 ListArguments listArgs = new ListArguments();
                 listArgs.setPath(Paths.get(arg.getString("path")));
-                u = new BasicUser();
+                u = new DataUser();
                 u.setId(arg.getString("root"));
                 listArgs.setUser(u);
                 res = sp.list(listArgs);
@@ -113,7 +114,7 @@ public class OperationsManager {
                 // response = store.status(arg);
                 arg.remove("op");
                 GetStatusArguments getArgs = new GetStatusArguments();
-                u = new BasicUser();
+                u = new DataUser();
                 u.setId(arg.getString("root"));
                 getArgs.setPath(Paths.get(arg.getString("path")));
                 getArgs.setUser(u);
@@ -137,7 +138,7 @@ public class OperationsManager {
                 // response = new RenameOperation(arg).call();
                 RenameArguments renameArgs = new RenameArguments(Paths.get(arg.getString("srcPath")),
                         Paths.get(arg.getString("dstPath")));
-                u = new BasicUser();
+                u = new DataUser();
                 u.setId(arg.getString("root"));
                 renameArgs.setUser(u);
                 res = sp.rename(renameArgs);
@@ -152,7 +153,7 @@ public class OperationsManager {
                 }
                 copyArgs.setSrcPath(Paths.get(arg.getString("srcPath")));
                 copyArgs.setDstPath(Paths.get(arg.getString("dstPath")));
-                u = new BasicUser();
+                u = new DataUser();
                 u.setId(arg.getString("root"));
                 copyArgs.setUser(u);
                 res = sp.copy(copyArgs);
@@ -166,7 +167,7 @@ public class OperationsManager {
                 }
                 copyArgs.setSrcPath(Paths.get(arg.getString("srcPath")));
                 copyArgs.setDstPath(Paths.get(arg.getString("dstPath")));
-                u = new BasicUser();
+                u = new DataUser();
                 u.setId(arg.getString("root"));
                 copyArgs.setUser(u);
                 res = sp.move(copyArgs);
@@ -180,7 +181,7 @@ public class OperationsManager {
                 setContentType("application/octet-stream");
                 ((HttpServletResponse) ctx.getResponse()).setHeader("Content-type", getContentType());
                 DownloadArguments downArgs = new DownloadArguments();
-                u = new BasicUser();
+                u = new DataUser();
                 u.setId(arg.getString("root"));
                 downArgs.setUser(u);
                 downArgs.setCtx(ctx);
@@ -206,7 +207,7 @@ public class OperationsManager {
             if (Operation.MKDIR.equalsName(operation)) {// no creo q sea
                 // necesario hacerlo
                 // multiple
-                u = new BasicUser();
+                u = new DataUser();
                 u.setId(arg.getString("root"));
                 MkDirArguments mkdirArgs = new MkDirArguments();
                 mkdirArgs.setUser(u);
@@ -218,7 +219,7 @@ public class OperationsManager {
 
             /** operacion para eliminar de una rruta a otra */
             if (Operation.DELETE.equalsName(operation)) {// multiple
-                u = new BasicUser();
+                u = new DataUser();
                 u.setId(arg.getString("root"));
                 DeleteArguments deleteArgs = new DeleteArguments();
                 deleteArgs.setUser(u);

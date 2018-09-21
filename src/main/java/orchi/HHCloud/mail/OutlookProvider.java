@@ -16,7 +16,7 @@ public class OutlookProvider implements MailProvider {
     @Override
     public void init() {
         System.err.println("iniciando proveedor outlook");
-        username = Start.conf.getString("mail.mailmanager.admin");
+        username = Start.conf.getString("mail.mailmanager.mail.admin");
         password = Start.conf.getString("mail.mailmanager.admin.password");
 
         Properties props = new Properties();
