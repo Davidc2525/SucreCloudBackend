@@ -4,11 +4,13 @@ public class Role {
 
     private Roles role = Roles.USER;
 
-    public Role(){}
+    public Role() {
+    }
 
     public Role(Roles role) {
         this.role = role;
     }
+
     public Roles getRole() {
         return role;
     }
@@ -17,4 +19,10 @@ public class Role {
         this.role = role;
     }
 
+    @Override
+    public String toString() {
+        return "Role{" +
+                "role=" + role +
+                '}';
+    }
 }

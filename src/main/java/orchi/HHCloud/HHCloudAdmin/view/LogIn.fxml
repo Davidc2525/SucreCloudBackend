@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="181.0" prefWidth="276.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="orchi.HHCloud.HHCloudAdmin.controller.LogIn">
+   <children>
+      <ImageView fitHeight="191.0" fitWidth="276.0" layoutX="-3.0" pickOnBounds="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <image>
+            <Image url="@/hhcloudWall.jpg" />
+         </image>
+      </ImageView>
+      <AnchorPane layoutX="1.0" prefHeight="56.0" prefWidth="276.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Text fill="WHITE" layoutX="14.0" layoutY="36.49267578125" stroke="BLACK" strokeType="OUTSIDE" strokeWidth="0.0" text="HHCloud Admin" textAlignment="CENTER" wrappingWidth="248.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="17.0">
+               <font>
+                  <Font name="System Bold" size="21.0" />
+               </font>
+            </Text>
+         </children>
+      </AnchorPane>
+      <GridPane fx:id="contentForm" layoutX="14.0" layoutY="50.0" prefHeight="93.0" prefWidth="248.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="55.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="116.0" minWidth="10.0" prefWidth="95.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="153.0" minWidth="10.0" prefWidth="153.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Label text="Email (admin)" textFill="#8d8d8d" />
+            <Label text="Contraseña" textFill="#8c8c8c" GridPane.rowIndex="1" />
+            <Button fx:id="loginButton" defaultButton="true" mnemonicParsing="false" text="Entrar" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <JFXTextField fx:id="emailField" focusColor="#e7e7e7" promptText="ej: admin@gmail.com" GridPane.columnIndex="1" />
+            <JFXPasswordField fx:id="passwordField" focusColor="#e7e7e7" promptText="ej: 1234" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+               <children>
+                  <JFXSpinner fx:id="spinnerLoading" layoutX="32.0" layoutY="-2.0" visible="false" />
+               </children>
+            </AnchorPane>
+         </children>
+      </GridPane>
+   </children>
+</AnchorPane>

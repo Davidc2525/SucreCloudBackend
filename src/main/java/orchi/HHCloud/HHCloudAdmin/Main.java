@@ -11,6 +11,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import orchi.HHCloud.HHCloudAdmin.controller.LogIn;
 import orchi.HHCloud.HHCloudAdmin.controller.PersonEditDialog;
 import orchi.HHCloud.HHCloudAdmin.model.Person;
 import orchi.HHCloud.user.DataUser;
@@ -44,6 +45,9 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         client = new Client();
+        if(!showLogIn()){
+            System.exit(1);
+        }
 
         //loadUsers();
 
@@ -56,6 +60,35 @@ public class Main extends Application {
         primaryStage.show();
 
         showPersonPreview();
+    }
+
+    public boolean showLogIn(){
+        try {
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getClassLoader().getResource("LogIn.fxml"));
+            AnchorPane page = (AnchorPane) loader.load();
+
+            // Create the dialog Stage.
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Entrar");
+            dialogStage.setResizable(false);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            LogIn controller = loader.getController();
+            controller.setStage(dialogStage);
+
+            dialogStage.showAndWait();
+
+
+            return controller.cantEnter();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public void showPersonPreview() throws IOException {

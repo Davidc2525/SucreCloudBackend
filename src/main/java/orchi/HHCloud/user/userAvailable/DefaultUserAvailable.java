@@ -21,17 +21,19 @@ public class DefaultUserAvailable implements UserAvailableProvider {
     private final String INSERT_UA = "INSERT INTO USER_AVAILABLE (IDUSER,REASON,CREATEDAT) VALUES (?,?,?)";
     private final String DELETE_UA = "DELETE FROM USER_AVAILABLE WHERE IDUSER = (?)";
     private final String SELECT_UA = "SELECT * FROM USER_AVAILABLE WHERE IDUSER = (?)";
-    private final String LOAD_UA = "SELECT * FROM USER_AVAILABLE";
+    private final String LOAD_UA   = "SELECT * FROM USER_AVAILABLE";
     private final String UPDATE_UA = "UPDATE USER_AVAILABLE SET REASON = (?) WHERE IDUSER = (?)";
     private ConnectionProvider dbP;
     private HashMap<String,AvailableDescriptor> availableList = new HashMap<>();
 
     @Override
     public void init() {
-        log.info("iniciando proveedor de disponibilidad de usuario: lazy({})",lazy);
+        log.info("INICIANDO PROVEEDOR DE DISPONIBILIDAD DE USUARIO: LAZY({})",lazy);
         dbP = Start.getDbConnectionManager().getConnectionProvider();
         if(!lazy){
             try {
+                availableList = null;
+                availableList = new HashMap<>();
                 loadAllAvailable();
             } catch (UserUnAvailableException e) {
                 e.printStackTrace();

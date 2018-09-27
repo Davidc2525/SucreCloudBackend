@@ -12,7 +12,10 @@ import orchi.HHCloud.store.StoreManager;
 import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Exceptions.UserException;
+import orchi.HHCloud.user.RoledUser;
+import orchi.HHCloud.user.UserProvider;
 import orchi.HHCloud.user.Users;
+import orchi.HHCloud.user.role.Roles;
 import orchi.HHCloud.user.userAvailable.AvailableDescriptor;
 import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
 import orchi.HHCloud.user.userAvailable.Exceptions.EnablingException;
@@ -24,6 +27,7 @@ public class ServiceImpl implements Service {
     private QuotaProvider qp = Start.getQuotaManager().getProvider();
     private StoreProvider sp = Start.getStoreManager().getStoreProvider();
     private UserAvailableProvider avp = Start.getUserManager().getUserAvailableProvider();
+    private UserProvider up = Start.getUserManager().getUserProvider();
     private AuthProvider ap = Start.getAuthProvider();
 
     @Override
@@ -32,8 +36,14 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public DataUser singIn(DataUser user) throws AuthException {
-        ap.authenticate(user,authUser -> {});
+    public DataUser singIn(DataUser user) throws AuthException, UserException {
+        DataUser u = (DataUser) up.getUserByEmail(user.getEmail());
+        if(Roles.ADMIN == RoledUser.byUser(u).getRole().getRole()){
+            ap.authenticate(user,authUser -> {});
+        }else{
+            throw new AuthException(String.format("El usuario %s no es un administrador.",u.getEmail()));
+        }
+
         return user;
     }
 

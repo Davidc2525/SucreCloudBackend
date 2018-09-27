@@ -20,6 +20,8 @@ import orchi.HHCloud.user.BasicUser;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.RoledUser;
+import orchi.HHCloud.user.role.Role;
+import orchi.HHCloud.user.role.Roles;
 import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
 import orchi.HHCloud.user.userAvailable.Exceptions.EnablingException;
 import orchi.HHCloud.user.userAvailable.UserAvailableProvider;
@@ -56,15 +58,15 @@ public class Main {
 
         System.out.println("HHCloud pruebas!");
         //orchi.HHCloud.HHCloudAdmin.Main.main(args);
-        RoledUser ru =  RoledUser.byUser(new DataUser());
-        ru.setId("hola");
-
-        log.info("roled user: {} {}",ru,ru.getRole().getRole()
-        );
+        new AdminServer();
         if (true) {
             return;
         }
-        new AdminServer();
+        RoledUser ru =  RoledUser.byUser(new DataUser());
+        ru.setId("123123");
+        log.info("roled user before: {} {}",ru,ru.getRole().getRole());
+        ru.setRole(new Role(Roles.USER));
+        log.info("roled user after: {} {} {}",ru,ru.getRole().getRole(),Roles.USER == ru.getRole().getRole());
         UserAvailableProvider uap = Start.getUserManager().getUserAvailableProvider();
         DataUser tuav = new DataUser();
         tuav.setId("123");

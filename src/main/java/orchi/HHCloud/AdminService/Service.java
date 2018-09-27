@@ -16,7 +16,7 @@ public interface Service {
     public int suma(int a, int b);
 
     /*login*/
-    public DataUser singIn(DataUser user) throws AuthException;
+    public DataUser singIn(DataUser user) throws AuthException, UserException;
 
     /*
      * Servicio de usuario

@@ -19,6 +19,17 @@ public enum Roles {
     }
 
     public String toString() {
-        return "{Role: "+this.role+"}";
+        return this.role;
+    }
+
+    public static Roles of(String n){
+        switch (n){
+            case "0":
+                return Roles.ADMIN;
+            case "1":
+                return Roles.USER;
+            default:
+                return Roles.USER;
+        }
     }
 }
