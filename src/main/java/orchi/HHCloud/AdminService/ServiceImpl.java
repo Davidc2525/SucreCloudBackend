@@ -1,6 +1,8 @@
 package orchi.HHCloud.AdminService;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.auth.AuthProvider;
+import orchi.HHCloud.auth.Exceptions.AuthException;
 import orchi.HHCloud.quota.Exceptions.QuotaException;
 import orchi.HHCloud.quota.Quota;
 import orchi.HHCloud.quota.QuotaProvider;
@@ -22,10 +24,17 @@ public class ServiceImpl implements Service {
     private QuotaProvider qp = Start.getQuotaManager().getProvider();
     private StoreProvider sp = Start.getStoreManager().getStoreProvider();
     private UserAvailableProvider avp = Start.getUserManager().getUserAvailableProvider();
+    private AuthProvider ap = Start.getAuthProvider();
 
     @Override
     public int suma(int a, int b) {
         return a + b;
+    }
+
+    @Override
+    public DataUser singIn(DataUser user) throws AuthException {
+        ap.authenticate(user,authUser -> {});
+        return user;
     }
 
     @Override
@@ -87,7 +96,7 @@ public class ServiceImpl implements Service {
 
     @Override
     public AvailableDescriptor disableUser(DataUser user, String reason) throws DisablingException, UserException {
-        avp.disableUser(user,reason);
+        avp.disableUser(user, reason);
         return getAvialableDescriptor(user);
     }
 

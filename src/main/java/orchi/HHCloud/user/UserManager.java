@@ -1,6 +1,7 @@
 package orchi.HHCloud.user;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.user.role.RoleProvider;
 import orchi.HHCloud.user.userAvailable.UserAvailableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +14,15 @@ import java.lang.reflect.InvocationTargetException;
 public class UserManager {
     private static UserManager instance;
     private static String classNameUserProvider = Start.conf.getString("user.usermanager.provider.user");
+    private static String classNameUserRoleProvider = Start.conf.getString("user.usermanager.provider.user.role");
     private static String classNameUserAvailableProvider = Start.conf.getString("user.usermanager.provider.user.available");
     private Logger logger = LoggerFactory.getLogger(UserManager.class);
     private UserProvider userProvider;
     private UserAvailableProvider userAvailableProvider;
+
+
+
+    private RoleProvider roleProvider;
 
     /**
      * inicia con proveedor por defecto {@link orchi.HHCloud.user.EmbeddedUserProvider}
@@ -26,10 +32,15 @@ public class UserManager {
         try {
             Class<UserProvider> clazzUP = (Class<UserProvider>) Class.forName(classNameUserProvider);
 
+            Class<RoleProvider> clazzURP = (Class<RoleProvider>) Class.forName(classNameUserRoleProvider);
+
             Class<UserAvailableProvider> clazzUAP = (Class<UserAvailableProvider>) Class.forName(classNameUserAvailableProvider);
 
             userProvider = clazzUP.newInstance();
             userAvailableProvider = clazzUAP.newInstance();
+
+            roleProvider = clazzURP.newInstance();
+            roleProvider.init();
 
             userProvider.init();
             userAvailableProvider.init();
@@ -72,5 +83,9 @@ public class UserManager {
 
     public UserAvailableProvider getUserAvailableProvider() {
         return userAvailableProvider;
+    }
+
+    public RoleProvider getUserRoleProvider() {
+        return roleProvider;
     }
 }

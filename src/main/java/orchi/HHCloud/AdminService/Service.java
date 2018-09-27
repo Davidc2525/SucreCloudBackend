@@ -1,5 +1,6 @@
 package orchi.HHCloud.AdminService;
 
+import orchi.HHCloud.auth.Exceptions.AuthException;
 import orchi.HHCloud.quota.Exceptions.QuotaException;
 import orchi.HHCloud.quota.Quota;
 import orchi.HHCloud.store.ContentSummary;
@@ -14,7 +15,10 @@ public interface Service {
 
     public int suma(int a, int b);
 
-    /**
+    /*login*/
+    public DataUser singIn(DataUser user) throws AuthException;
+
+    /*
      * Servicio de usuario
      */
     public DataUser getUser(String email) throws UserException;

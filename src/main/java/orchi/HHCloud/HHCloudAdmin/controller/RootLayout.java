@@ -10,6 +10,7 @@ import orchi.HHCloud.HHCloudAdmin.Main;
 import java.io.IOException;
 
 public class RootLayout {
+
     public void close(){
         System.exit(0);
     }

@@ -1,7 +1,7 @@
 HHCloud server
 ======================
 
-HHCloud te permite crear una nube de almacenamiento sumamente facil y rapido, con poca configuracion, haciendo uso de su [interfaz web](https://github.com/Davidc2525/HHCloud), se complementan para poder prestar el servicio, HHCloud consta de 2 partes:
+__HHCloud__ te permite crear una nube de almacenamiento sumamente facil y rapido, con poca configuracion, haciendo uso de su [interfaz web](https://github.com/Davidc2525/HHCloud#imagen-de-presentacion), se complementan para poder prestar el servicio, HHCloud consta de 2 partes:
 
 - Servidor: Gestiona las peticiones de el cliente.
 - [Cliente](https://github.com/Davidc2525/HHCloud): Tiene La interfaz adactada a las prestaciones del servidor.
@@ -77,7 +77,7 @@ db.dbmanager.connection.provider=orchi.HHCloud.database.EmbeddedConnectionProvid
 
 ### Envio de correos
 
-HHCloud en cierta parte de la gestion de usuario, hace uso de el envio de correos, para eso se describe una [interfaz](src/main/java/orchi/HHCloud/mail/MailProvider.java) y una [implementacion](src/main/java/orchi/HHCloud/mail/GoogleGmailProvider.java). Tambien puedes escribir tus pripieas implementaciones y usarlas editando la [configuracion](src/main/resources/application.properties), existen dos implementaciones con dos proveedores distintos de servicio, uno para Gmail y otro para OutLook, el proveedor por defecto es el que se muestra debajo en la configuracion, hace uso de Gmail para enviar los mensajes por correo.
+HHCloud en cierta parte de la gestion de usuario, hace uso de el envio de correos, para eso se describe una [interfaz](src/main/java/orchi/HHCloud/mail/MailProvider.java) y una [implementacion](src/main/java/orchi/HHCloud/mail/GoogleGmailProvider.java). Tambien puedes escribir tus propiaas implementaciones y usarlas editando la [configuracion](src/main/resources/application.properties), existen dos implementaciones con dos proveedores distintos de servicio, uno para Gmail y otro para OutLook, el proveedor por defecto es el que se muestra debajo en la configuracion, hace uso de Gmail para enviar los mensajes por correo.
 
 
 ```properties
