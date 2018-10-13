@@ -15,9 +15,12 @@ import orchi.HHCloud.HHCloudAdmin.controller.LogIn;
 import orchi.HHCloud.HHCloudAdmin.controller.PersonEditDialog;
 import orchi.HHCloud.HHCloudAdmin.model.Person;
 import orchi.HHCloud.user.DataUser;
+import orchi.HHCloud.user.User;
 import orchi.HHCloud.user.Users;
+import org.apache.xmlrpc.XmlRpcException;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 
 public class Main extends Application {
 
@@ -27,6 +30,7 @@ public class Main extends Application {
     public static Window primaryStage;
 
     public static void main(String[] args) {
+
         launch(args);
     }
 
@@ -44,7 +48,13 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        client = new Client();
+        try {
+            client = new Client();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Util.exceptionDialog(e);
+            System.exit(1);
+        }
         if(!showLogIn()){
             System.exit(1);
         }
@@ -141,16 +151,17 @@ public class Main extends Application {
         ObservableList<Person> persons = FXCollections.observableArrayList();
         ;
         Users users = client.getService().getAllUsers();
-        users.getUsers().forEach((DataUser u) -> {
+        users.getUsers().forEach((User u) -> {
+            DataUser user = (DataUser) u;
             persons.add(new Person(
-                    u.getId(),
-                    u.getUsername(),
-                    u.getEmail(),
-                    u.getPassword(),
-                    u.getFirstName(),
-                    u.getLastName(),
-                    u.isEmailVerified(),
-                    u.getGender()
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.isEmailVerified(),
+                    user.getGender()
             ));
         });
 
@@ -159,16 +170,17 @@ public class Main extends Application {
 
     private void loadUsers() {
         Users users = client.getService().getAllUsers();
-        users.getUsers().forEach((DataUser u) -> {
+        users.getUsers().forEach((User u) -> {
+            DataUser user = (DataUser) u;
             personData.add(new Person(
-                    u.getId(),
-                    u.getUsername(),
-                    u.getEmail(),
-                    u.getPassword(),
-                    u.getFirstName(),
-                    u.getLastName(),
-                    u.isEmailVerified(),
-                    u.getGender()
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.isEmailVerified(),
+                    user.getGender()
             ));
         });
 

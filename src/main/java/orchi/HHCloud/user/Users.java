@@ -5,17 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Users implements Serializable {
-    private List<DataUser> users = new ArrayList<DataUser>();
+    private List<User> users = new ArrayList<User>();
 
-    public void add(DataUser user) {
+    public void add(User user) {
         users.add(user);
     }
 
-    public void removeUser(DataUser user) {
+    public void removeUser(User user) {
         users.remove(user);
     }
 
-    public List<DataUser> getUsers() {
+    public List<User> getUsers() {
         return users;
     }
 }

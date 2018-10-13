@@ -1,6 +1,3 @@
-/**
- * DefaultShareProvider.java
- */
 package orchi.HHCloud.share;
 
 import orchi.HHCloud.Start;
@@ -9,6 +6,7 @@ import orchi.HHCloud.store.RestrictedNames;
 import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
+import orchi.HHCloud.user.Users;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,10 +16,11 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
+ * Proveedor de comparticion de rutas por defecto
+ *
  * @author david 14 ago. 2018
  */
 public class DefaultShareProvider implements ShareProvider {
@@ -34,171 +33,42 @@ public class DefaultShareProvider implements ShareProvider {
     public void init() {
         log.info("Iniciando proveedor de compartir.");
         RestrictedNames.registerName(SHAREDS_DESCRIPTOR);
-        sp = Start.getStoreManager().getStoreProvider();
+        //sp = Start.getStoreManager().getStoreProvider();
         //Start.getDbConnectionManager().getConnection();
         db = Start.getDbConnectionManager().getConnectionProvider();
     }
 
-    /**
-     * por hacer
-     */
-    public void getSharedDescriptor(User user, Path path) {
-        try {
-            String pathwr = path.toString();
-            if (sp.exists(user, Paths.get(pathwr, SHAREDS_DESCRIPTOR))) {
-
-            }
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void createShareParent(User user, Path path) {
-        Connection con;
-        try {// SHAREDPARENT
-            path = normaizePaht(path);
-            log.debug("Creando shared parent en user {}, {}", user.getId(), path.toString());
-
-            con = db.getConnection();
-            PreparedStatement stmSP = con.prepareStatement("INSERT INTO SHAREDPARENT VALUES(?,?,?)");
-
-            stmSP.setString(1, path.getParent().toString());
-            stmSP.setString(2, path.toString());
-            stmSP.setString(3, user.getId());
-            stmSP.executeUpdate();
-
-            con.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void createShare(User user, Path path) {
-
-        Connection con;
-        try {// SHAREDPARENT
-            path = normaizePaht(path);
-
-            log.debug("creando share en {} para usuario {}", path.toString(), user.getId());
-
-            if (isShared(user, path))
-                return;
-
-            createShareParent(user, path);
-            con = db.getConnection();
-            PreparedStatement stm = con.prepareStatement("INSERT INTO SHARE VALUES(?,?,?,?)");
-            stm.setString(1, path.toString());
-            stm.setString(2, user.getId());
-            stm.setString(3, path.getParent().toString());
-            stm.setBigDecimal(4, new BigDecimal(System.currentTimeMillis()));
-            stm.executeUpdate();
-            log.debug("Comparticion exitosa de {}", path.toString());
-            Path parent = path.getParent();
-            if (parent.getParent() != null) {
-                //createShare(user,parent);
-            }
-            con.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
-    @Override
-    public void deleteShare(User user, Path path) {
-        log.debug("Eliminar rruta compartida {} en user {}", path + "", user.getId());
-
-        try {
-            path = normaizePaht(path);
-
-            Connection con = db.getConnection();
-            String sqlDeleteInSharedParent = "" //SI ES DIRECTORIO
-                    + "DELETE FROM SHAREDPARENT WHERE PATH IN( "
-                    + "	SELECT PATH FROM SHAREDPARENT "
-                    + "		WHERE PATH LIKE ? AND OWNERUSER=? "//like %
-                    + ")";
-            String sqlDeleteInShared = "" // SI ES DIRECTORIO
-                    + "DELETE FROM SHARE WHERE PATH IN( "
-                    + "	SELECT PATH FROM SHARE "
-                    + "		WHERE PPATH LIKE ? AND OWNERUSER=? "//like %
-                    + ")";
-
-            String sqlDeleteSharedParent = "DELETE FROM SHAREDPARENT WHERE PATH = ? AND CSPATH = ? AND OWNERUSER=?";
-
-            String sqlDeleteShared = "DELETE FROM SHARE WHERE PATH = ? AND PPATH = ? AND OWNERUSER=?";
-
-            if (sp.isDirectory(user, path)) {
-                log.debug("La rruta es un directorio {}", path + "");
-                log.debug("Eliminando todos las rrutas padre q coinsidan con {} de user {}", path + "%", user.getId());
-
-                PreparedStatement stmParent = con.prepareStatement(sqlDeleteInSharedParent);
-                stmParent.setString(1, path.toString() + "%");
-                stmParent.setString(2, user.getId());
-                int countParents = stmParent.executeUpdate();
-                log.debug("Eliminadas rutas padre {}", countParents);
-
-                log.debug("Eliminando todos las rrutas hijas (en share) q coinsidan con {} de user {}", path + "%", user.getId());
-                PreparedStatement stm = con.prepareStatement(sqlDeleteInShared);
-                stm.setString(1, path.toString() + "%");
-                stm.setString(2, user.getId());
-                int countChildrens = stm.executeUpdate();
-                log.debug("Eliminadas rrutas hijas", countChildrens);
-
-            } else if (sp.isFile(user, path)) {
-
-                log.debug("La rruta es un archivo {}", path + "");
-                log.debug("Eliminando la rruta padre q coinsidan con {}", path + "");
-                PreparedStatement stmParent = con.prepareStatement(sqlDeleteSharedParent);
-                stmParent.setString(1, path.getParent().toString());
-                stmParent.setString(2, path.toString());
-                stmParent.setString(3, user.getId());
-                int countParents = stmParent.executeUpdate();
-                log.debug("Eliminando la rruta padre q coinsidan con {}, {}", path + "", countParents);
-
-                log.debug("Eliminando la rruta hija q coinsidan con {}", path + "");
-                PreparedStatement stm = con.prepareStatement(sqlDeleteShared);
-                stm.setString(1, path.toString());
-                stm.setString(2, path.getParent().toString());
-                stm.setString(3, user.getId());
-                int countChildrens = stm.executeUpdate();
-                log.debug("Eliminando la rruta padre q coinsidan con {}, {}", path + "", countChildrens);
-            }
-            con.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public Shared sharedInDirectory(User user, Path path) {
-
         Shared shared = new Shared();
         try {
 
             log.debug("Obtener rutas compartidas en directorio {} para {}", path + "", user.getId());
             path = normaizePaht(path);
-            if (sp.isDirectory(user, path)) {
+            if (true /*sp.isDirectory(user, path)*/) {
 
                 log.debug("La rruta es un directorio {}", path + "");
                 //System.out.println(path);
 
                 Connection con = db.getConnection();
-                String sql = ""
+                String SQL = "SELECT * FROM SHARE WHERE PATH like (?) AND OWNERUSER = (?)";
+                /*String sql = ""
                         + "SELECT DISTINCT SHARE.* FROM SHARE LEFT JOIN SHAREDPARENT "
                         + " ON SHARE.PPATH = SHAREDPARENT.PATH "
                         + " WHERE SHAREDPARENT.PATH=(?) AND SHARE.OWNERUSER=(?)";
-                PreparedStatement stm = con.prepareStatement(sql);
-                stm.setString(1, path.toString());
+                        */
+                PreparedStatement stm = con.prepareStatement(SQL);
+                stm.setString(1, path.toString() + "%");
                 stm.setString(2, user.getId());
                 ResultSet r = stm.executeQuery();
                 while (r.next()) {
                     log.debug("Ruta compartida {} en {}", r.getString("PATH"), path + "");
                     DataUser newUser = new DataUser();
                     newUser.setId(r.getString("OWNERUSER"));
-                    Share share = BuildShare.createShare("", newUser, Paths.get(r.getString("PATH")), r.getLong("CREATEAT"));
-                    shared.addShare(share);
+                    Share share = BuildShare.createShare("", newUser, Paths.get(r.getString("PATH")), r.getLong("CREATEAT"), Mode.valueOf(r.getString("MODE")));
+                    if (!share.getPath().equals(path)) {
+                        shared.addShare(share);
+                    }
                 }
                 con.close();
             }
@@ -210,11 +80,15 @@ public class DefaultShareProvider implements ShareProvider {
     }
 
     @Override
-    public boolean isShared(User user, Path path) {
+    public void deleteShares(User user, List<Path> paths) {
 
+    }
+
+    @Override
+    public boolean isShared(User user, Path path) {
         boolean shared = false;
         try {
-            path = path.normalize();
+            path = normaizePaht(path);
             log.debug("Comprobar si {} esta compartida, user {}", path + "", user.getId());
             Connection con = db.getConnection();
             PreparedStatement stm = con.prepareStatement("SELECT * FROM SHARE WHERE PATH=(?) AND OWNERUSER=(?) ");
@@ -226,16 +100,284 @@ public class DefaultShareProvider implements ShareProvider {
             log.debug("La rruta {} {} compartida", path + "", shared ? "esta" : "no esta");
             con.close();
         } catch (Exception e) {
-
             e.printStackTrace();
         }
         return shared;
     }
 
     @Override
-    public void deleteShares(User user, List<Path> paths) {
+    public boolean isSharedWith(User ownerUser, User to, Path path) {
+        boolean shared = false;
+        try {
+            path = normaizePaht(path);
+            log.debug("Comprobar si {} esta compartida, user {}", path + "", ownerUser.getId());
+            Connection con = db.getConnection();
+            PreparedStatement stm = con.prepareStatement("SELECT * FROM SHARE_WITH WHERE PATH=(?) AND OWNERUSER=(?) AND SHAREDWITH = (?) ");
+            stm.setString(1, path.toString());
+            stm.setString(2, ownerUser.getId());
+            stm.setString(3, to.getId());
+            ResultSet r = stm.executeQuery();
+
+            shared = r.next();
+            log.debug("La rruta {} {} compartida", path + "", shared ? "esta" : "no esta");
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return shared;
     }
 
+    @Override
+    public void createShare(User user, Path path) {
+        createShare(user, null, path, Mode.P);
+    }
+
+    @Override
+    public void createShare(User user, Users with, Path path) {
+        createShare(user, with, path, Mode.P);
+    }
+
+    @Override
+    public void createShare(User user, Users with, Path path, Mode mode) {
+
+        if (isShared(user, path)) {
+            return;
+        }
+        Connection con;
+        try {
+            path = normaizePaht(path);
+
+            log.debug("creando share en {} para usuario {}", path.toString(), user.getId());
+
+            if (isShared(user, path))
+                return;
+
+            con = db.getConnection();
+            PreparedStatement stm = con.prepareStatement("INSERT INTO SHARE (PATH, OWNERUSER, PPATH, CREATEAT,MODE) VALUES(?,?,?,?,?)");
+            stm.setString(1, path.toString());
+            stm.setString(2, user.getId());
+            stm.setString(3, path.getParent().toString());
+            stm.setBigDecimal(4, new BigDecimal(System.currentTimeMillis()));
+            stm.setString(5, mode.name());
+            stm.executeUpdate();
+            log.debug("Comparticion exitosa de {}", path.toString());
+
+
+            con.close();
+
+            if (with != null) {
+                Path finalPath = path;
+                with.getUsers().forEach((User u) -> {
+                    setSharedWith(user, u, finalPath);
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public void setMode(User user, Path path, Mode mode) {
+        if (mode == getMode(user, path)) {
+            return;
+        }
+
+        try {
+            path = normaizePaht(path);
+
+            Connection con = db.getConnection();
+
+            PreparedStatement stm = con.prepareStatement("UPDATE SHARE SET MODE=(?) WHERE PATH=(?)  AND OWNERUSER = (?)");
+            stm.setString(1, mode.name());
+            stm.setString(2, path + "");
+            stm.setString(3, user.getId());
+
+            int updates = stm.executeUpdate();
+
+            if (updates <= 0) {
+                log.error("No se modifico ningun registro al modificar MODO {} en {} de {}", mode, path, user.getId());
+            } else {
+                log.debug("Se modifico el MODO {} en {}, de {}", mode, path, user.getId());
+            }
+
+            stm.close();
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Mode getMode(User user, Path path) {
+        Mode mode = Mode.P;
+        try {
+            path = normaizePaht(path);
+            //log.debug("Comprobar si {} esta compartida, user {}", path + "", ownerUser.getId());
+            Connection con = db.getConnection();
+            PreparedStatement stm = con.prepareStatement("SELECT MODE FROM SHARE WHERE PATH=(?) AND OWNERUSER=(?)");
+            stm.setString(1, path.toString());
+            stm.setString(2, user.getId());
+
+            ResultSet r = stm.executeQuery();
+
+            if (r.next()) {
+                mode = Mode.valueOf(r.getString("MODE"));
+            }
+
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return mode;
+    }
+
+    @Override
+    public void deleteShare(User user, Path path) {
+        log.debug("Eliminar rruta compartida {} en user {}", path + "", user.getId());
+
+        sharedInDirectory(user, path).getShared().forEach((Share s) -> {
+            deleteShare(user, s.getPath());
+        });
+
+        try {
+            path = normaizePaht(path);
+
+            Connection con = db.getConnection();
+
+            String sqlDeleteShared = "DELETE FROM SHARE WHERE PATH LIKE ? AND OWNERUSER = ?";
+
+
+            log.debug("La rruta es un directorio {}", path + "");
+
+            PreparedStatement stm = con.prepareStatement(sqlDeleteShared);
+            stm.setString(1, path.toString() + "%");
+            stm.setString(2, user.getId());
+            int countChildrens = stm.executeUpdate();
+            log.debug("Eliminadas rutas", countChildrens);
+
+
+            deleteSharedWith(user, getUsersBySharedPath(user, path), path);
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void setSharedWith(User ownerUser, User to, Path path) {
+        if (isSharedWith(ownerUser, to, path)) {
+            return;
+        }
+        Connection con = null;
+        try {
+
+            path = normaizePaht(path);
+
+            String SQL = "INSERT INTO SHARE_WITH (PATH, OWNERUSER, SHAREDWITH, CREATEAT) VALUES (?,?,?,?)";
+
+            con = db.getConnection();
+            PreparedStatement stm = con.prepareStatement(SQL);
+            stm.setString(1, path + "");
+            stm.setString(2, ownerUser.getId());
+            stm.setString(3, to.getId());
+            stm.setBigDecimal(4, new BigDecimal(System.currentTimeMillis()));
+
+            stm.executeUpdate();
+            con.close();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Shared getSharedWithMe(User user) {
+        Shared shared = new Shared();
+
+        try {
+            Connection con = db.getConnection();
+
+            PreparedStatement stm = con.prepareStatement("SELECT * FROM SHARE_WITH WHERE SHAREDWITH = (?)");
+            stm.setString(1, user.getId());
+            ResultSet r = stm.executeQuery();
+
+            while (r.next()) {
+                DataUser newUser = new DataUser();
+                newUser.setId(r.getString("OWNERUSER"));
+                Share share = BuildShare.createShare("", newUser, Paths.get(r.getString("PATH")), r.getLong("CREATEAT"), null);
+                shared.addShare(share);
+            }
+            stm.close();
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return shared;
+    }
+
+    @Override
+    public Users getUsersBySharedPath(User ownerUser, Path path) {
+
+        Users users = new Users();
+
+        try {
+            Connection con = db.getConnection();
+
+            PreparedStatement stm = con.prepareStatement("SELECT SHAREDWITH FROM SHARE_WITH WHERE PATH = (?) AND OWNERUSER = (?)");
+            stm.setString(1, path + "");
+            stm.setString(2, ownerUser.getId());
+
+            ResultSet r = stm.executeQuery();
+
+            while (r.next()) {
+                DataUser u = new DataUser();
+                u.setId(r.getString("SHAREDWITH"));
+                users.add(u);
+            }
+
+            stm.close();
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return users;
+    }
+
+    @Override
+    public void deleteSharedWith(User ownerUser, Users withUsers, Path path) {
+        log.debug("DELETESHAREDWITH  owner {}, to: {}, path: {}", ownerUser, withUsers, path);
+        if (withUsers != null) {
+            withUsers.getUsers().forEach((User u) -> {
+                deleteSharedWith(ownerUser, u, path);
+            });
+        }
+    }
+
+    @Override
+    public void deleteSharedWith(User ownerUser, User withUser, Path path) {
+        try {
+            Connection con = db.getConnection();
+
+            PreparedStatement stm = con.prepareStatement("DELETE FROM SHARE_WITH WHERE OWNERUSER = (?)  AND PATH = (?) AND SHAREDWITH = (?) ");
+            stm.setString(1, ownerUser.getId());
+            stm.setString(2, path + "");
+            stm.setString(3, withUser.getId());
+            int delete = stm.executeUpdate();
+
+            log.debug("DELETESHAREDWITH delete: {}, owner {}, to: {}, path: {}", delete, ownerUser, withUser, path);
+
+
+            stm.close();
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private Path normaizePaht(Path path) {
         if (!path.isAbsolute()) {

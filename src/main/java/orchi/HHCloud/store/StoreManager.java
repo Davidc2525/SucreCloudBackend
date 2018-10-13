@@ -1,5 +1,6 @@
 package orchi.HHCloud.store;
 
+import orchi.HHCloud.Providers;
 import orchi.HHCloud.Start;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +10,7 @@ public class StoreManager {
     public static final long SPACE_QUOTA_SIZE_NO_VERIFIED_USER = Start.conf.getLong("store.storemanager.quote.users.unverified");
     private static Logger log = LoggerFactory.getLogger(StoreManager.class);
     private static String defaultStore = Start.conf.getString("store.storemanager.storeprovider");
-    private static StoreManager instance = null;
+    private static StoreManager instance = new StoreManager();
     private StoreProvider storeProvider = null;
 
     public StoreManager() {
@@ -25,6 +26,7 @@ public class StoreManager {
             storeProvider = ClassStore.newInstance();
             storeProvider.init();
             storeProvider.start();
+            Providers.extractInterfaces(storeProvider);
             log.debug("Creado proveedor de almacenamiento: {}", storeProviderClassName);
         } catch (ClassNotFoundException e) {
             log.error("No se encontro la clase proveedora de almacenamiento: {}", storeProviderClassName);

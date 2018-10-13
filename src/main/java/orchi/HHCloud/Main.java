@@ -11,8 +11,10 @@ import orchi.HHCloud.auth.GenerateToken;
 import orchi.HHCloud.cipher.CipherManager;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.mail.MailProvider;
+import orchi.HHCloud.share.Mode;
 import orchi.HHCloud.share.ShareProvider;
 import orchi.HHCloud.store.ContextStore;
+import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.store.arguments.*;
 import orchi.HHCloud.stores.HdfsStore.HdfsManager;
 import orchi.HHCloud.stores.HdfsStore.HdfsStoreProvider;
@@ -57,11 +59,54 @@ public class Main {
     public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException, XmlRpcException, UserException, DisablingException, EnablingException {
 
         System.out.println("HHCloud pruebas!");
-        //orchi.HHCloud.HHCloudAdmin.Main.main(args);
-        new AdminServer();
+        log.info("{}",Mode.P.name());
+
+        ShareProvider shap =   Start.getShareManager().getShareProvider();
+
+        DataUser utcs = new DataUser();
+        utcs.setId("1234");
+        shap.createShare(utcs,Paths.get("/images"));
+        shap.createShare(utcs,Paths.get("/images/1.png"));
+        shap.createShare(utcs,Paths.get("/images/2.png"));
+
+        utcs.setId("1539366533225");
+        shap.createShare(utcs,Paths.get("/Documentos"));
+
+        utcs.setId("1234");
+        //log.info("before mode: {}",shap.getMode(utcs,Paths.get("/images")));
+        //shap.setMode(utcs,Paths.get("/images"),Mode.P);
+        //log.info("after mode: {}",shap.getMode(utcs,Paths.get("/images")));
+
+        DataUser toutcs = new DataUser();
+        toutcs.setId("12345");
+        shap.setSharedWith(utcs,toutcs,Paths.get("/images") );
+        toutcs.setId("123456");
+        shap.setSharedWith(utcs,toutcs,Paths.get("/images") );
+        shap.setSharedWith(utcs,toutcs,Paths.get("/images/1.png") );
+
+        log.debug("users by path: {}",shap.getUsersBySharedPath(utcs,Paths.get("/images") ).getUsers());
+
+        log.debug("shared with me {} ",shap.getSharedWithMe(toutcs).getShared());
+
+        log.debug("{}" ,shap.sharedInDirectory(utcs,Paths.get("/images") ).getShared());
+        shap.deleteShare(utcs,Paths.get("/images"));
+
+        log.debug("shared with me {} ",shap.getSharedWithMe(toutcs).getShared());
+
+
         if (true) {
             return;
         }
+        //Providers.extractInterfaces((Start.getStoreManager().getStoreProvider()));
+        //Start.getStoreManager().getStoreProvider();
+        for(Package pack : Main.class.getPackage().getPackages()){
+            log.info("{} {}",pack,pack.getPackages());
+        }
+        StoreProvider sp = (StoreProvider)Providers.getProvider(StoreProvider.class);
+        log.info("{}",Providers.getProviders());
+        //orchi.HHCloud.HHCloudAdmin.Main.main(args);
+
+        new AdminServer();
         RoledUser ru =  RoledUser.byUser(new DataUser());
         ru.setId("123123");
         log.info("roled user before: {} {}",ru,ru.getRole().getRole());
@@ -161,7 +206,7 @@ public class Main {
 
         BasicUser use = new BasicUser();
         use.setId("1234");
-        //DefaultShareProvider s = new DefaultShareProvider();
+        //OldDefaultShareProvider s = new OldDefaultShareProvider();
 
 
         log.info("is shared B {}", s.isShared(use, pa));

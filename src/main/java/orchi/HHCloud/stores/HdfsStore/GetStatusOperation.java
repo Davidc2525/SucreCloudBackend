@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Util;
 import orchi.HHCloud.Api.Fs.operations.IOperation;
-import orchi.HHCloud.share.DefaultShareProvider;
 import orchi.HHCloud.share.ShareProvider;
 import orchi.HHCloud.share.Shared;
 import orchi.HHCloud.store.RestrictedNames;

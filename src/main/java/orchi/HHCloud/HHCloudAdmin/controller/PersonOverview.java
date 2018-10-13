@@ -20,6 +20,7 @@ import orchi.HHCloud.Start;
 import orchi.HHCloud.quota.Exceptions.QuotaException;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Exceptions.UserException;
+import orchi.HHCloud.user.User;
 import orchi.HHCloud.user.Users;
 
 import java.io.IOException;
@@ -78,16 +79,17 @@ public class PersonOverview implements Initializable {
         };
         task.setOnSucceeded(ws -> {
             Users users = (Users) ws.getSource().getValue();
-            users.getUsers().forEach((DataUser u) -> {
+            users.getUsers().forEach((User u) -> {
+                DataUser user = (DataUser) u;
                 personData.add(new Person(
-                        u.getId(),
-                        u.getUsername(),
-                        u.getEmail(),
-                        u.getPassword(),
-                        u.getFirstName(),
-                        u.getLastName(),
-                        u.isEmailVerified(),
-                        u.getGender()
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getPassword(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.isEmailVerified(),
+                        user.getGender()
                 ));
             });
         });
