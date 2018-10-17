@@ -127,7 +127,11 @@ public class Share extends API {
                 return;
             }
 
-            jsonArgs = new JSONObject(p.getString("args"));
+            if (p.getString("args") != null) {
+                jsonArgs = new JSONObject(p.getString("args"));
+            } else {
+                jsonArgs = new JSONObject();
+            }
 
             switch (op) {
 
@@ -364,7 +368,7 @@ public class Share extends API {
 
         }
 
-        public void copy() throws IOException {
+        public void copy() throws IOException, UserException {
             JSONObject args = jsonArgs;
             // Mode mode = args.has("mode") ? Mode.valueOf(args.getString("mode").toUpperCase()) : Mode.P;
             //List<Object> toUsers = args.has("users") ? args.getJSONArray("users").toList() : null;
@@ -442,6 +446,39 @@ public class Share extends API {
             Path sPATH = Paths.get(ssPath.normalize() + "/" + subPath.normalize()).normalize();
 
             if (!hasError) {
+                if (shp.isShared(ownerUser, ssPath)) {
+                    Mode mode = shp.getMode(ownerUser, ssPath);
+                    if (mode == Mode.P) {
+
+                    } else if (mode == Mode.U) {
+                        HttpSession s = reqs.getSession(false);
+
+                        if (s == null) {
+                            hasError = true;
+                            response.setError("session_require");
+                            response.setStatus("error");
+                            response.setMsg("Esta rruta esta compartida en modo privado con algunos usuarios, tienes que iniciar sesion y debe estar compartida contigo.");
+                        } else {
+                            DataUser u2 = (DataUser) Start.getUserManager().getUserProvider().getUserById((String) s.getAttribute("uid"));
+                            if (!shp.isSharedWith(ownerUser, u2, ssPath) || shp.isShared(u2, ssPath)) {
+
+                                hasError = true;
+                                response.setError("not_share_with_you");
+                                response.setStatus("error");
+                                response.setMsg("Esta rruta esta en modo privado y no se encuentra conpartida con tigo");
+
+                            }
+                        }
+                    }
+                } else {
+                    hasError = true;
+                    response.setMsg("'" + sPath + "' Esta rruta no esta conpartida y no puedes acceder a '" + srcPath + "'");
+                    response.setStatus("error");
+                    response.setError("not_share");
+                }
+            }
+
+            if (!hasError) {
                 if (!sp.exists(ownerUser, sPATH)) {
                     hasError = true;
                     response.setMsg("La rruta fuente no existe " + srcPath);
@@ -456,15 +493,6 @@ public class Share extends API {
                     response.setMsg("La rruta de destino ya existe " + dstPath);
                     response.setStatus("error");
                     response.setError("dpath_exist");
-                }
-            }
-
-            if (!hasError) {
-                if (!shp.isShared(ownerUser, Paths.get(sPath))) {
-                    hasError = true;
-                    response.setMsg("'" + sPath + "' Esta rruta no esta conpartida y no puedes acceder a '" + srcPath + "'");
-                    response.setStatus("error");
-                    response.setError("not_share");
                 }
             }
 
@@ -796,7 +824,7 @@ public class Share extends API {
 
             if (!hasError) {
                 try {
-                    orchi.HHCloud.share.Share share = shp.getShare(ownerUser, Paths.get(path),wUsers);
+                    orchi.HHCloud.share.Share share = shp.getShare(ownerUser, Paths.get(path), wUsers);
                     response.setPayload(share);
                 } catch (NotShareException e) {
                     hasError = true;
@@ -821,9 +849,9 @@ public class Share extends API {
             ListArguments listArgs = new ListArguments();
             Path sPath = Paths.get("/", Paths.get(jsonArgs.getString("spath")).normalize() + "");
             Path subPath = Paths.get("/", Paths.get(jsonArgs.getString("subpath")).normalize() + "");
-            String idUser = jsonArgs.getString("email");
+            String idUser = jsonArgs.getString("owner");
             listArgs.setPath(Paths.get(sPath.normalize() + "/" + subPath.normalize()).normalize());
-            DataUser u = (DataUser) Start.getUserManager().getUserProvider().getUserByEmail(idUser);
+            DataUser u = (DataUser) Start.getUserManager().getUserProvider().getUserById(idUser);
             boolean hasError = false;
             Response response = new Response();
 
@@ -844,6 +872,7 @@ public class Share extends API {
 
                 } else if (pMode == Mode.U) {
                     HttpSession s = reqs.getSession(false);
+
                     if (s == null) {
                         hasError = true;
                         response.setError("session_require");
