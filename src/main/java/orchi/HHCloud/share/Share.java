@@ -4,6 +4,9 @@
 package orchi.HHCloud.share;
 
 import orchi.HHCloud.user.User;
+import orchi.HHCloud.user.Users;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -16,8 +19,22 @@ public class Share implements Serializable {
     private User owner;
     private long sharedAt;
     private Mode mode;
+    @JsonIgnore
     private Path path; // ruta absoluta, completa
+    private Users shareWith;
 
+    @JsonProperty(value = "path")
+    public String getStringPath() {
+        return path != null ? path.toString() == null ? "/" : path.toString() : "/";
+    }
+
+    public Users getShareWith() {
+        return shareWith;
+    }
+
+    public void setShareWith(Users shareWith) {
+        this.shareWith = shareWith;
+    }
 
     public long getSharedAt() {
         return sharedAt;
@@ -67,6 +84,7 @@ public class Share implements Serializable {
                 ", sharedAt=" + sharedAt +
                 ", mode=" + mode +
                 ", path=" + path +
+                ", shareWith=" + shareWith +
                 '}';
     }
 }

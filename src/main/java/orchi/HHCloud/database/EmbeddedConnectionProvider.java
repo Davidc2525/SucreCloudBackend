@@ -27,7 +27,8 @@ public class EmbeddedConnectionProvider implements ConnectionProvider {
         Log.debug("Iniciando base de datos empotrada.");
 
         org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource dataSource = new org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource();
-        dataSource.setDatabaseName("db/HHCloud");
+        dataSource.setDatabaseName("resources/db/HHCloud");
+
         // dataSource.setCreateDatabase("create");
         poolMgr = new MiniConnectionPoolManager(dataSource, 2000);
     }

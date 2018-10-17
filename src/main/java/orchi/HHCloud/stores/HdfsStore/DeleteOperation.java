@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
+import orchi.HHCloud.Start;
+import orchi.HHCloud.share.ShareProvider;
+import orchi.HHCloud.store.StoreProvider;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +17,8 @@ import orchi.HHCloud.store.response.DeleteResponse;
 
 public class DeleteOperation implements IOperation {
     private static Logger log = LoggerFactory.getLogger(DeleteOperation.class);
+    private final ShareProvider shp;
+
     private List<java.nio.file.Path> paths;
     private DeleteArguments arg;
     private String path;
@@ -27,7 +32,9 @@ public class DeleteOperation implements IOperation {
         paths = arg.getPaths();
         path = arg.getPath().toString();
         root = arg.getUserId();
+        shp = Start.getShareManager().getShareProvider();
         log.debug("Nueva operacion de eliminacion");
+
     }
 
     public DeleteResponse call() {
@@ -41,6 +48,10 @@ public class DeleteOperation implements IOperation {
                     log.debug("Eliminando {}", opath);
                     HdfsManager.getInstance().deletePath(opath);
                     log.debug("{} eliminando", opath);
+
+                    log.debug("{} eliminando de rrutas compartidas", p);
+                    shp.deleteShare(arg.getUse(),p,true);
+
                 }
                 String parentOfLastPath = (Paths.get(lastPath).getParent().toString());
                 response.setStatus("ok");
@@ -52,6 +63,9 @@ public class DeleteOperation implements IOperation {
                 log.debug("Eliminando {}", opath.toString());
                 HdfsManager.getInstance().deletePath(opath);
                 log.debug("{} eliminando", path);
+
+                log.debug("{} eliminando de rrutas compartidas", path);
+                shp.deleteShare(arg.getUse(),Paths.get(path),true);
             }
 
         } catch (IOException e) {

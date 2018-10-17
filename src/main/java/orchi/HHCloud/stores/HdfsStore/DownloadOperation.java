@@ -1,6 +1,16 @@
 package orchi.HHCloud.stores.HdfsStore;
 
 
+import orchi.HHCloud.Api.Fs.operations.IOperation;
+import orchi.HHCloud.Util;
+import orchi.HHCloud.store.arguments.DownloadArguments;
+import orchi.HHCloud.store.response.Response;
+import org.apache.hadoop.fs.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.AsyncContext;
+import javax.servlet.http.HttpServletResponse;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,26 +18,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.RemoteIterator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import orchi.HHCloud.Util;
-import orchi.HHCloud.Api.Fs.operations.IOperation;
-import orchi.HHCloud.store.arguments.DownloadArguments;
-import orchi.HHCloud.store.response.Response;
-
 
 public class DownloadOperation implements IOperation {
     private static Logger log = LoggerFactory.getLogger(DownloadOperation.class);
     private static FileSystem fs = HdfsManager.getInstance().fs;
+    private HttpServletResponse r;
     private List<java.nio.file.Path> paths;
     private AsyncContext ctx;
 
@@ -41,7 +36,7 @@ public class DownloadOperation implements IOperation {
         String path = arg.getPath().toString();
         paths = arg.getPaths();
         Path opath = new Path(HdfsManager.newPath(root, path).toString());
-        HttpServletResponse r = ((HttpServletResponse) ctx.getResponse());
+        r = ((HttpServletResponse) ctx.getResponse());
         if (paths != null) {
             log.info("Descarga de multiples archivos {}", paths);
 
@@ -57,7 +52,6 @@ public class DownloadOperation implements IOperation {
                         }
                         return false;
                     }).collect(Collectors.toList());
-            ;
 
             try {
                 r.addHeader("Content-Disposition", " attachment; filename=\"" + opath.getName() + ".zip\"");
@@ -79,7 +73,9 @@ public class DownloadOperation implements IOperation {
         try {
             if (!fs.exists(opath)) {
                 log.info("{} no existe", opath.toString());
-                ctx.getResponse().getWriter().println("no exists" + opath.toString());
+                r.addHeader("Content-type", "text/plaint");
+                r.setStatus(404);
+                ctx.getResponse().getWriter().println("no exists " + arg.getPath());
                 log.info("Operacion de descarga terminada {}", opath.toString());
                 ctx.complete();
             }

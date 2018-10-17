@@ -5,6 +5,7 @@ import orchi.HHCloud.Api.ApiManager;
 import orchi.HHCloud.Api.Auth.Auth;
 import orchi.HHCloud.Api.Fs.Fs;
 import orchi.HHCloud.Api.Opener.Opener;
+import orchi.HHCloud.Api.Share.Share;
 import orchi.HHCloud.Api.Uploader.Uploader;
 import orchi.HHCloud.Api.User.Users;
 import orchi.HHCloud.auth.AuthProvider;
@@ -85,6 +86,7 @@ public class Start {
         //servletContext.addFilter(ApiFilter.class, "/*", null);
 
         servletContext.addServlet(ApiManager.addApi(Fs.class, Fs.apiName), Fs.apiName);
+        servletContext.addServlet(ApiManager.addApi(Share.class, Share.apiName), Share.apiName);
         servletContext.addServlet(ApiManager.addApi(Users.class, Users.apiName), Users.apiName);
         servletContext.addServlet(ApiManager.addApi(Auth.class, Auth.apiName), Auth.apiName);
         servletContext.addServlet(ApiManager.addApi(Opener.class, Opener.apiName), Opener.apiName);
@@ -95,7 +97,8 @@ public class Start {
         HashSessionIdManager idManager = new HashSessionIdManager();
         server.setSessionIdManager(idManager);
         HashSessionManager manager = new HashSessionManager();
-        manager.setStoreDirectory(new File("./sessions"));
+        manager.setStoreDirectory(new File("./resources/sessions"));
+        manager.setSavePeriod(10);
         SessionCookieConfig cc = manager.getSessionCookieConfig();
         cc.setName(conf.getString("app.name") + "-S");
         SessionHandler sessions = new SessionHandler(manager);

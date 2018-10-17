@@ -1,4 +1,4 @@
-connect 'jdbc:derby:db/HHCloud;create=true';  --comentar esta linea si no es se ejecutara en la base de datos embebida
+connect 'jdbc:derby:resources/db/HHCloud;create=true';  --comentar esta linea si no es se ejecutara en la base de datos embebida
 
 CREATE TABLE USERS
     (ID varchar(100) NOT NULL,

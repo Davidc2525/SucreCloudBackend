@@ -12,16 +12,15 @@ import orchi.HHCloud.cipher.CipherManager;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.mail.MailProvider;
 import orchi.HHCloud.share.Mode;
+import orchi.HHCloud.share.ShareException;
 import orchi.HHCloud.share.ShareProvider;
 import orchi.HHCloud.store.ContextStore;
 import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.store.arguments.*;
 import orchi.HHCloud.stores.HdfsStore.HdfsManager;
 import orchi.HHCloud.stores.HdfsStore.HdfsStoreProvider;
-import orchi.HHCloud.user.BasicUser;
-import orchi.HHCloud.user.DataUser;
+import orchi.HHCloud.user.*;
 import orchi.HHCloud.user.Exceptions.UserException;
-import orchi.HHCloud.user.RoledUser;
 import orchi.HHCloud.user.role.Role;
 import orchi.HHCloud.user.role.Roles;
 import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
@@ -56,9 +55,29 @@ import java.util.*;
 public class Main {
     private static Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException, XmlRpcException, UserException, DisablingException, EnablingException {
+    public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException, XmlRpcException, UserException, DisablingException, EnablingException, ShareException {
 
         System.out.println("HHCloud pruebas!");
+
+
+
+
+        UserManager um = Start.getUserManager();
+        um.getSearchUserProvider().prepare();
+        um.getSearchUserProvider().addAll(um.getUserProvider().getUsers());
+        if (true) {
+            return;
+        }
+        DataUser uti = new DataUser();
+        uti.setId("1234");
+        uti.setFirstName("yulia");
+        uti.setLastName("avila");
+        uti.setEmail("yuli@gmail.com");
+        //um.getSearchUserProvider().addUserToIndex(uti);
+
+        log.info("found {}",um.getSearchUserProvider().search(args[0]));
+
+
         log.info("{}",Mode.P.name());
 
         ShareProvider shap =   Start.getShareManager().getShareProvider();
@@ -94,9 +113,7 @@ public class Main {
         log.debug("shared with me {} ",shap.getSharedWithMe(toutcs).getShared());
 
 
-        if (true) {
-            return;
-        }
+
         //Providers.extractInterfaces((Start.getStoreManager().getStoreProvider()));
         //Start.getStoreManager().getStoreProvider();
         for(Package pack : Main.class.getPackage().getPackages()){

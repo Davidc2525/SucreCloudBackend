@@ -2,6 +2,7 @@ package orchi.HHCloud.user;
 
 import orchi.HHCloud.Start;
 import orchi.HHCloud.user.role.RoleProvider;
+import orchi.HHCloud.user.search.SearchUserProvider;
 import orchi.HHCloud.user.userAvailable.UserAvailableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +17,11 @@ public class UserManager {
     private static String classNameUserProvider = Start.conf.getString("user.usermanager.provider.user");
     private static String classNameUserRoleProvider = Start.conf.getString("user.usermanager.provider.user.role");
     private static String classNameUserAvailableProvider = Start.conf.getString("user.usermanager.provider.user.available");
+    private static String classNameSearchUserProvider = Start.conf.getString("user.usermanager.provider.user.search");
     private Logger logger = LoggerFactory.getLogger(UserManager.class);
     private UserProvider userProvider;
     private UserAvailableProvider userAvailableProvider;
-
+    private SearchUserProvider searchUserProvider;
 
 
     private RoleProvider roleProvider;
@@ -36,6 +38,8 @@ public class UserManager {
 
             Class<UserAvailableProvider> clazzUAP = (Class<UserAvailableProvider>) Class.forName(classNameUserAvailableProvider);
 
+            Class<SearchUserProvider> clazzSAP = (Class<SearchUserProvider>) Class.forName(classNameSearchUserProvider);
+
             userProvider = clazzUP.newInstance();
             userAvailableProvider = clazzUAP.newInstance();
 
@@ -44,6 +48,11 @@ public class UserManager {
 
             userProvider.init();
             userAvailableProvider.init();
+
+            searchUserProvider = clazzSAP.newInstance();
+            searchUserProvider.prepare();
+            searchUserProvider.init();
+
 
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -88,4 +97,11 @@ public class UserManager {
     public RoleProvider getUserRoleProvider() {
         return roleProvider;
     }
+
+    public SearchUserProvider getSearchUserProvider() {
+        return searchUserProvider;
+    }
+
 }
+
+

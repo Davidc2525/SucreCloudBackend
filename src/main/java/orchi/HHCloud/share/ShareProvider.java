@@ -42,12 +42,30 @@ public interface ShareProvider {
     public boolean isSharedWith(User ownerUser, User to, Path path);
 
     /**
+     * Recuperar informacion de una rruta compartida
+     *
+     * @param ownerUser usuario dueño de la rruta compartida
+     * @param path      rruta compartida a la que se desea acceder
+     */
+    public Share getShare(User ownerUser, Path path) throws NotShareException;
+
+    /**
+     * Recuperar informacion de una rruta compartida
+     *
+     * @param additionalData si es true, se agregara informacion adicional que puede que en ocaciones sea o no necesaria.
+     *                      Este comportamiento depende de la implementacion
+     * @param ownerUser     usuario dueño de la rruta compartida
+     * @param path          rruta compartida a la que se desea acceder
+     */
+    public Share getShare(User ownerUser, Path path, boolean additionalData) throws NotShareException;
+
+    /**
      * Compartir una nueva ruta
      *
      * @param user usuario dueño de la rruta a compartir
      * @param path rruta a compartir
      */
-    public void createShare(User user, Path path);
+    public void createShare(User user, Path path) throws ShareException;
 
     /**
      * Compartir una nueva ruta
@@ -56,7 +74,7 @@ public interface ShareProvider {
      * @param with usuario con quien se compartira la rruta
      * @param path rruta a compartir
      */
-    public void createShare(User user, Users with, Path path);
+    public void createShare(User user, Users with, Path path) throws ShareException;
 
     /**
      * Compartir una nueva ruta
@@ -66,7 +84,7 @@ public interface ShareProvider {
      * @param path rruta a compartir
      * @param mode modo en el que se compartira la rruta {@link Mode}
      */
-    public void createShare(User user, Users with, Path path, Mode mode);
+    public void createShare(User user, Users with, Path path, Mode mode) throws ShareException;
 
     /**
      * Configurar un nuevo modo a una rruta espesifica de un usuario
@@ -79,15 +97,24 @@ public interface ShareProvider {
     public Mode getMode(User user, Path path);
 
     /**
-     * Eliminar una rruta compartida, elimina las rrutas hijas
+     * Eliminar una rruta compartida
      */
     public void deleteShare(User user, Path path);
 
     /**
-     * A una rruta compartida se puede compartir con un usuario espesifico
+     * Eliminar una rruta compartida, elimina las rrutas hijas
+     */
+    public void deleteShare(User user, Path path, boolean recursive);
+
+    /**
+     * Compartir una rruta con un usuario espesifico
      */
     public void setSharedWith(User ownerUser, User to, Path path);
 
+    /**
+     *
+     * */
+    public void setSharedWith(User ownerUser, Users to, Path path);
 
     /**
      * Obtener rrutas compartidas con un usuario espesifico

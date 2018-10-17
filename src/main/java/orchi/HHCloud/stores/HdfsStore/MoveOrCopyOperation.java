@@ -1,18 +1,20 @@
 package orchi.HHCloud.stores.HdfsStore;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-
+import orchi.HHCloud.Api.Fs.operations.IOperation;
+import orchi.HHCloud.Start;
+import orchi.HHCloud.Util;
+import orchi.HHCloud.share.ShareProvider;
+import orchi.HHCloud.store.arguments.MoveOrCopyArguments;
+import orchi.HHCloud.store.response.MoveOrCopyResponse;
+import orchi.HHCloud.user.User;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import orchi.HHCloud.Util;
-import orchi.HHCloud.Api.Fs.operations.IOperation;
-import orchi.HHCloud.store.arguments.MoveOrCopyArguments;
-import orchi.HHCloud.store.response.MoveOrCopyResponse;
+import java.io.IOException;
+import java.nio.file.Paths;
 
 public class MoveOrCopyOperation implements IOperation {
     private static Logger log = LoggerFactory.getLogger(MoveOrCopyOperation.class);
@@ -25,6 +27,7 @@ public class MoveOrCopyOperation implements IOperation {
     private FileSystem fs;
     private MoveOrCopyArguments args;
     private MoveOrCopyResponse response;
+    private ShareProvider shp;
 
     public MoveOrCopyOperation(MoveOrCopyArguments arg) {
         response = new MoveOrCopyResponse();
@@ -36,7 +39,17 @@ public class MoveOrCopyOperation implements IOperation {
         root = args.getUserId();
         srcpathWithRoot = new Path(HdfsManager.newPath(root, srcPath.toString()).toString());
         dstpathWithRoot = new Path(HdfsManager.newPath(root, dstPath.toString()).toString());
+
+        shp = Start.getShareManager().getShareProvider();
         log.debug("nueva operacion de {} ", move ? "mover ruta" : "copiar ruta");
+    }
+
+    public void setContextSrc(User user) {
+        srcpathWithRoot = new Path(HdfsManager.newPath(user.getId(), srcPath.toString()).toString());
+    }
+
+    public void setContextDst(User user) {
+        dstpathWithRoot = new Path(HdfsManager.newPath(user.getId(), dstPath.toString()).toString());
     }
 
     public MoveOrCopyResponse call() {
@@ -60,6 +73,11 @@ public class MoveOrCopyOperation implements IOperation {
                                 .getParent());
 
                         log.debug("	{} exitoso ", move ? "movido" : "copiado");
+
+                        if (move) {
+                            log.debug("{} eliminando de rrutas compartidas", args.getSrcPath());
+                            shp.deleteShare(args.getUse(), args.getSrcPath(), true);
+                        }
                     } else {
                         // (fs, srcpathWithRoot, dstpathWithRoot, move,
                         // fs.getConf());

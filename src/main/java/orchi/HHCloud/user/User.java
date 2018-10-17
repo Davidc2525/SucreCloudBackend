@@ -1,6 +1,7 @@
 package orchi.HHCloud.user;
 
 import java.io.Externalizable;
+import java.util.Comparator;
 
 /**
  * Todas las clases tengan q ver con contenido de usuario deben heredar esta
@@ -10,7 +11,7 @@ import java.io.Externalizable;
  * heredando esta.
  * Todas las clases q herenden esta clase, tienen q ser serialisables
  */
-public abstract class User implements Externalizable {
+public abstract class User implements Externalizable,Comparator<User>{
 
     protected String id = "";
     protected String username = "";
@@ -63,4 +64,26 @@ public abstract class User implements Externalizable {
         return "User {id=" + id + ", username=" + username + ", email=" + email + ", password=" + password + "}";
     }
 
+    @Override
+    public int compare(User o1, User o2) {
+        return o1.equals(o2.getId()) ? 1:0;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean eq = false;
+        if(obj instanceof User){
+            User cUser = (User) obj;
+
+            eq = id.equalsIgnoreCase(cUser.getId());
+
+        }
+
+        if(obj instanceof String){
+            eq = id.equalsIgnoreCase((String) obj);
+        }
+
+        return eq;
+
+    }
 }

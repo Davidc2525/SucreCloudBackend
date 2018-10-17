@@ -18,4 +18,15 @@ public class Users implements Serializable {
     public List<User> getUsers() {
         return users;
     }
+
+    public void addAll(List<User> users){
+        this.users = users;
+    }
+
+    @Override
+    public String toString() {
+        return "Users{" +
+                "users=" + users +
+                '}';
+    }
 }

@@ -12,6 +12,7 @@ import orchi.HHCloud.user.Exceptions.UserAleardyExistsException;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Exceptions.UserMutatorException;
 import orchi.HHCloud.user.Exceptions.UserNotExistException;
+import orchi.HHCloud.user.search.SearchUserProvider;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.WordUtils;
@@ -45,9 +46,9 @@ public class EmbeddedUserProvider implements UserProvider {
     private static final String APPLICATION_ADMIN = Start.conf.getString("mail.mailmanager.mail.admin");
     private static final String UPDATE_PASS_USER = "UPDATE USERS SET PASS=(?) WHERE ID=(?)";
     private static final String DELETE_USERS_WHERE_ID = "DELETE FROM USERS WHERE ID=(?)";
-    private static final String SELECT_USERS_WHERE_USERNAME = "SELECT * FROM USERS where username=(?)";
-    private static final String SELECT_USERS_WHERE_EMAIL = "SELECT * FROM USERS where email=(?)";
-    private static final String SELECT_USERS_WHERE_ID = "SELECT * FROM USERS where id=(?)";
+    private static final String SELECT_USERS_WHERE_USERNAME = "SELECT * FROM USERS where username=(?) FETCH FIRST ROW ONLY";
+    private static final String SELECT_USERS_WHERE_EMAIL = "SELECT * FROM USERS where email=(?) FETCH FIRST ROW ONLY";
+    private static final String SELECT_USERS_WHERE_ID = "SELECT * FROM USERS where id=(?) FETCH FIRST ROW ONLY";
     private static final String INSERT_INTO_USERS = "INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_USER = "" +
             "UPDATE USERS SET "
@@ -65,6 +66,7 @@ public class EmbeddedUserProvider implements UserProvider {
             + "WHERE ID=(?)";
     private ThreadPoolExecutor executor;
     private CipherProvider ciplherProvider = Start.getCipherManager().getCipherProvider();
+
     private ConnectionProvider provider;
     //private Connection conn;
     private UserValidator userValidator = new DefaultUserValidator();
@@ -81,6 +83,7 @@ public class EmbeddedUserProvider implements UserProvider {
             e1.printStackTrace();
         }
         Start.getDbConnectionManager();
+
         provider = DbConnectionManager.getInstance().getConnectionProvider();
         //conn = provider.getConnection();
         executor = new ThreadPoolExecutor(100, 100, 10L, TimeUnit.SECONDS,
@@ -231,6 +234,10 @@ public class EmbeddedUserProvider implements UserProvider {
                         sendVerifyEmail(user);
                         log.debug("User created {}, sendind email to veridy account", user);
                     }
+                    CompletableFuture.runAsync(()->{
+                        Start.getUserManager().getSearchUserProvider().addUserToIndex(user);
+                    },executor);
+
                 } catch (SQLException e) {
                     e.printStackTrace();
                     throw new UserException(e.getMessage());
@@ -260,6 +267,11 @@ public class EmbeddedUserProvider implements UserProvider {
             userDelete.setString(1, escape(user.getId()));
             userDelete.executeUpdate();
             log.debug("User deleted {}", user);
+
+            CompletableFuture.runAsync(()->{
+                Start.getUserManager().getSearchUserProvider().removeUserToIndex(user);
+            },executor);
+
         } catch (SQLException e) {
             e.printStackTrace();
             throw new UserException(e.getMessage());
@@ -378,6 +390,11 @@ public class EmbeddedUserProvider implements UserProvider {
             userUpdate.setString(8, escape(editUser.getId()));
             userUpdate.executeUpdate();
             log.debug("User chaged from: {}\nto: {}", oldUser, editUser);
+
+            CompletableFuture.runAsync(()->{
+                Start.getUserManager().getSearchUserProvider().editUserInIndex(oldUser, editUser);
+            },executor);
+
         } catch (SQLException e) {
             e.printStackTrace();
             throw new UserException(e.getMessage());

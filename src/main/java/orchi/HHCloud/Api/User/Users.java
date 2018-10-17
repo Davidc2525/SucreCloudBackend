@@ -14,6 +14,8 @@ import orchi.HHCloud.store.ContextStore;
 import orchi.HHCloud.store.StoreProvider;
 import orchi.HHCloud.user.*;
 import orchi.HHCloud.user.Exceptions.*;
+import orchi.HHCloud.user.search.SearchUserProvider;
+import orchi.HHCloud.user.search.UsersFound;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -50,6 +52,7 @@ public class Users extends API {
     private static ObjectMapper om;
     private static CipherProvider cipher = Start.getCipherManager().getCipherProvider();
     private ThreadPoolExecutor executor;
+    private static SearchUserProvider us;
 
     @Operation(name = "accountstatus")
     @SessionRequired
@@ -893,8 +896,29 @@ public class Users extends API {
         ctx.complete();
     }
 
+    @Operation(name = "search")
+    private static void searchUserOperation(AsyncContext ctx, JSONObject jsonArgs) throws IOException {
+        HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
+        SearchResponse response = new SearchResponse();
+        UserValidator validator = up.getValidator();
+        User user = null;
+        boolean hasError = false;
+        String queryString = jsonArgs.has("query") ? jsonArgs.getString("query") : "";
+
+        UsersFound result = us.search(queryString);
+        orchi.HHCloud.user.Users users = new orchi.HHCloud.user.Users();
+        users.addAll(result.getAll());
+        response.setPayload(users);
+
+        resp.getWriter().println(om.writeValueAsString(response));
+
+        ctx.complete();
+    }
+
+
     @Override
     public void init(ServletConfig config) throws ServletException {
+        us = Start.getUserManager().getSearchUserProvider();
         up = Start.getUserManager().getUserProvider();
         sp = Start.getStoreManager().getStoreProvider();
         om = new ObjectMapper();
@@ -1024,6 +1048,10 @@ public class Users extends API {
                     changePasswordByRecover(ctx, jsonArgs);
                     break;
 
+                case "search"://no session
+                    searchUserOperation(ctx, jsonArgs);
+                    break;
+
                 default:
                     JsonResponse response = new JsonResponse();
                     response.setStatus("error");
@@ -1035,6 +1063,7 @@ public class Users extends API {
                     break;
             }
         }
+
     }
 
     /*--------------------------------OPERACIONES------------------------**/
@@ -1240,5 +1269,45 @@ public class Users extends API {
             this.error = error;
         }
 
+    }
+
+    public static class SearchResponse {
+        private String status = "ok";
+        private String error;
+        private String msg = "ok";
+
+        public orchi.HHCloud.user.Users getPayload() {
+            return payload;
+        }
+
+        public void setPayload(orchi.HHCloud.user.Users payload) {
+            this.payload = payload;
+        }
+
+        private orchi.HHCloud.user.Users payload = null;
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getError() {
+            return error;
+        }
+
+        public void setError(String error) {
+            this.error = error;
+        }
+
+        public String getMsg() {
+            return msg;
+        }
+
+        public void setMsg(String msg) {
+            this.msg = msg;
+        }
     }
 }
