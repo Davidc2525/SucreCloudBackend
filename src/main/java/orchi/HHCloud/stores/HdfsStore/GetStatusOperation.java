@@ -36,7 +36,8 @@ public class GetStatusOperation implements IOperation {
 
     private ShareProvider shareProvider;
     private Shared shared;
-    private boolean thisIsShared;
+    private boolean thisIsShared = false;
+    private boolean shareInfo = false;
 
     public GetStatusOperation(GetStatusArguments args) {
 
@@ -49,8 +50,13 @@ public class GetStatusOperation implements IOperation {
         opath = new Path(HdfsManager.newPath(root, path).toString());
 
         shareProvider = Start.getShareManager().getShareProvider();
-        thisIsShared = shareProvider.isShared(args.getUse(), Paths.get(path));
-        shared = shareProvider.sharedInDirectory(args.getUse(), Paths.get(path).getParent());
+        shareInfo = args.getShareInfo();
+
+        if(shareInfo){
+            thisIsShared = shareProvider.isShared(args.getUse(), Paths.get(path));
+            shared = shareProvider.sharedInDirectory(args.getUse(), Paths.get(path).getParent());
+        }
+
 
         log.info("Nueva operacion de estatus de archivo {}", opath.toString());
     }
@@ -122,7 +128,7 @@ public class GetStatusOperation implements IOperation {
 
             FileStatus fileStatus = fs.getFileLinkStatus(opath);
             Status status = new Status();
-            status.setShared(shared.isShared(args.getPath()));
+            if(shareInfo){status.setShared(shared.isShared(args.getPath()));}
             status.setName(fileStatus.getPath().getName());
             status.setPath(Paths.get(Util.getPathWithoutRootPath(fileStatus.getPath().toString())));
             status.setMime(Files.probeContentType(Paths.get(fileStatus.getPath().getName())));

@@ -847,6 +847,7 @@ public class Share extends API {
 
         public void list() throws Exception {
             ListArguments listArgs = new ListArguments();
+            listArgs.setShareInfo(false);
             Path sPath = Paths.get("/", Paths.get(jsonArgs.getString("spath")).normalize() + "");
             Path subPath = Paths.get("/", Paths.get(jsonArgs.getString("subpath")).normalize() + "");
             String idUser = jsonArgs.getString("owner");
@@ -880,7 +881,7 @@ public class Share extends API {
                         response.setMsg("Esta rruta esta compartida en modo privado con algunos usuarios, tienes que iniciar sesion y debe estar compartida contigo.");
                     } else {
                         DataUser u2 = (DataUser) Start.getUserManager().getUserProvider().getUserById((String) s.getAttribute("uid"));
-                        if (shp.isSharedWith(u, u2, sPath) || shp.isShared(u2, sPath)) {
+                        if (shp.isSharedWith(u, u2, sPath) || u.equals(u2)) {
                             listArgs.setUser(u);
                             ListResponse res = sp.list(listArgs);
 
@@ -960,7 +961,7 @@ public class Share extends API {
                             response.setMsg("Esta rruta esta compartida en modo privado con algunos usuarios, tienes que iniciar sesion y debe estar compartida contigo.");
                         } else {
                             DataUser u2 = (DataUser) Start.getUserManager().getUserProvider().getUserById((String) s.getAttribute("uid"));
-                            if (shp.isSharedWith(u, u2, sPath) || shp.isShared(u2, sPath)) {
+                            if (shp.isSharedWith(u, u2, sPath) || u.equals(u2)) {
                                 DownloadArguments downArgs = new DownloadArguments();
                                 downArgs.setPath(Paths.get(sPath.normalize() + "/" + subPath.normalize()).normalize());
                                 downArgs.setUser(u);

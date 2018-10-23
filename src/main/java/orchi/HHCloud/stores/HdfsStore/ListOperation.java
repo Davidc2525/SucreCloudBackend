@@ -37,7 +37,8 @@ public class ListOperation implements IOperation {
     private ListArguments args;
     private ShareProvider shareProvider;
     private Shared shared;
-    private boolean thisIsShared;
+    private boolean thisIsShared = false;
+    private boolean shareInfo = true;
 
     public ListOperation(ListArguments args) {
         this.args = args;
@@ -47,10 +48,19 @@ public class ListOperation implements IOperation {
         path = args.getPath().toString();
         opath = new Path(HdfsManager.newPath(root, path).toString());
         shareProvider = Start.getShareManager().getShareProvider();
-        shared = shareProvider.sharedInDirectory(args.getUse(), Paths.get(path));
+        shareInfo = args.getShareInfo();
 
-        thisIsShared = shareProvider.isShared(args.getUse(), Paths.get(path));
         log.info("Nueva operacion de listado {}", opath.toString());
+        if(shareInfo){
+            log.info("-- Se buscara rutas compartidas para ", opath.toString());
+            shared = shareProvider.sharedInDirectory(args.getUse(), Paths.get(path));
+
+            thisIsShared = shareProvider.isShared(args.getUse(), Paths.get(path));
+        }else{
+            log.info("-- No se buscara rutas compartidas para ", opath.toString());
+        }
+
+
 
     }
 
@@ -81,7 +91,7 @@ public class ListOperation implements IOperation {
                     try {
                         java.nio.file.Path statusPath = Paths.get(Util.getPathWithoutRootPath(x.getPath().toString()));
                         Status status = new Status();
-                        status.setShared(shared.isShared(statusPath));
+                        if(shareInfo){status.setShared(shared.isShared(statusPath));}
                         status.setName(x.getPath().getName());
                         status.setPath(statusPath);
                         status.setMime(Files.probeContentType(Paths.get(x.getPath().getName())));
@@ -127,11 +137,12 @@ public class ListOperation implements IOperation {
             } else if (fs.isFile(new Path(HdfsManager.newPath(root, path).toString()))) {
                 log.warn("transfer operation, get status file", opath);
                 GetStatusArguments gsa = new GetStatusArguments();
+                gsa.setShareInfo(shareInfo);
                 gsa.setPath(Paths.get(path));
                 gsa.setUser(args.getUse());
                 GetStatusResponse gs = new GetStatusOperation(gsa).call();
                 ListResponse lr = new ListResponse();
-                lr.setShared(gs.isShared());
+                if(shareInfo){lr.setShared(gs.isShared());}
                 lr.setStatus(gs.getStatus());
                 lr.setError(gs.getError());
                 lr.setMsg(gs.getMsg());
