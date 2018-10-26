@@ -322,7 +322,7 @@ public class DefaultShareProvider implements ShareProvider {
     public void setSharedWith(User ownerUser, User to, Path path) {
         log.debug("Set  share with: {} to: {}, owner {}", path, to.getId(), ownerUser.getId());
         if(ownerUser.equals(to)){
-            log.debug("Not can't shared with you");
+            log.debug("Can't share with you");
             return;
         }
         if (isSharedWith(ownerUser, to, path)) {

@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -529,15 +530,20 @@ public class Share extends API {
         public void share() throws IOException {
             JSONObject args = jsonArgs;
             Mode mode = args.has("mode") ? Mode.valueOf(args.getString("mode").toUpperCase()) : Mode.P;
-            List<Object> toUsers = args.has("users") ? args.getJSONArray("users").toList() : null;
+            String stringUsers = args.has("users") ? args.getString("users") : null;
             String path = args.has("path") ? args.getString("path") : null;
 
             Users users = new Users();
 
+            List<String> toUsers = null;
+            if(stringUsers!=null){
+                String[] partsUsers = stringUsers.split(",");
+                toUsers = Arrays.asList(partsUsers);
+            }
             if (toUsers != null) {
                 if (toUsers.size() > 0) {
                     toUsers.stream()
-                            .map(id -> String.valueOf(id))
+                            .map(id -> id)
                             .filter(id -> !id.equalsIgnoreCase(""))
                             .filter(id -> id.length() > 5)
                             .forEach((id) -> {
@@ -655,11 +661,15 @@ public class Share extends API {
         public void setUsersToPath() throws IOException {
             JSONObject args = jsonArgs;
             Mode mode = args.has("mode") ? Mode.valueOf(args.getString("mode").toUpperCase()) : null;
-            List<Object> toUsers = args.has("users") ? args.getJSONArray("users").toList() : null;
+            String stringUsers = args.has("users") ? args.getString("users") : null;
             String path = args.has("path") ? args.getString("path") : null;
 
             Users users = new Users();
-
+            List<String> toUsers = null;
+            if(stringUsers!=null){
+                String[] partsUsers = stringUsers.split(",");
+                toUsers = Arrays.asList(partsUsers);
+            }
             if (toUsers != null) {
                 if (toUsers.size() > 0) {
                     toUsers.stream()
