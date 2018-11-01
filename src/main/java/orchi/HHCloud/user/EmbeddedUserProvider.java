@@ -3,6 +3,10 @@ package orchi.HHCloud.user;
 import com.google.api.client.util.Base64;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.auth.Exceptions.TokenException;
+import orchi.HHCloud.cache.Cache;
+import orchi.HHCloud.cache.CacheAleardyExistException;
+import orchi.HHCloud.cache.CacheDontExistException;
+import orchi.HHCloud.cache.CacheFactory;
 import orchi.HHCloud.cipher.CipherProvider;
 import orchi.HHCloud.database.ConnectionProvider;
 import orchi.HHCloud.database.DbConnectionManager;
@@ -29,10 +33,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Proveedor de usuarios con base de datos empotrada
@@ -72,6 +73,8 @@ public class EmbeddedUserProvider implements UserProvider {
     private UserValidator userValidator = new DefaultUserValidator();
     private String templateEmailVerify;
     private String templateRecoveryPassword;
+    private Cache<String,User> cacheById;
+    private Cache<String,User> cacheByEmail;
 
     @Override
     public void init() {
@@ -88,12 +91,41 @@ public class EmbeddedUserProvider implements UserProvider {
         //conn = provider.getConnection();
         executor = new ThreadPoolExecutor(100, 100, 10L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(1000000));
-    }
 
+        try {
+            cacheById = CacheFactory.createLRUCache("USERS_CACHE_ID");
+        } catch (CacheAleardyExistException e) {
+            e.printStackTrace();
+            try {
+                cacheById = CacheFactory.get("USERS_CACHE_ID");
+            } catch (CacheDontExistException e1) {
+                e1.printStackTrace();
+            }
+        }
+        cacheById.setMaxSize(1000);
+
+        try {
+            cacheByEmail = CacheFactory.createLRUCache("USERS_CACHE_EMAIL");
+        } catch (CacheAleardyExistException e) {
+            e.printStackTrace();
+            try {
+                cacheByEmail = CacheFactory.get("USERS_CACHE_EMAIL");
+            } catch (CacheDontExistException e1) {
+                e1.printStackTrace();
+            }
+        }
+        cacheByEmail.setMaxSize(1000);
+
+    }
 
     @Override
     public User getUserById(String userId) throws UserNotExistException, UserException {
         log.debug("getUserById {}", userId);
+        User inCache = cacheById.get(userId);
+        if(inCache!= null){
+            return inCache;
+        }
+
         User user = null;
         ResultSet result;
         Connection conn = null;
@@ -108,6 +140,8 @@ public class EmbeddedUserProvider implements UserProvider {
             if (result.next()) {
                 user = buildUserFromResult(result);
                 log.debug("User found {}", user);
+                cacheById.put(user.getId(),user);
+                cacheByEmail.put(user.getEmail(),user);
             } else {
                 throw new UserNotExistException("Usuario con id: " + userId + ", no existe.");
             }
@@ -131,6 +165,11 @@ public class EmbeddedUserProvider implements UserProvider {
     @Override
     public User getUserByEmail(String userEmail) throws UserNotExistException, UserException {
         log.debug("getUserByEmail {}", userEmail);
+        User inCache = cacheByEmail.get(userEmail);
+        if(inCache!= null){
+            return inCache;
+        }
+
         User user = null;
         ResultSet result;
         Connection conn = null;
@@ -144,6 +183,8 @@ public class EmbeddedUserProvider implements UserProvider {
             if (result.next()) {
                 user = buildUserFromResult(result);
                 log.debug("User found {}", user);
+                cacheById.put(user.getId(),user);
+                cacheByEmail.put(user.getEmail(),user);
             } else {
                 throw new UserNotExistException("Usuario con " + userEmail + " no existe.");
             }
@@ -218,7 +259,7 @@ public class EmbeddedUserProvider implements UserProvider {
                 try {
                     conn = provider.getConnection();
                     userInsert = conn.prepareStatement(INSERT_INTO_USERS);
-
+                    user.setPassword(ciplherProvider.encrypt(user.getPassword()));
                     userInsert.setString(1, escape(user.getId()));
                     userInsert.setString(2, escape(user.getEmail()));
                     userInsert.setBoolean(3, (user.isEmailVerified()));
@@ -227,7 +268,7 @@ public class EmbeddedUserProvider implements UserProvider {
                     userInsert.setString(6, escape(user.getLastName()));
                     userInsert.setString(7, escape(user.getGender().toLowerCase()));
                     userInsert.setBigDecimal(8, new BigDecimal(user.getCreateAt()));
-                    userInsert.setString(9, ciplherProvider.encrypt(user.getPassword()));
+                    userInsert.setString(9, (user.getPassword()));
                     userInsert.executeUpdate();
 
                     if (!user.isEmailVerified()) {
@@ -237,6 +278,9 @@ public class EmbeddedUserProvider implements UserProvider {
                     CompletableFuture.runAsync(()->{
                         Start.getUserManager().getSearchUserProvider().addUserToIndex(user);
                     },executor);
+
+                    cacheById.put(user.getId(),user);
+                    cacheByEmail.put(user.getEmail(),user);
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -271,6 +315,10 @@ public class EmbeddedUserProvider implements UserProvider {
             CompletableFuture.runAsync(()->{
                 Start.getUserManager().getSearchUserProvider().removeUserToIndex(user);
             },executor);
+
+            cacheById.remove(user.getId());
+            cacheByEmail.remove(user.getEmail());
+
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -350,6 +398,10 @@ public class EmbeddedUserProvider implements UserProvider {
             updatePass.executeUpdate();
 
             log.debug("Password changued to {}", user);
+            user.setPassword(nPasswordEncrypt);
+            cacheById.put(user.getId(),user);
+            cacheByEmail.put(user.getEmail(),user);
+
         } catch (SQLException e) {
             e.printStackTrace();
             throw new UserException(e.getMessage());
@@ -394,6 +446,10 @@ public class EmbeddedUserProvider implements UserProvider {
             CompletableFuture.runAsync(()->{
                 Start.getUserManager().getSearchUserProvider().editUserInIndex(oldUser, editUser);
             },executor);
+            editUser.setCreateAt(oldUser.getCreateAt());
+            cacheById.put(editUser.getId(),editUser);
+            cacheByEmail.put(editUser.getEmail(),editUser);
+
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -459,6 +515,9 @@ public class EmbeddedUserProvider implements UserProvider {
             } else {
                 log.debug("ACCOUNT UNVERIFIED {}", user);
             }
+
+            cacheById.put(user.getId(),user);
+            cacheByEmail.put(user.getEmail(),user);
             ;
         } catch (SQLException e) {
             e.printStackTrace();

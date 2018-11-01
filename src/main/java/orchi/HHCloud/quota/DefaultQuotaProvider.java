@@ -1,6 +1,9 @@
 package orchi.HHCloud.quota;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.cache.Cache;
+import orchi.HHCloud.cache.CacheAleardyExistException;
+import orchi.HHCloud.cache.CacheFactory;
 import orchi.HHCloud.database.DbConnectionManager;
 import orchi.HHCloud.quota.Exceptions.QuotaException;
 import orchi.HHCloud.store.StoreManager;
@@ -23,11 +26,19 @@ public class DefaultQuotaProvider extends ProxyQuotaProvider {
     private final String UPDATE_QUOTA_USER = "UPDATE SPACE_QUOTA SET SIZE = (?) WHERE IDUSER = (?)";
     private StoreProvider sp;
     private DbConnectionManager db;
+    private Cache<String,Quota> cache;
 
     public void init() {
         super.init();
         db = Start.getDbConnectionManager();
         log.info("Iniciando QuotaProvider");
+        try {
+            cache = CacheFactory.createLRUCache("QUOTA_CACHE");
+        } catch (CacheAleardyExistException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
     }
 
     @Override
@@ -54,6 +65,8 @@ public class DefaultQuotaProvider extends ProxyQuotaProvider {
                 stm.setLong(2, q.getQuota());
                 stm.executeUpdate();
             }
+
+            cache.put(user.getId(),q);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -82,6 +95,8 @@ public class DefaultQuotaProvider extends ProxyQuotaProvider {
             stm.setString(1, user.getId());
             stm.executeUpdate();
 
+            cache.remove(user.getId());
+
         } catch (SQLException e) {
             e.printStackTrace();
             throw new QuotaException(e);
@@ -100,6 +115,13 @@ public class DefaultQuotaProvider extends ProxyQuotaProvider {
     public boolean quotaIsSet(User user) throws QuotaException {
         boolean qset = false;
         log.debug("quotaIsSet {}", user);
+
+        Quota quotaInCache = cache.get(user.getId());
+
+        if(quotaInCache!=null){
+            return true;
+        }
+
         ResultSet result;
         Connection conn = null;
         PreparedStatement stm = null;
@@ -133,6 +155,13 @@ public class DefaultQuotaProvider extends ProxyQuotaProvider {
     public Quota getQuota(User user) throws QuotaException {
         log.debug("getQuota {}", user);
         super.getQuota(user);
+
+        Quota quotaInCache = cache.get(user.getId());
+
+        if(quotaInCache!=null){
+            return quotaInCache;
+        }
+
         Quota q = new Quota();
         ResultSet result;
         Connection conn = null;
@@ -151,7 +180,9 @@ public class DefaultQuotaProvider extends ProxyQuotaProvider {
             } else {
                 q.setQuota(StoreManager.SPACE_QUOTA_SIZE_NO_VERIFIED_USER);
             }
+            cache.put(user.getId(),q);
         } catch (SQLException e) {
+
             e.printStackTrace();
             throw new QuotaException(e);
         } finally {

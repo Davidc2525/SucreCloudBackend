@@ -97,6 +97,67 @@ public class PersonOverview implements Initializable {
         new Thread(task).start();
     }
 
+    private void getUser(Person p){
+        spinnerWait.setVisible(true);
+        if(p.getPassword().equalsIgnoreCase("")){
+            Task<User> task = new Task<User>() {
+                @Override
+                protected User call() throws Exception {
+                    return Main.client.getService().getUser(p.getEmail());
+                }
+            };
+            task.setOnSucceeded(ws -> {
+                spinnerWait.setVisible(false);
+                Person np = Util.userToPerson((User) ws.getSource().getValue());
+                //personData.get(personData.indexOf(p)).setPassword(np.getPassword());
+                int index =personData.indexOf(p);
+                Person pind = personData.get(index);
+                pind.setPassword(np.getPassword());
+                pind.setLastName(np.getLastName());
+                pind.setFirstName(np.getFirstName());
+                pind.setUsername(np.getUsername());
+               // personTable.getSelectionModel().select(index);
+                setPersonDetails(np);
+            });
+
+            new Thread(task).start();
+        }else{
+
+            setPersonDetails(p);
+        }
+
+    }
+
+    private void searchUsers(String query) {
+        spinnerWait.setVisible(true);
+        Task<Users> task = new Task<Users>() {
+            @Override
+            protected Users call() throws Exception {
+                return Main.client.getService().search(query);
+            }
+        };
+        task.setOnSucceeded(ws -> {
+            spinnerWait.setVisible(false);
+            personData.clear();
+            Users users = (Users) ws.getSource().getValue();
+            users.getUsers().forEach((User u) -> {
+                DataUser user = (DataUser) u;
+                personData.add(new Person(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getPassword(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.isEmailVerified(),
+                        user.getGender()
+                ));
+            });
+        });
+
+        new Thread(task).start();
+    }
+
     /**
      * Called to initialize a controller after its root element has been
      * completely processed.
@@ -110,8 +171,8 @@ public class PersonOverview implements Initializable {
 
 
         //iniciar combobox de filtrar resultado de filtrado
-        filterBy.setValue("Nombre");
-        filterBy.setItems(itemsComboBoxFilterBy);
+        //filterBy.setValue("Nombre");
+        //filterBy.setItems(itemsComboBoxFilterBy);
 
 
         //iniciarlizar la tabla de personas con dos columnas
@@ -119,70 +180,36 @@ public class PersonOverview implements Initializable {
         lastNameColumn.setCellValueFactory(cellData -> cellData.getValue().lastNameProperty());
 
 
-        // 1. Wrap the ObservableList in a FilteredList (initially display all data).
-        FilteredList<Person> filteredData = new FilteredList<>(personData, p -> true);
-        filterBy.valueProperty().addListener((os, ov, nv) -> {
-            filteredData.setPredicate(p -> true);
-        });
+
 
         filterInput.textProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println("escibiendo");
-            String filterby = (String) filterBy.getValue();
-            System.out.println("filtrando por " + filterby);
-            filterby = filterby.toLowerCase();
-            String finalFilterby = filterby;
-            filteredData.setPredicate(person -> {
-
-
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-                if (finalFilterby.equals("id")) {
-                    String lowerCaseFilter = newValue.toLowerCase();
-
-                    if (person.getId().toLowerCase().contains(lowerCaseFilter)) {
-                        return true; // Filter matches first name.
-                    }
-                }
-
-                if (finalFilterby.equals("correo")) {
-                    String lowerCaseFilter = newValue.toLowerCase();
-
-                    if (person.getEmail().toLowerCase().contains(lowerCaseFilter)) {
-                        return true; // Filter matches first name.
-                    }
-                }
-
-                if (finalFilterby.equals("usuario")) {
-                    String lowerCaseFilter = newValue.toLowerCase();
-
-                    if (person.getEmail().toLowerCase().contains(lowerCaseFilter)) {
-                        return true; // Filter matches first name.
-                    }
-                }
-
-                if (finalFilterby.equals("nombre")) {
-
-                    String lowerCaseFilter = newValue.toLowerCase();
-
-                    if (person.getFirstName().toLowerCase().contains(lowerCaseFilter)) {
-                        return true; // Filter matches first name.
-                    } else if (person.getLastName().toLowerCase().contains(lowerCaseFilter)) {
-                        return true; // Filter matches last name.
-                    }
-                }
-
-                return false; // Does not match.
-            });
+            //String filterby = (String) filterBy.getValue();
+            //System.out.println("filtrando por " + filterby);
+            //filterby = filterby.toLowerCase();
+            //String finalFilterby = filterby;
+            if(newValue.length()==0){
+                personData.clear();
+                loadUsers();
+            }else if(!newValue.startsWith("*")){
+                searchUsers(newValue);
+            }
         });
 
-        personTable.setItems(filteredData);
+        personTable.setItems(personData);
         // limpiar detalle de persona
         setPersonDetails(null);
 
         // Escuchar por cambios de selecion y mostrar los datos de personas cuando cambian
         personTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> setPersonDetails(newValue));
+                (observable, oldValue, newValue) -> {
+                    if(filterInput.getText().length()>0&&!filterInput.getText().startsWith("*")){
+                        getUser(newValue);
+                    }else{
+                        setPersonDetails(newValue);
+                    }
+
+                });
 
 
         loadUsers();
@@ -375,7 +402,9 @@ public class PersonOverview implements Initializable {
         setPersonDetails(null);
         new Thread(() -> {
             spinnerWait.setVisible(true);
+
             personData.clear();
+
 
             loadUsers();
             ;

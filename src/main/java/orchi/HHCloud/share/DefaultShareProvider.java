@@ -1,6 +1,9 @@
 package orchi.HHCloud.share;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.cache.Cache;
+import orchi.HHCloud.cache.CacheAleardyExistException;
+import orchi.HHCloud.cache.CacheFactory;
 import orchi.HHCloud.database.ConnectionProvider;
 import orchi.HHCloud.store.RestrictedNames;
 import orchi.HHCloud.store.StoreProvider;
@@ -18,7 +21,12 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Proveedor para compartir rutas por defecto
@@ -30,6 +38,7 @@ public class DefaultShareProvider implements ShareProvider {
     private static Logger log = LoggerFactory.getLogger(DefaultShareProvider.class);
     private StoreProvider sp;
     private ConnectionProvider db;
+    private Cache<String, Share> cache;
 
     @Override
     public void init() {
@@ -38,6 +47,13 @@ public class DefaultShareProvider implements ShareProvider {
         //sp = Start.getStoreManager().getStoreProvider();
         //Start.getDbConnectionManager().getConnection();
         db = Start.getDbConnectionManager().getConnectionProvider();
+
+        try {
+            cache = CacheFactory.createLRUCache("SHARE_CAHCE");
+            cache.setMaxSize(1000);
+        } catch (CacheAleardyExistException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -87,6 +103,16 @@ public class DefaultShareProvider implements ShareProvider {
     @Override
     public boolean isShared(User user, Path path) {
         boolean shared = false;
+        Share inCache = cache.get(createId(user, path));
+        if (inCache != null) {
+            return true;
+        } else {
+            try {
+                getShare(user, path, true);
+            } catch (NotShareException e) {
+                //e.printStackTrace();
+            }
+        }
         try {
             path = normaizePaht(path);
             log.debug("Comprobar si {} esta compartida, user {}", path + "", user.getId());
@@ -108,9 +134,19 @@ public class DefaultShareProvider implements ShareProvider {
     @Override
     public boolean isSharedWith(User ownerUser, User to, Path path) {
         boolean shared = false;
+        Share ts = cache.get(createId(ownerUser, path));
+        if (ts != null) {
+            return ts.getShareWith().getUsers().contains(to);
+        } else {
+            try {
+                getShare(ownerUser, path);
+            } catch (NotShareException e) {
+                //e.printStackTrace();
+            }
+        }
         try {
             path = normaizePaht(path);
-            log.debug("Comprobar si {} esta compartida con {}, user {}", path + "",to.getId(), ownerUser.getId());
+            log.debug("Comprobar si {} esta compartida con {}, user {}", path + "", to.getId(), ownerUser.getId());
             Connection con = db.getConnection();
             PreparedStatement stm = con.prepareStatement("SELECT * FROM SHARE_WITH WHERE PATH=(?) AND OWNERUSER=(?) AND SHAREDWITH = (?) FETCH FIRST ROW ONLY");
             stm.setString(1, path.toString());
@@ -141,8 +177,12 @@ public class DefaultShareProvider implements ShareProvider {
 
         Share share = new Share();
 
-        if (!isShared(ownerUser, path)) {
+        /*if (!isShared(ownerUser, path)) {
             throw new NotShareException(path + "no se encuentra compartida");
+        }*/
+        Share inCache = cache.get(createId(ownerUser, path));
+        if (inCache != null) {
+            return inCache;
         }
         try {
             path = normaizePaht(path);
@@ -159,15 +199,19 @@ public class DefaultShareProvider implements ShareProvider {
                 share.setOwner(ownerUser);
                 share.setPath(path);
                 share.setSharedAt(r.getLong("CREATEAT"));
+                cache.put(createId(ownerUser, path), share);
                 if (additionalData) {
                     share.setShareWith(getUsersBySharedPath(ownerUser, path));
                 }
+                //cache.put(createId(ownerUser, path), share);
 
             } else {
                 throw new NotShareException(path + "no se encuentra compartida");
             }
 
             con.close();
+        } catch (NotShareException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -195,7 +239,7 @@ public class DefaultShareProvider implements ShareProvider {
             path = normaizePaht(path);
 
             log.debug("creando share en {} para usuario {}", path.toString(), user.getId());
-            if(with!=null) log.debug("     -| compartida con {}",with.getUsers());
+            if (with != null) log.debug("     -| compartida con {}", with.getUsers());
 
             if (isShared(user, path))
                 return;
@@ -210,9 +254,8 @@ public class DefaultShareProvider implements ShareProvider {
             stm.executeUpdate();
             log.debug("Comparticion exitosa de {}", path.toString());
 
-
             con.close();
-
+            cache.put(createId(user, path), getShare(user, path));
             if (with != null) {
                 setSharedWith(user, with, path);
             }
@@ -228,6 +271,11 @@ public class DefaultShareProvider implements ShareProvider {
         if (mode == getMode(user, path)) {
             return;
         }
+
+        if (!isShared(user, path)) {
+            return;
+        }
+
 
         try {
             path = normaizePaht(path);
@@ -245,6 +293,11 @@ public class DefaultShareProvider implements ShareProvider {
                 log.error("No se modifico ningun registro al modificar MODO {} en {} de {}", mode, path, user.getId());
             } else {
                 log.debug("Se modifico el MODO {} en {}, de {}", mode, path, user.getId());
+
+                Share share = cache.get(createId(user, path));
+                share.setMode(mode);
+                cache.put(createId(user, path), share);
+                share = null;
             }
 
             stm.close();
@@ -257,6 +310,10 @@ public class DefaultShareProvider implements ShareProvider {
     @Override
     public Mode getMode(User user, Path path) {
         Mode mode = Mode.P;
+        Share inCache = cache.get(createId(user, path));
+        if (inCache != null) {
+            return inCache.getMode();
+        }
         try {
             path = normaizePaht(path);
             //log.debug("Comprobar si {} esta compartida, user {}", path + "", ownerUser.getId());
@@ -291,6 +348,7 @@ public class DefaultShareProvider implements ShareProvider {
         if (recursive) {
             sharedInDirectory(user, path).getShared().forEach((Share s) -> {
                 deleteShare(user, s.getPath());
+                cache.remove(createId(user, s.getPath()));
             });
         }
 
@@ -312,6 +370,7 @@ public class DefaultShareProvider implements ShareProvider {
 
 
             deleteSharedWith(user, getUsersBySharedPath(user, path), path);
+            cache.remove(createId(user, path));
             con.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -321,7 +380,7 @@ public class DefaultShareProvider implements ShareProvider {
     @Override
     public void setSharedWith(User ownerUser, User to, Path path) {
         log.debug("Set  share with: {} to: {}, owner {}", path, to.getId(), ownerUser.getId());
-        if(ownerUser.equals(to)){
+        if (ownerUser.equals(to)) {
             log.debug("Can't share with you");
             return;
         }
@@ -335,6 +394,7 @@ public class DefaultShareProvider implements ShareProvider {
 
             String SQL = "INSERT INTO SHARE_WITH (PATH, OWNERUSER, SHAREDWITH, CREATEAT) VALUES (?,?,?,?)";
 
+
             con = db.getConnection();
             PreparedStatement stm = con.prepareStatement(SQL);
             stm.setString(1, path + "");
@@ -343,9 +403,17 @@ public class DefaultShareProvider implements ShareProvider {
             stm.setBigDecimal(4, new BigDecimal(System.currentTimeMillis()));
 
             stm.executeUpdate();
+
+
             con.close();
 
+            Share ts = cache.get(createId(ownerUser, path));
+            if (ts != null) {
+                ts.getShareWith().add(Start.getUserManager().getUserProvider().getUserById(to.getId()));
+                cache.put(createId(ownerUser, path), ts);
+                ts = null;
 
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -353,18 +421,68 @@ public class DefaultShareProvider implements ShareProvider {
 
     @Override
     public void setSharedWith(User ownerUser, Users to, Path path) {
-        log.debug("Set share with: {} to(s): {}, owner {}", path, to, ownerUser);
+        log.debug("Set  share with: {}, owner {}", path, ownerUser.getId());
+
         Users ua1 = getUsersBySharedPath(ownerUser, path);
-
         deleteSharedWith(ownerUser, ua1, path);
+        Share ts = cache.get(createId(ownerUser, path));
+        if (ts != null) {
+            if (ts.getShareWith() != null) {
+                ts.getShareWith().removeAll();
+            }
+            cache.put(createId(ownerUser, path), ts);
+            ts = null;
+        }
 
-        to.getUsers().forEach((User u) -> {
-            setSharedWith(ownerUser, u, path);
-        });
+        if (to.getUsers().size() == 0) {
+            return;
+        }
+        Connection con = null;
+        try {
+
+            path = normaizePaht(path);
+
+            String SQL = "INSERT INTO SHARE_WITH (PATH, OWNERUSER, SHAREDWITH, CREATEAT) VALUES ";//"(?,?,?,?)";
+            for (User u : to.getUsers()) {
+                if (!ownerUser.equals(u)) {
+                    SQL += "('" + path + "','" + ownerUser.getId() + "','" + u.getId() + "'," + System.currentTimeMillis() + "),";
+                } else {
+                    log.debug("Can't share with you");
+                }
+            }
+            SQL = SQL.substring(0, SQL.length() - 1);
+            log.info("{}", SQL);
+            con = db.getConnection();
+            PreparedStatement stm = con.prepareStatement(SQL);
+            stm.executeUpdate();
+
+            Share ts2 = cache.get(createId(ownerUser, path));
+            if (ts2 != null) {
+                for (User u : to.getUsers()) {
+                    if (!ownerUser.equals(u)) {
+                        ts2.getShareWith().add(Start.getUserManager().getUserProvider().getUserById(u.getId()));
+                    }
+                }
+                cache.put(createId(ownerUser, path), ts2);
+                ts2 = null;
+            }
+            con.close();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                con.close();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
+
     }
 
     @Override
     public Shared getSharedWithMe(User user) {
+        log.debug("GETSHAREDWITHME {}", user);
         Shared shared = new Shared();
 
         try {
@@ -379,7 +497,7 @@ public class DefaultShareProvider implements ShareProvider {
                 newUser.setId(r.getString("OWNERUSER"));
 
                 User uu = Start.getUserManager().getUserProvider().getUserById(newUser.getId());
-                uu.setPassword("");
+                //uu.setPassword("");
                 Share share = BuildShare.createShare("", uu, Paths.get(r.getString("PATH")), r.getLong("CREATEAT"), null);
                 shared.addShare(share);
             }
@@ -394,8 +512,13 @@ public class DefaultShareProvider implements ShareProvider {
 
     @Override
     public Users getUsersBySharedPath(User ownerUser, Path path) {
-
+        log.debug("GETUSERSBYSHAREDPATH");
         Users users = new Users();
+
+        Share ts = cache.get(createId(ownerUser, path));
+        if (ts != null && ts.getShareWith().getUsers().size() > 0) {
+            return ts.getShareWith();
+        }
 
         try {
             Connection con = db.getConnection();
@@ -405,22 +528,32 @@ public class DefaultShareProvider implements ShareProvider {
             stm.setString(2, ownerUser.getId());
 
             ResultSet r = stm.executeQuery();
+            Share ts2 = cache.get(createId(ownerUser, path));
 
             while (r.next()) {
                 //DataUser u = new DataUser();
                 //u.setId(r.getString("SHAREDWITH"));
                 try {
                     User uu = Start.getUserManager().getUserProvider().getUserById(r.getString("SHAREDWITH"));
-                    uu.setPassword("");
+                    //uu.setPassword("");
+                    if (ts2 != null) {
+                        ts2.getShareWith().add(uu);
+                    }
                     users.add(uu);
                 } catch (UserNotExistException e) {
                     DataUser u = new DataUser();
                     u.setId(r.getString("SHAREDWITH"));
+                    //ts2.getShareWith().add(u);
                     users.add(u);
                     e.printStackTrace();
                 } catch (UserException e) {
                     e.printStackTrace();
                 }
+            }
+
+            if (ts2 != null) {
+                cache.put(createId(ownerUser, path), ts2);
+                ts2 = null;
             }
 
             stm.close();
@@ -435,11 +568,40 @@ public class DefaultShareProvider implements ShareProvider {
     @Override
     public void deleteSharedWith(User ownerUser, Users withUsers, Path path) {
         log.debug("DELETESHAREDWITH  owner {}, to: {}, path: {}", ownerUser, withUsers, path);
-        if (withUsers != null) {
+
+        try {
+            Connection con = db.getConnection();
+            String users = "";
+            List<String> parts = Arrays.asList();
+            if (withUsers != null && withUsers.getUsers().size() > 0) {
+
+                parts = withUsers.getUsers().stream().map(u -> u.getId()).map(x -> String.format("'%s'", x)).collect(Collectors.toList());
+
+                users = String.join(",", parts);
+
+            } else {
+                return;
+            }
+            log.debug("DELETE FROM SHARE_WITH WHERE OWNERUSER = (?)  AND PATH = (?) AND SHAREDWITH IN (" + users + ") ");
+            PreparedStatement stm = con.prepareStatement("DELETE FROM SHARE_WITH WHERE OWNERUSER = (?)  AND PATH = (?) AND SHAREDWITH IN (" + users + ") ");
+            stm.setString(1, ownerUser.getId());
+            stm.setString(2, path + "");
+            //stm.setArray(3, con.createArrayOf("String",parts.toArray()));
+            int delete = stm.executeUpdate();
+
+            log.debug("DELETESHAREDWITH delete: {}, owner {}, to: {}, path: {}", delete, ownerUser, withUsers, path);
+
+
+            stm.close();
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        /*if (withUsers != null) {
             withUsers.getUsers().forEach((User u) -> {
                 deleteSharedWith(ownerUser, u, path);
             });
-        }
+        }*/
     }
 
     @Override
@@ -455,6 +617,12 @@ public class DefaultShareProvider implements ShareProvider {
 
             log.debug("DELETESHAREDWITH delete: {}, owner {}, to: {}, path: {}", delete, ownerUser, withUser, path);
 
+            Share ts = cache.get(createId(ownerUser, path));
+            if (ts != null) {
+                ts.getShareWith().removeUser(withUser);
+                cache.put(createId(ownerUser, path), ts);
+                ts = null;
+            }
 
             stm.close();
             con.close();
@@ -464,12 +632,19 @@ public class DefaultShareProvider implements ShareProvider {
     }
 
 
-    private Path normaizePaht(Path path) {
+    private Path normaizePaht(Path path) throws Exception {
+        if (path.normalize() + "" == "/") {
+            throw new Exception("No puedes compartir root");
+        }
         if (!path.isAbsolute()) {
             path = Paths.get("/", path.toString()).normalize();
         }
         path = path.normalize();
 
         return path;
+    }
+
+    private String createId(User u, Path p) {
+        return String.format("%s_%s", u.getId(), p + "");
     }
 }

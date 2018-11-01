@@ -31,14 +31,16 @@ public interface Service {
 
     public Users getAllUsers();
 
-    /**Disponibilidad de usuario*/
+    public Users search(String query);
+
+    /*Disponibilidad de usuario*/
     public AvailableDescriptor disableUser(DataUser user, String reason) throws DisablingException, UserException;
 
     public AvailableDescriptor enableUser(DataUser user) throws EnablingException, UserException;
 
     public AvailableDescriptor getAvialableDescriptor(DataUser user) throws UserException;
 
-    /**
+    /*
      * Servicio de detalles almacenamiento
      */
     public ContentSummary getContentSummary(DataUser user);

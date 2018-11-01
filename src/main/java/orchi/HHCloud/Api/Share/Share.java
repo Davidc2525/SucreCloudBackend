@@ -650,7 +650,15 @@ public class Share extends API {
                 }
 
             }
+            if(!hasError){
+                if(!shp.isShared(ownerUser, Paths.get(path))){
+                    hasError = true;
+                    response.setMsg("Esta rruta no esta compartida");
+                    response.setStatus("error");
+                    response.setError("not_share");
+                }
 
+            }
             if (!hasError) {
                 shp.deleteShare(ownerUser, Paths.get(path), recursive);
             }

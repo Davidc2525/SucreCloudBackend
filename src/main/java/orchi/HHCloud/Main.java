@@ -8,11 +8,11 @@ import com.google.crypto.tink.aead.AeadConfig;
 import com.google.crypto.tink.aead.AeadFactory;
 import orchi.HHCloud.AdminService.AdminServer;
 import orchi.HHCloud.auth.GenerateToken;
+import orchi.HHCloud.cache.*;
 import orchi.HHCloud.cipher.CipherManager;
 import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.mail.MailProvider;
 import orchi.HHCloud.share.Mode;
-import orchi.HHCloud.share.ShareException;
 import orchi.HHCloud.share.ShareProvider;
 import orchi.HHCloud.store.ContextStore;
 import orchi.HHCloud.store.StoreProvider;
@@ -23,8 +23,6 @@ import orchi.HHCloud.user.*;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.role.Role;
 import orchi.HHCloud.user.role.Roles;
-import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
-import orchi.HHCloud.user.userAvailable.Exceptions.EnablingException;
 import orchi.HHCloud.user.userAvailable.UserAvailableProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.WordUtils;
@@ -32,21 +30,17 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
-import org.apache.xmlrpc.XmlRpcException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.file.Paths;
-import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -55,19 +49,52 @@ import java.util.*;
 public class Main {
     private static Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws FileNotFoundException, IllegalArgumentException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, URISyntaxException, GeneralSecurityException, XmlRpcException, UserException, DisablingException, EnablingException, ShareException {
+    public static void main(String[] args) throws Exception, CacheAleardyExistException, CacheDontExistException {
 
         System.out.println("HHCloud pruebas!");
+        String msg = "AQDrnU4ZcmLCwDwVAabcs/HHpFKvYk7rbF26igq523a8ZO8UXEy/Pw";
+        log.info("desifrado: {}",Start.getCipherManager().getCipherProvider().decrypt(msg));
+        log.info("sifrado: {}",msg);
+
+        if (true) {
+            return;
+        }
+        Cache<String,String> cache = CacheFactory.createMapCache("names");
 
 
+        cache.put("luisa","luisa");
+
+        Cache<String,String> cache2 = CacheFactory.get("names");
+        cache2.put("david","david");
+
+        Cache<String,User> cache3 = CacheFactory.createLRUCache("LRU");
+
+        User user1 = new DataUser();
+        user1.setUsername("david");
+        User user2 = new DataUser();
+        user2.setUsername("luisa");
+        User user3 = new DataUser();
+        user3.setUsername("juana");
+        cache3.put("adavid",user1);
+        cache3.put("luisa",user2);
+        cache3.put("ajuana",user3);
+        user1.setUsername("new username david");
+        //cache3.put("david",user1);
+
+        Map<String, User> nc = cache3.getByKeyWith(new FilterKey<String>() {
+            @Override
+            public boolean test(String value) {
+                return value.startsWith("a");
+            }
+        });
+        log.info("{}",nc);
+        log.info("{} {}", cache3, cache2.getAll());
 
 
         UserManager um = Start.getUserManager();
         um.getSearchUserProvider().prepare();
         um.getSearchUserProvider().addAll(um.getUserProvider().getUsers());
-        if (true) {
-            return;
-        }
+        
         DataUser uti = new DataUser();
         uti.setId("1234");
         uti.setFirstName("yulia");

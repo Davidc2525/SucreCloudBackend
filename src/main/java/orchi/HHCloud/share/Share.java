@@ -21,7 +21,7 @@ public class Share implements Serializable {
     private Mode mode;
     @JsonIgnore
     private Path path; // ruta absoluta, completa
-    private Users shareWith;
+    private Users shareWith = new Users();
 
     @JsonProperty(value = "path")
     public String getStringPath() {

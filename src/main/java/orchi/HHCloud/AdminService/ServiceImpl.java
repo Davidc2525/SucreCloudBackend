@@ -16,6 +16,8 @@ import orchi.HHCloud.user.RoledUser;
 import orchi.HHCloud.user.UserProvider;
 import orchi.HHCloud.user.Users;
 import orchi.HHCloud.user.role.Roles;
+import orchi.HHCloud.user.search.SearchUserProvider;
+import orchi.HHCloud.user.search.UsersFound;
 import orchi.HHCloud.user.userAvailable.AvailableDescriptor;
 import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
 import orchi.HHCloud.user.userAvailable.Exceptions.EnablingException;
@@ -29,6 +31,7 @@ public class ServiceImpl implements Service {
     private UserAvailableProvider avp = Start.getUserManager().getUserAvailableProvider();
     private UserProvider up = Start.getUserManager().getUserProvider();
     private AuthProvider ap = Start.getAuthProvider();
+    private SearchUserProvider usp = Start.getUserManager().getSearchUserProvider();
 
     @Override
     public int suma(int a, int b) {
@@ -102,6 +105,14 @@ public class ServiceImpl implements Service {
             e.printStackTrace();
         }
         return u;
+    }
+
+    @Override
+    public Users search(String query) {
+        UsersFound found = usp.search(query);
+        Users users = new Users();
+        users.addAll(found.getAll());
+        return users;
     }
 
     @Override

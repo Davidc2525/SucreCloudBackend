@@ -52,7 +52,7 @@ public class DefaultSearchUserProvider implements SearchUserProvider {
 
                 @Override
                 public Lock obtainLock(Directory arg0, String arg1) throws IOException {
-                    // TOD
+
                     return new Lock() {
 
                         @Override
@@ -62,7 +62,6 @@ public class DefaultSearchUserProvider implements SearchUserProvider {
 
                         @Override
                         public void close() throws IOException {
-                            // TODO Auto-generated method stub
 
                         }
                     };

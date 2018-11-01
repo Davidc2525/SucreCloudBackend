@@ -1,5 +1,7 @@
 package orchi.HHCloud.user;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 import java.io.Externalizable;
 import java.util.Comparator;
 
@@ -16,7 +18,7 @@ public abstract class User implements Externalizable,Comparator<User>{
     protected String id = "";
     protected String username = "";
     protected String email = "";
-    //@JsonIgnore //Descomentar para ocultar la clave a la api de usuario
+    @JsonIgnore //ocultar la clave a la api de usuario
     protected String password = "";
 
     public User bind(String id, String username, String email, String password) {

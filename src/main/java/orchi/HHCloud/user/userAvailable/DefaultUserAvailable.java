@@ -1,6 +1,9 @@
 package orchi.HHCloud.user.userAvailable;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.cache.Cache;
+import orchi.HHCloud.cache.CacheAleardyExistException;
+import orchi.HHCloud.cache.CacheFactory;
 import orchi.HHCloud.database.ConnectionProvider;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Exceptions.UserException;
@@ -24,21 +27,28 @@ public class DefaultUserAvailable implements UserAvailableProvider {
     private final String LOAD_UA   = "SELECT * FROM USER_AVAILABLE";
     private final String UPDATE_UA = "UPDATE USER_AVAILABLE SET REASON = (?) WHERE IDUSER = (?)";
     private ConnectionProvider dbP;
-    private HashMap<String,AvailableDescriptor> availableList = new HashMap<>();
+
+    private Cache<String,AvailableDescriptor> cache;
 
     @Override
     public void init() {
         log.info("INICIANDO PROVEEDOR DE DISPONIBILIDAD DE USUARIO: LAZY({})",lazy);
         dbP = Start.getDbConnectionManager().getConnectionProvider();
+        try {
+            cache = CacheFactory.createLRUCache("USER_AVAILABLE");
+        } catch (CacheAleardyExistException e) {
+            e.printStackTrace();
+
+            System.exit(1);
+        }
         if(!lazy){
             try {
-                availableList = null;
-                availableList = new HashMap<>();
                 loadAllAvailable();
             } catch (UserUnAvailableException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     private void loadAllAvailable() throws UserUnAvailableException {
@@ -91,7 +101,7 @@ public class DefaultUserAvailable implements UserAvailableProvider {
                 int updates = stm.executeUpdate();
 
                 AvailableDescriptor avd = new AvailableDescriptor(u, reason, false, createdAt);
-                availableList.put(u.getId(),avd);
+                cache.put(u.getId(),avd);
 
             }else{
                 stm = conn.prepareStatement(UPDATE_UA);
@@ -100,7 +110,9 @@ public class DefaultUserAvailable implements UserAvailableProvider {
                 //stm.setLong(3, createdAt);
                 int updates = stm.executeUpdate();
 
-                availableList.get(u.getId()).setAvailable(false).setReason(reason);
+                AvailableDescriptor avd = cache.get(u.getId());
+                avd.setAvailable(false).setReason(reason);
+                cache.put(u.getId(),avd);
             }
 
 
@@ -133,7 +145,9 @@ public class DefaultUserAvailable implements UserAvailableProvider {
             stm.setString(1, (user.getId()));
             int updates = stm.executeUpdate();
 
-            availableList.get(user.getId()).setAvailable(true);
+            AvailableDescriptor avd = cache.get(user.getId());
+            avd.setAvailable(true);
+            cache.put(user.getId(),avd);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -154,11 +168,11 @@ public class DefaultUserAvailable implements UserAvailableProvider {
     public boolean userIsEnable(User user) throws UserException {
         boolean isEnable = true;
         log.debug("USERISENABLE {}", user.getId());
-        boolean inCache = availableList.containsKey(user.getId());
-        if(inCache){
-            AvailableDescriptor avd = availableList.get(user.getId());
-            log.debug("- DESCRIPTOR IN CACHE {}",avd);
-            return avd.isAvailable();
+        AvailableDescriptor inCache = cache.get(user.getId());
+        if(inCache!=null){
+
+            log.debug("- DESCRIPTOR IN CACHE {}",inCache);
+            return inCache.isAvailable();
         }
         ResultSet result;
         Connection conn = null;
@@ -179,7 +193,7 @@ public class DefaultUserAvailable implements UserAvailableProvider {
                 DataUser u = new DataUser();
                 u.setId(user.getId());
                 AvailableDescriptor avd = new AvailableDescriptor(u, "", true, 0L);
-                availableList.put(user.getId(),avd);
+                cache.put(user.getId(),avd);
                 log.debug("LOADED {}",avd);
                 log.debug("- DESCRIPTOR IN DB {}",avd);
             }
@@ -203,7 +217,7 @@ public class DefaultUserAvailable implements UserAvailableProvider {
     @Override
     public AvailableDescriptor getDescriptor(User user) throws UserException {
         userIsEnable(user);
-        return availableList.get(user.getId());
+        return cache.get(user.getId());
     }
 
 
@@ -214,7 +228,7 @@ public class DefaultUserAvailable implements UserAvailableProvider {
         DataUser u = new DataUser();
         u.setId(IDUSER);
         AvailableDescriptor avd = new AvailableDescriptor(u, REASON, false, CREATEDAT);
-        availableList.put(IDUSER,avd);
+        cache.put(IDUSER,avd);
         log.debug("LOADED {}",avd);
         return avd;
     }
