@@ -86,6 +86,7 @@ public class Share extends API {
 
         public Task(AsyncContext ctx) {
             super(ctx);
+            getCtx().setTimeout(Long.MAX_VALUE);
         }
 
         @Override

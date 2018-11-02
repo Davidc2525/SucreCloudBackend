@@ -515,9 +515,10 @@ public class EmbeddedUserProvider implements UserProvider {
             } else {
                 log.debug("ACCOUNT UNVERIFIED {}", user);
             }
-
-            cacheById.put(user.getId(),user);
-            cacheByEmail.put(user.getEmail(),user);
+            DataUser nu = (DataUser) getUserById(user.getId());
+            nu.setEmailVerified(verified);
+            cacheById.put(nu.getId(),nu);
+            cacheByEmail.put(nu.getEmail(),nu);
             ;
         } catch (SQLException e) {
             e.printStackTrace();
