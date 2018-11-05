@@ -63,6 +63,9 @@ public class DefaultShareProvider implements ShareProvider {
 
             log.debug("Obtener rutas compartidas en directorio {} para {}", path + "", user.getId());
             path = normaizePaht(path);
+            if(path.equals(Paths.get("/"))){
+               // return shared;
+            }
             if (true /*sp.isDirectory(user, path)*/) {
 
 
@@ -115,6 +118,9 @@ public class DefaultShareProvider implements ShareProvider {
         }
         try {
             path = normaizePaht(path);
+            if(path.equals(Paths.get("/"))){
+                return false;
+            }
             log.debug("Comprobar si {} esta compartida, user {}", path + "", user.getId());
             Connection con = db.getConnection();
             PreparedStatement stm = con.prepareStatement("SELECT * FROM SHARE WHERE PATH=(?) AND OWNERUSER=(?) FETCH FIRST ROW ONLY");
@@ -146,6 +152,9 @@ public class DefaultShareProvider implements ShareProvider {
         }
         try {
             path = normaizePaht(path);
+            if(path.equals(Paths.get("/"))){
+                return shared;
+            }
             log.debug("Comprobar si {} esta compartida con {}, user {}", path + "", to.getId(), ownerUser.getId());
             Connection con = db.getConnection();
             PreparedStatement stm = con.prepareStatement("SELECT * FROM SHARE_WITH WHERE PATH=(?) AND OWNERUSER=(?) AND SHAREDWITH = (?) FETCH FIRST ROW ONLY");
@@ -186,6 +195,9 @@ public class DefaultShareProvider implements ShareProvider {
         }
         try {
             path = normaizePaht(path);
+            if(path.equals(Paths.get("/"))){
+                return share;
+            }
             log.debug("Obtener informacion de una rruta compartida, path: {}, user: {}", path + "", ownerUser.getId());
             Connection con = db.getConnection();
             PreparedStatement stm = con.prepareStatement("SELECT * FROM SHARE WHERE PATH=(?) AND OWNERUSER=(?) FETCH FIRST ROW ONLY");
@@ -237,6 +249,9 @@ public class DefaultShareProvider implements ShareProvider {
         Connection con;
         try {
             path = normaizePaht(path);
+            if(path.equals(Paths.get("/"))){
+                return;
+            }
 
             log.debug("creando share en {} para usuario {}", path.toString(), user.getId());
             if (with != null) log.debug("     -| compartida con {}", with.getUsers());
@@ -279,6 +294,9 @@ public class DefaultShareProvider implements ShareProvider {
 
         try {
             path = normaizePaht(path);
+            if(path.equals(Paths.get("/"))){
+                return;
+            }
 
             Connection con = db.getConnection();
 
@@ -354,7 +372,9 @@ public class DefaultShareProvider implements ShareProvider {
 
         try {
             path = normaizePaht(path);
-
+            if(path.equals(Paths.get("/"))){
+                return;
+            }
             Connection con = db.getConnection();
 
             String sqlDeleteShared = "DELETE FROM SHARE WHERE PATH = ? AND OWNERUSER = ?";
@@ -391,6 +411,9 @@ public class DefaultShareProvider implements ShareProvider {
         try {
 
             path = normaizePaht(path);
+            if(path.equals(Paths.get("/"))){
+                return;
+            }
 
             String SQL = "INSERT INTO SHARE_WITH (PATH, OWNERUSER, SHAREDWITH, CREATEAT) VALUES (?,?,?,?)";
 
@@ -441,6 +464,9 @@ public class DefaultShareProvider implements ShareProvider {
         try {
 
             path = normaizePaht(path);
+            if(path.equals(Paths.get("/"))){
+                return;
+            }
 
             String SQL = "INSERT INTO SHARE_WITH (PATH, OWNERUSER, SHAREDWITH, CREATEAT) VALUES ";//"(?,?,?,?)";
             for (User u : to.getUsers()) {
@@ -633,9 +659,7 @@ public class DefaultShareProvider implements ShareProvider {
 
 
     private Path normaizePaht(Path path) throws Exception {
-        if (path.normalize() + "" == "/") {
-            throw new Exception("No puedes compartir root");
-        }
+
         if (!path.isAbsolute()) {
             path = Paths.get("/", path.toString()).normalize();
         }
