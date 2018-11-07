@@ -46,7 +46,7 @@ public class Users extends API {
 
     private static final long serialVersionUID = 3632921692211341012L;
     public static String apiName = "/user";
-    private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
+    //private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
     private static StoreProvider sp;
     private static UserProvider up;
     private static ObjectMapper om;
@@ -990,7 +990,7 @@ public class Users extends API {
 
             HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
             HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
-            resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+            //resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
             resp.setHeader("Content-type", "application/json");
             resp.setHeader("Access-Control-Allow-Credentials", "true");
 

@@ -4,6 +4,7 @@
 package orchi.HHCloud.Api;
 
 import orchi.HHCloud.Api.ApiManager.ApiDescriptor;
+import orchi.HHCloud.Start;
 import org.json.JSONObject;
 import org.mortbay.log.Log;
 
@@ -11,6 +12,7 @@ import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  * Debido a que el {@link ApiFilter} es bloqueante, con esta clase en cada api
@@ -25,6 +27,8 @@ import javax.servlet.http.HttpSession;
 public abstract class ServiceTaskAPIImpl implements ServiceTaskAPIInterface {
 
     private AsyncContext ctx;
+    private List<Object> allowers = Start.conf.getList("api.headers.aclo");
+
 
     public ServiceTaskAPIImpl(AsyncContext ctx) {
         this.ctx = ctx;
@@ -77,20 +81,43 @@ public abstract class ServiceTaskAPIImpl implements ServiceTaskAPIInterface {
         throw e;
     }
 
-    /**
-     * Ejecuta las validaciones de las apis, haciendo uso de la informacion
-     * recabada por {@link ApiManager}
-     *
-     * @param apiName       nombre de la api
-     * @param operationName nombre de la operacion dentro de la api
-     * @author david
-     **/
     @Override
-    public void checkAvailability(String apiName, String operationName) throws Exception {
+    public void checkAvailability(String apiName, String operationName, boolean checkOrigin) throws Exception {
         HttpServletRequest reqs = (HttpServletRequest) getCtx().getRequest();
+        HttpServletResponse resps = (HttpServletResponse) getCtx().getResponse();
         HttpSession session = reqs.getSession(false);
         ApiDescriptor apid = ApiManager.getApid(apiName);
         orchi.HHCloud.Api.ApiManager.Operation op = null;
+
+        if (checkOrigin) {
+            String origin = reqs.getHeader("origin");
+            if (origin != null) {
+                if (allowers.contains(origin)) {
+                    resps.setHeader("Access-Control-Allow-Origin", origin);
+                    resps.setHeader("Vary", "Origin");
+                } else {
+                    sendError("no_allow", "Origin no allowed");
+                    getCtx().complete();
+                }
+            } else {
+                if (reqs.getRemoteAddr().equalsIgnoreCase(reqs.getLocalAddr())) {
+                    resps.setHeader("Access-Control-Allow-Origin", reqs.getRemoteAddr());
+                    resps.setHeader("Vary", "Origin");
+                } else {
+                    resps.setHeader("Access-Control-Allow-Origin", reqs.getRemoteAddr());
+                    resps.setHeader("Vary", "Origin");
+                    sendError("no_allow", "Origin no allowed");
+                    getCtx().complete();
+                }
+
+            }
+        } else {
+            String origin = reqs.getHeader("origin");
+            if (origin != null) {
+                resps.setHeader("Access-Control-Allow-Origin", origin);
+                resps.setHeader("Vary", "Origin");
+            }
+        }
 
         if (apid != null) {
 
@@ -133,6 +160,19 @@ public abstract class ServiceTaskAPIImpl implements ServiceTaskAPIInterface {
             }
             if (Log.isDebugEnabled()) ApiManager.showDescriptions(apid.name);
         }
+    }
+
+    /**
+     * Ejecuta las validaciones de las apis, haciendo uso de la informacion
+     * recabada por {@link ApiManager}
+     *
+     * @param apiName       nombre de la api
+     * @param operationName nombre de la operacion dentro de la api
+     * @author david
+     **/
+    @Override
+    public void checkAvailability(String apiName, String operationName) throws Exception {
+        checkAvailability(apiName, operationName, true);
     }
 
     public AsyncContext getCtx() {

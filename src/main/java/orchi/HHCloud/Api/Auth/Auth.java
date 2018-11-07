@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 public class Auth extends API {
     public static String apiName = "/auth";
     private static String appDomain = Start.conf.getString("app.host");
-    private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
+    //private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
     private static ThreadPoolExecutor executorw2;
     private static Logout logout;
     private static Login login;
@@ -125,8 +125,7 @@ public class Auth extends API {
             try {
 
                 ((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Credentials", "true");
-                ((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Origin",
-                        ACCESS_CONTROL_ALLOW_ORIGIN);
+                //((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Origin",ACCESS_CONTROL_ALLOW_ORIGIN);
                 ((HttpServletResponse) getCtx().getResponse()).setHeader("Content-type", "application/json");
                 //((HttpServletResponse) getCtx().getResponse()).setHeader("Access-Control-Allow-Origin", "*");
                 ((HttpServletResponse) getCtx().getResponse()).setHeader("Content-encoding", "gzip");

@@ -109,7 +109,7 @@ public class Start {
         contexts.setHandlers(new Handler[]{servletContext});
 
         server.setHandler(contexts);
-
+        server.setDumpAfterStart(true);
         log.info("Iniciando servidor");
         server.start();
         new AdminServer();

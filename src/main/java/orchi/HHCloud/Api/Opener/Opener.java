@@ -40,7 +40,7 @@ public class Opener extends API {
     public static String apiName = "/opener";
     private static Logger log = LoggerFactory.getLogger(Opener.class);
     private static Long sizeRange = Start.conf.getLong("api.openner.range.size");
-    private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
+    //private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
     private static Long readedParts = 0L;
     private static StoreProvider sp;
     private static ShareProvider shp;
@@ -75,7 +75,7 @@ public class Opener extends API {
             HttpServletRequest req = (HttpServletRequest) getCtx().getRequest();
             HttpServletResponse resp = (HttpServletResponse) getCtx().getResponse();
 
-            resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+           // resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
             resp.setHeader("Content-type", "application/json");
             resp.setHeader("Access-Control-Allow-Credentials", "true");
             resp.setHeader("Accept-Ranges", "bytes");
@@ -85,7 +85,7 @@ public class Opener extends API {
             try {
                 //params = new ParseParamsMultiPart2(req);
                 //JsonArgs = new JSONObject(params.getString("args"));
-                checkAvailability(apiName, null);
+                checkAvailability(apiName, null,false);
             } catch (Exception e) {
                 e.printStackTrace();
                 return;

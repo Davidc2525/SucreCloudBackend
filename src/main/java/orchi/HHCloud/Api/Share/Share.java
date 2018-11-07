@@ -54,7 +54,7 @@ public class Share extends API {
 
     public static String apiName = "/share";
     private static Logger log = org.slf4j.LoggerFactory.getLogger(Share.class);
-    private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
+    //private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
     private static ObjectMapper om;
     private static StoreProvider sp = Start.getStoreManager().getStoreProvider();
     private static ShareProvider shp = Start.getShareManager().getShareProvider();
@@ -107,7 +107,7 @@ public class Share extends API {
             HttpServletRequest reqs = (HttpServletRequest) getCtx().getRequest();
             HttpServletResponse resps = (HttpServletResponse) getCtx().getResponse();
             HttpSession session = reqs.getSession(false);
-            resps.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+            //resps.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
             resps.setHeader("Content-type", "application/json");
             resps.setHeader("Access-Control-Allow-Credentials", "true");
 

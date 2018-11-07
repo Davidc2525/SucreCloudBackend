@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 public class Uploader extends API {
     public static String apiName = "/uploader";
     private static Logger log = LoggerFactory.getLogger(Uploader.class);
-    private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
+    //private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
     private static ObjectMapper om;
     private ThreadPoolExecutor executor;
 
@@ -63,10 +63,13 @@ public class Uploader extends API {
          Access-Control-Max-Age: 86400*/
 
         resp.setHeader("Access-Control-Allow-Credentials", "true");
-        resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+        //resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
         resp.setHeader("Access-Control-Allow-Headers", "X-PINGOTHER, Content-Type");
         resp.setHeader("Access-Control-Allow-Methods", "POST");
 
+        AsyncContext aContext = req.startAsync();
+        aContext.setTimeout(Long.MAX_VALUE);
+        executor.execute(new Task2(aContext));
     }
 
     @Override
@@ -90,7 +93,7 @@ public class Uploader extends API {
             boolean isMultipart = ServletFileUpload.isMultipartContent(req);
             UploaderResponse response = new UploaderResponse();
             resp.setHeader("Access-Control-Allow-Credentials", "true");
-            resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+            //resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
             resp.setHeader("Content-type", "application/json");
 
             // crear un nuevo manejador de subida
@@ -145,6 +148,50 @@ public class Uploader extends API {
                     getCtx().complete();
                     e1.printStackTrace();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                try {
+                    sendError("upload_error", e);
+                } catch (Exception e1) {
+                    getCtx().complete();
+                    e1.printStackTrace();
+                }
+
+            }
+        }
+
+        @Override
+        public void run() {
+            proceess();
+        }
+
+    }
+
+    public static class Task2 extends ServiceTaskAPIImpl implements Runnable {
+
+        public Task2(AsyncContext ctx) {
+            super(ctx);
+
+        }
+
+        private void proceess() {
+
+            HttpServletRequest req = (HttpServletRequest) getCtx().getRequest();
+            HttpServletResponse resp = (HttpServletResponse) getCtx().getResponse();
+            boolean isMultipart = ServletFileUpload.isMultipartContent(req);
+            UploaderResponse response = new UploaderResponse();
+            resp.setHeader("Access-Control-Allow-Credentials", "true");
+            //resp.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
+            resp.setHeader("Content-type", "application/json");
+
+            // crear un nuevo manejador de subida
+            ServletFileUpload upload = new ServletFileUpload();
+
+            // parse request
+            try {
+                checkAvailability(apiName, null);
+
+                getCtx().complete();
             } catch (Exception e) {
                 e.printStackTrace();
                 try {

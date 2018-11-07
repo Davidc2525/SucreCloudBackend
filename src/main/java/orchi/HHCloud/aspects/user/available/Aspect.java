@@ -59,7 +59,7 @@ public class Aspect {
             u.setId((String) s.getAttribute("uid"));
             if (!uap.userIsEnable(u)) {
                 AvailableDescriptor avd = uap.getDescriptor(u);
-                sendError(resp, "user_unavailable", new UserUnAvailableException(String.format(USER_UNAVAILABLE_MSG,avd.getReason())));
+                sendError(resp,resp, "user_unavailable", new UserUnAvailableException(String.format(USER_UNAVAILABLE_MSG,avd.getReason())));
                 Start.server.getSessionIdManager().invalidateAll(s.getId());
                 return null;
             }
@@ -69,8 +69,8 @@ public class Aspect {
         return p.proceed();
     }
 
-    public void sendError(HttpServletResponse resps, String error, Exception e) throws Exception {
-        String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
+    public void sendError(HttpServletResponse resp, HttpServletResponse resps, String error, Exception e) throws Exception {
+        String ACCESS_CONTROL_ALLOW_ORIGIN = resps.getHeader("Origin");
         resps.setHeader("Access-Control-Allow-Origin", ACCESS_CONTROL_ALLOW_ORIGIN);
         resps.setHeader("Content-type", "application/json");
         resps.setHeader("Access-Control-Allow-Credentials", "true");
