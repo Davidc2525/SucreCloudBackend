@@ -1,9 +1,6 @@
 package orchi.HHCloud.user.search;
 
-import orchi.HHCloud.user.DataUser;
-import orchi.HHCloud.user.ScoreUser;
-import orchi.HHCloud.user.User;
-import orchi.HHCloud.user.Users;
+import orchi.HHCloud.user.*;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
@@ -306,7 +303,7 @@ public class DefaultSearchUserProvider implements SearchUserProvider {
                 fUser.setEmail(d.get("email"));
                 fUser.setScore(hits[i].score);
                 //System.out.println((i + 1) + ". " + d.get("id") + "\t" + d.get("name") + "\t" + d.get("email"));
-                f.add(fUser);
+                f.add((fUser));
 
                 fUser=null;
                 d.clear();

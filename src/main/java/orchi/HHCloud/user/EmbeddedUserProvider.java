@@ -16,6 +16,8 @@ import orchi.HHCloud.user.Exceptions.UserAleardyExistsException;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Exceptions.UserMutatorException;
 import orchi.HHCloud.user.Exceptions.UserNotExistException;
+import orchi.HHCloud.user.avatar.AvatarProvider;
+import orchi.HHCloud.user.avatar.DefaultAvatarProvider;
 import orchi.HHCloud.user.search.SearchUserProvider;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -71,6 +73,7 @@ public class EmbeddedUserProvider implements UserProvider {
     private ConnectionProvider provider;
     //private Connection conn;
     private UserValidator userValidator = new DefaultUserValidator();
+    private AvatarProvider avatarProvider;
     private String templateEmailVerify;
     private String templateRecoveryPassword;
     private Cache<String,User> cacheById;
@@ -80,10 +83,15 @@ public class EmbeddedUserProvider implements UserProvider {
     public void init() {
         log.info("iniciando proveedor de usuario");
         try {
+            avatarProvider = new DefaultAvatarProvider();
             templateEmailVerify = Streams.asString(EmbeddedUserProvider.class.getResourceAsStream("/templateVerifyEmail.html"));
             templateRecoveryPassword = Streams.asString(EmbeddedUserProvider.class.getResourceAsStream("/templateRecoveryPasswordEmail.html"));
         } catch (IOException e1) {
             e1.printStackTrace();
+        } catch (CacheAleardyExistException e) {
+            e.printStackTrace();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
         Start.getDbConnectionManager();
 
@@ -471,6 +479,11 @@ public class EmbeddedUserProvider implements UserProvider {
     @Override
     public UserValidator getValidator() {
         return userValidator;
+    }
+
+    @Override
+    public AvatarProvider getAvatarProvider() {
+        return avatarProvider;
     }
 
     public String escape(String in) {

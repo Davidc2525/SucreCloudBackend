@@ -70,7 +70,6 @@ public class HdfsManager {
                 dfsAdmin = new HdfsAdmin(fs.getUri(), conf);
             }
 
-
             Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
                 try {
                     FileSystem.printStatistics();

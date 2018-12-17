@@ -619,6 +619,7 @@ public class Users extends API {
         if (!hasError) {
             try {
                 userParam = (DataUser) up.editUser(userParam);
+                userParam = (DataUser) up.getUserById(userParam.getId());
             } catch (UserException e) {
                 response.setStatus("error");
                 response.setError("edit_exception");
@@ -898,6 +899,7 @@ public class Users extends API {
 
     @Operation(name = "search")
     private static void searchUserOperation(AsyncContext ctx, JSONObject jsonArgs) throws IOException {
+        long initOp = System.currentTimeMillis();
         HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
         SearchResponse response = new SearchResponse();
         UserValidator validator = up.getValidator();
@@ -909,6 +911,9 @@ public class Users extends API {
         orchi.HHCloud.user.Users users = new orchi.HHCloud.user.Users();
         users.addAll(result.getAll());
         response.setPayload(users);
+        long endOp = System.currentTimeMillis();
+        endOp = endOp-initOp;
+        response.setTook(endOp);
 
         resp.getWriter().println(om.writeValueAsString(response));
 
@@ -1272,9 +1277,19 @@ public class Users extends API {
     }
 
     public static class SearchResponse {
+
+        private long took = 0L;
         private String status = "ok";
         private String error;
         private String msg = "ok";
+
+        public long getTook() {
+            return took;
+        }
+
+        public void setTook(long took) {
+            this.took = took;
+        }
 
         public orchi.HHCloud.user.Users getPayload() {
             return payload;

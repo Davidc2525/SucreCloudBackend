@@ -29,7 +29,7 @@ public class DefaultUserValidator implements UserValidator {
         //validador para claves
         passValidator = new RegexValidator(regexsPass, caseSensitive);
 
-        String regexFirstAndLastName = "^([-_A-Za-z0-9]){2,15}$";
+        String regexFirstAndLastName = "^([-_A-Za-z0-9\\s]){2,25}$";
         FirstAndLastNameValidator = new RegexValidator(regexFirstAndLastName);
 
     }

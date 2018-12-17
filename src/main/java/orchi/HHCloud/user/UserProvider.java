@@ -4,6 +4,7 @@ import orchi.HHCloud.mail.Exceptions.SendEmailException;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.Exceptions.UserMutatorException;
 import orchi.HHCloud.user.Exceptions.UserNotExistException;
+import orchi.HHCloud.user.avatar.AvatarProvider;
 
 /**
  * interface para proveedor de usuarios
@@ -20,6 +21,8 @@ public interface UserProvider {
      * valida emain, username, nombre, apellido, clave ...
      */
     public UserValidator getValidator();
+
+    public AvatarProvider getAvatarProvider();
 
     /**
      * obtener usuario por su id

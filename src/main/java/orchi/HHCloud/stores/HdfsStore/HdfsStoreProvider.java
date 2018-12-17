@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 public class HdfsStoreProvider implements StoreProvider {
 
@@ -245,6 +246,7 @@ public class HdfsStoreProvider implements StoreProvider {
         return cs;
     }
 
+
     @Override
     public Quota setQuota(User user, Path path, long size) throws QuotaException {
         org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path + "");
@@ -272,6 +274,188 @@ public class HdfsStoreProvider implements StoreProvider {
         org.apache.hadoop.fs.Path p = HdfsManager.newPath(user.getId(), path + "");
         try {
             HdfsManager.getInstance().dfsAdmin.clearSpaceQuota(p);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Api de bajo nivel
+     *
+     * @param path
+     * @param out
+     */
+    @Override
+    public void read(Path path, OutputStream out) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+
+            HdfsManager.getInstance().readFile(p, out);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void read(Path path, Range range, OutputStream out) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+
+            HdfsManager.getInstance().readFile(p, out,range);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void create(Path path, InputStream in) throws Exception {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+
+            HdfsManager.getInstance().writeFile(p,in);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void delete(Path path) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+
+            HdfsManager.getInstance().deletePath(p);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void touch(Path path) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+
+            HdfsManager.getInstance().writeFile(p,new ByteArrayInputStream("".getBytes()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean exists(Path path) {
+        try {
+            //System.out.println("        PATH: "+path);
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+            //System.out.println("        PATH: "+path);
+            //System.out.println("        PATH HDFS: "+p);
+            return HdfsManager.getInstance().fs.exists(p);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isFile(Path path) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+
+            return HdfsManager.getInstance().fs.isFile(p);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isDirectory(Path path) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+
+            return HdfsManager.getInstance().fs.isDirectory(p);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public Long getSize(Path path) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+
+            return HdfsManager.getInstance().fs.getFileStatus(p).getLen();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0L;
+    }
+
+    @Override
+    public ContentSummary getContentSummary(Path path) {
+       return null;
+
+    }
+
+    @Override
+    public byte[] getAttr(Path path, String name) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+            FileSystem fs = HdfsManager.getInstance().getFs();
+
+            return fs.getXAttr(p,name);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public Map<String, byte[]> getAttr(Path path) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+            FileSystem fs = HdfsManager.getInstance().getFs();
+
+            return fs.getXAttrs(p);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public void setAttr(Path path, String name, byte[] value) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+            FileSystem fs = HdfsManager.getInstance().getFs();
+
+            fs.setXAttr(p,name,value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteAttr(Path path, String name) {
+        try {
+            Path pp = Paths.get(HdfsManager.root, path+"");
+            org.apache.hadoop.fs.Path p = new org.apache.hadoop.fs.Path(pp.toString());
+            FileSystem fs = HdfsManager.getInstance().getFs();
+
+            fs.removeXAttr(p,name);
         } catch (Exception e) {
             e.printStackTrace();
         }

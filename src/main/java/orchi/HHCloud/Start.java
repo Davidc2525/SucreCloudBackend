@@ -3,6 +3,7 @@ package orchi.HHCloud;
 import orchi.HHCloud.AdminService.AdminServer;
 import orchi.HHCloud.Api.ApiManager;
 import orchi.HHCloud.Api.Auth.Auth;
+import orchi.HHCloud.Api.Avatar.Avatar;
 import orchi.HHCloud.Api.Fs.Fs;
 import orchi.HHCloud.Api.Opener.Opener;
 import orchi.HHCloud.Api.Share.Share;
@@ -91,6 +92,7 @@ public class Start {
         servletContext.addServlet(ApiManager.addApi(Auth.class, Auth.apiName), Auth.apiName);
         servletContext.addServlet(ApiManager.addApi(Opener.class, Opener.apiName), Opener.apiName);
         servletContext.addServlet(ApiManager.addApi(Uploader.class, Uploader.apiName), Uploader.apiName);
+        servletContext.addServlet(ApiManager.addApi(Avatar.class, Avatar.apiName), Avatar.apiName);
 
         servletContext.addServlet(TEST.class, "/test").setAsyncSupported(true);
 

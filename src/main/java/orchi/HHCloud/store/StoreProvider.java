@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Map;
 
 public interface StoreProvider extends QuotaProvider {
 
@@ -38,7 +39,7 @@ public interface StoreProvider extends QuotaProvider {
     public void download(DownloadArguments args);
 
     /**
-     * Api de bajo nivel
+     * Api de bajo nivel con usuario
      */
     public void read(User user, Path path, OutputStream out);
 
@@ -59,4 +60,39 @@ public interface StoreProvider extends QuotaProvider {
     public Long getSize(User user, Path path);
 
     public ContentSummary getContentSummary(User user, Path path);
+
+
+    /**
+     * Api de bajo nivel
+     */
+    public void read(Path path, OutputStream out);
+
+    public void read(Path path, Range range, OutputStream out);
+
+    public void create(Path path, InputStream in) throws Exception;
+
+    public void delete(Path path);
+
+    public void touch(Path path);
+
+    public boolean exists(Path path);
+
+    public boolean isFile(Path path);
+
+    public boolean isDirectory(Path path);
+
+    public Long getSize(Path path);
+
+    public ContentSummary getContentSummary(Path path);
+
+
+
+    public byte[] getAttr(Path path,String name);
+
+    public Map<String, byte[]> getAttr(Path path);
+
+    public void setAttr(Path path,String name,byte[] value);
+
+    public void deleteAttr(Path path,String name);
+
 }

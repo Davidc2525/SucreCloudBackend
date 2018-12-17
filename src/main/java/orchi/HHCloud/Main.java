@@ -52,13 +52,23 @@ public class Main {
     public static void main(String[] args) throws Exception, CacheAleardyExistException, CacheDontExistException {
 
         System.out.println("HHCloud pruebas!");
-        String msg = "AQDrnU4ZcmLCwDwVAabcs/HHpFKvYk7rbF26igq523a8ZO8UXEy/Pw";
-        log.info("desifrado: {}",Start.getCipherManager().getCipherProvider().decrypt(msg));
-        log.info("sifrado: {}",msg);
+
+        DataUser avatarUser = new DataUser();
+        avatarUser.setId("1541079863546");
+
+        log.info("foto is set? {}",Start.getUserManager().getUserProvider().getAvatarProvider().isSet(avatarUser));
+        Start.getUserManager().getUserProvider().getAvatarProvider().delete(avatarUser);
+        log.info("foto is set? {} after delete",Start.getUserManager().getUserProvider().getAvatarProvider().isSet(avatarUser));
+        Start.getUserManager().getUserProvider().getAvatarProvider().set(avatarUser,new FileInputStream(new File("/home/david/Imágenes/david.jpg")));
+        log.info("foto is set? {} after set",Start.getUserManager().getUserProvider().getAvatarProvider().isSet(avatarUser));
 
         if (true) {
             return;
         }
+        String msg = "AQDrnU4ZcmLCwDwVAabcs/HHpFKvYk7rbF26igq523a8ZO8UXEy/Pw";
+        log.info("desifrado: {}",Start.getCipherManager().getCipherProvider().decrypt(msg));
+        log.info("sifrado: {}",msg);
+
         Cache<String,String> cache = CacheFactory.createMapCache("names");
 
 
