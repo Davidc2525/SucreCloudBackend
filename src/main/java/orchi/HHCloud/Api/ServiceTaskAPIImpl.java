@@ -28,6 +28,7 @@ public abstract class ServiceTaskAPIImpl implements ServiceTaskAPIInterface {
 
     private AsyncContext ctx;
     private List<Object> allowers = Start.conf.getList("api.headers.aclo");
+    private boolean checkOrigin = Start.conf.getBoolean("api.aclo.check");
 
 
     public ServiceTaskAPIImpl(AsyncContext ctx) {
@@ -172,7 +173,7 @@ public abstract class ServiceTaskAPIImpl implements ServiceTaskAPIInterface {
      **/
     @Override
     public void checkAvailability(String apiName, String operationName) throws Exception {
-        checkAvailability(apiName, operationName, true);
+        checkAvailability(apiName, operationName, checkOrigin);
     }
 
     public AsyncContext getCtx() {

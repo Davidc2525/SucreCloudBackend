@@ -1,12 +1,17 @@
 package orchi.HHCloud.Api.Auth;
 
+import com.google.api.client.util.Base64;
 import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Operation;
 import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.auth.Exceptions.VerifyException;
+import orchi.HHCloud.mail.MailProvider;
+import orchi.HHCloud.user.EmbeddedUserProvider;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.fileupload.util.Streams;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.json.JSONException;
@@ -18,6 +23,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 @Operation(name = "login", isRequired = false)
 @Operation(name = "logout", isRequired = true)
 @Operation(name = "verifyemail")
+@Operation(name = "verifyemailpage")
 /**
  * Api para autenticacion
  * */
@@ -36,6 +44,7 @@ public class Auth extends API {
     private static Logout logout;
     private static Login login;
     private static ObjectMapper om;
+    private static String emailVerifyPage = null;
 
     public Auth() {
         login = new Login();
@@ -45,6 +54,12 @@ public class Auth extends API {
         om = new ObjectMapper();
         om.enable(org.codehaus.jackson.map.SerializationConfig.Feature.INDENT_OUTPUT);
         om.getJsonFactory();
+
+        try {
+            emailVerifyPage = Streams.asString(EmbeddedUserProvider.class.getResourceAsStream("/verifyemail.html"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -187,13 +202,53 @@ public class Auth extends API {
                     executorw2.execute(new orchi.HHCloud.Api.Auth.Logout.Task(getCtx()));
                     break;
 
+                case "verifyemailpage":
+                    HttpServletResponse response = ((HttpServletResponse) getCtx().getResponse());
+                    HttpServletRequest request = (HttpServletRequest) getCtx().getRequest();
+                    response.setHeader("Content-type","text/html");
+
+                    String pagedefaultLocationRedirect = String.format("%s/SC/account", appDomain);
+                    String pageidVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
+                    boolean pageredirect = jsonArgs.has("redirect") ? jsonArgs.getBoolean("redirect") : false;
+                    String pageredirectTo = jsonArgs.has("redirectTo") ? jsonArgs.getString("redirectTo") : pagedefaultLocationRedirect;
+
+
+                    MailProvider mp = Start.getMailManager().getProvider();
+
+                    String protocol = Start.conf.getString("api.protocol");
+                    String host = Start.conf.getString("app.host");
+                    String apiHost = Start.conf.getString("api.host");
+                    int apiPort = Start.conf.getInt("api.port");
+                    String apiUrl = String.format("%s://%s:%s", protocol,apiHost, apiPort);
+                    String appUrl = host;
+                    String args = request.getParameter("args");
+                    String url = apiUrl + "/api/auth?op=verifyemail&args=" + args;
+                    String appName = Start.conf.getString("app.name");
+
+                    Map<String, String> values = new HashMap<String, String>();
+                    values.put("url", url);
+                    values.put("args", jsonArgs.toString(2));
+                    values.put("redirect", Boolean.toString(pageredirect));
+                    values.put("redirectTo", pageredirectTo);
+                    values.put("appUrl", appUrl);
+                    values.put("appName", appName);
+                    String page = Auth.createBody(values, emailVerifyPage);
+
+                    try {
+                        response.getWriter().write(page);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    getCtx().complete();
+                    break;
+
                 case "verifyemail":
                     String defaultLocationRedirect = String.format("%s/SC/account", appDomain);
                     // verifyEmailOperation(jsonArgs);
                     String idVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
                     boolean redirect = jsonArgs.has("redirect") ? jsonArgs.getBoolean("redirect") : false;
                     String redirectTo = jsonArgs.has("redirectTo") ? jsonArgs.getString("redirectTo") : defaultLocationRedirect;
-
 
                     if (idVeryfy == null) {
                         writeResponse(new JsonResponse(false, "No se ha resivido ningun token")
@@ -229,6 +284,14 @@ public class Auth extends API {
 
         }
 
+    }
+
+    private static String createBody(Map<String, String> values, String template) {
+        StrSubstitutor sub = new StrSubstitutor(values);
+        sub.setVariablePrefix("${{");
+        sub.setVariableSuffix("}}");
+        String resolvedString = sub.replace(template);
+        return resolvedString;
     }
 
 }

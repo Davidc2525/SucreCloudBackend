@@ -569,14 +569,15 @@ public class EmbeddedUserProvider implements UserProvider {
 
         DataUser dUser = (DataUser) user;
         MailProvider mp = Start.getMailManager().getProvider();
+        String protocol = Start.conf.getString("api.protocol");
         String host = Start.conf.getString("app.host");
         String apiHost = Start.conf.getString("api.host");
         int apiPort = Start.conf.getInt("api.port");
-        String apiUrl = String.format("http://%s:%s", apiHost, apiPort);
+        String apiUrl = String.format("%s://%s:%s", protocol,apiHost, apiPort);
         String appUrl = host;
-        String args = new JSONObject().put("token", idToken).put("redirect", true).toString();
+        String args = new JSONObject().put("token", idToken).put("redirect", false).toString();
         args = Base64.encodeBase64String(args.getBytes());
-        String url = apiUrl + "/api/auth?op=verifyemail&args=" + args;
+        String url = apiUrl + "/api/auth?op=verifyemailpage&args=" + args;
         String appName = Start.conf.getString("app.name");
         ;
         String subject = "Verificar tu correo para " + appName;
