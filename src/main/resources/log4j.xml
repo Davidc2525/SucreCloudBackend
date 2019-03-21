@@ -100,7 +100,7 @@
 
     <root>
         <appender-ref ref="CONS"/>
-        <appender-ref ref="CONS2"/>
+        <!--<appender-ref ref="CONS2"/>-->
         <appender-ref ref="FILE"/>
     </root>
 
