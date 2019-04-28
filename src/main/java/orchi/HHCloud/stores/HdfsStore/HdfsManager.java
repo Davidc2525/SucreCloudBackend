@@ -134,7 +134,7 @@ public class HdfsManager {
 
         //p = Path.mergePaths(new Path(getRoot(pRoot)), p);
         java.nio.file.Path p = Paths.get(root, ContextStore.toUserContext(userId, path).toString());
-        System.err.println("newPath " + p);
+        log.debug("newPath " + p);
         return new Path(p.normalize().toString());
     }
 

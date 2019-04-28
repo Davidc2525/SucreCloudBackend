@@ -11,6 +11,5 @@ log/
 HHCloudFsStore
 HHCloud.ipr
 HHCloud.iws
-./resources
 maqueta.ucls
-
+/resources/

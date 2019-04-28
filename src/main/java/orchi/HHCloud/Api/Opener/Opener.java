@@ -159,6 +159,7 @@ public class Opener extends API {
                         String endodePath = params.params.get("path");
                         String decodePath = new decodeParam(endodePath).decoded;
                         path = decodePath;
+                        log.debug("         OPENNER: {}",path);                        
                     } else {
                         sendError("mising_session", "Debe iniciar sesion");
                     }
@@ -324,11 +325,15 @@ public class Opener extends API {
                 String[] parts = p.split(":");
 
                 for (String part : parts) {
-                    decoded += Character.toString((Character.toChars(Integer.valueOf(part, 16)))[0]);
+                    
+                    String _char = Character.toString( ( Character.toChars( Integer.valueOf(part, 16) ) )[0]);
+                    log.debug("          caracter: {}",_char);
+                    decoded += _char;
                 }
 
                 try {
-                   decoded = URLDecoder.decode(decoded, "UTF-8");
+                   //decoded = URLDecoder.decode(decoded, "UTF-8");
+                   log.debug("      decoded: {} ",decoded);
                 } catch (Exception e) {
 
                     log.error("Name character encoding is not supported, the value is no modified {}", decoded);
