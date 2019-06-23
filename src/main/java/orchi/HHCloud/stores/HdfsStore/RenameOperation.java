@@ -36,7 +36,7 @@ public class RenameOperation implements IOperation {
 
     }
 
-    public RenameResponse call() {
+    public RenameResponse run() {
         log.debug("	renombrando {} a {}", srcPath.toString(), dstPath.toString());
         try {
             if (HdfsManager.getInstance().fs.exists(srcpathWithRoot)) {

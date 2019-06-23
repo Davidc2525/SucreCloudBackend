@@ -1,4 +1,4 @@
-package orchi.HHCloud;
+package orchi.HHCloud.provider;
 
 public class ProviderNotFoundException extends RuntimeException {
     public ProviderNotFoundException(){

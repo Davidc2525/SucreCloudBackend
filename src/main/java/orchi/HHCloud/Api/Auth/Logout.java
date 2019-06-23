@@ -18,7 +18,6 @@ public class Logout extends HttpServlet {
     //private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
     private static ObjectMapper om = new ObjectMapper();
     private ThreadPoolExecutor executorw2;
-    ;
 
     public Logout() {
         executorw2 = new ThreadPoolExecutor(10, 100, 50000L, TimeUnit.MILLISECONDS,

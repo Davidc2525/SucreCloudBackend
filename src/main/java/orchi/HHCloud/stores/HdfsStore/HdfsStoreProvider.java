@@ -38,40 +38,40 @@ public class HdfsStoreProvider implements StoreProvider {
     @Override
     public CreateDirectoryResponse mkdir(MkDirArguments args) {
 
-        return new CreateDirectoryOperation(args).call();
+        return new CreateDirectoryOperation(args).run();
     }
 
     @Override
     public DeleteResponse delete(DeleteArguments args) {
-        return new DeleteOperation(args).call();
+        return new DeleteOperation(args).run();
     }
 
     @Override
     public ListResponse list(ListArguments args) {
 
-        return new ListOperation(args).call();
+        return new ListOperation(args).run();
     }
 
     @Override
     public GetStatusResponse status(GetStatusArguments args) {
-        return new GetStatusOperation(args).call();
+        return new GetStatusOperation(args).run();
     }
 
     @Override
     public MoveOrCopyResponse copy(MoveOrCopyArguments args) {
         args.setMove(false);
-        return new MoveOrCopyOperation(args).call();
+        return new MoveOrCopyOperation(args).run();
     }
 
     @Override
     public MoveOrCopyResponse move(MoveOrCopyArguments args) {
         args.setMove(true);
-        return new MoveOrCopyOperation(args).call();
+        return new MoveOrCopyOperation(args).run();
     }
 
     @Override
     public RenameResponse rename(RenameArguments args) {
-        return new RenameOperation(args).call();
+        return new RenameOperation(args).run();
     }
 
     @Override
@@ -152,7 +152,7 @@ public class HdfsStoreProvider implements StoreProvider {
 
     @Override
     public void download(DownloadArguments args) {
-        new DownloadOperation(args).call();
+        new DownloadOperation(args).run();
     }
 
     @Override

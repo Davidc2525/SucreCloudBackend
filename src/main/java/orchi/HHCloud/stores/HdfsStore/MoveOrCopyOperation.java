@@ -52,7 +52,7 @@ public class MoveOrCopyOperation implements IOperation {
         dstpathWithRoot = new Path(HdfsManager.newPath(user.getId(), dstPath.toString()).toString());
     }
 
-    public MoveOrCopyResponse call() {
+    public MoveOrCopyResponse run() {
         boolean can = false;
         log.debug("	{} {} a {}", move ? "Moviendo" : "Copiando", srcPath.toString(), dstPath.toString());
 

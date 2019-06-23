@@ -126,8 +126,8 @@ public class HdfsManager {
      * 	la rruta completa queda: 'hdfs://${host}:${port}/mi_dfs/${iduser}/mi imagenes/img1.jpg'
      * </pre>
      *
-     * @param userId   contiene la ruta root del sistema mas la id del usuario
-     * @param contiene la rruta a la q quiere acceder el usuario
+     * @param userId contiene la ruta root del sistema mas la id del usuario
+     * @param path contiene la rruta a la q quiere acceder el usuario
      */
     public static Path newPath(String userId, String path) {
         //Path p = new Path(Paths.get("/", path).normalize().toString());

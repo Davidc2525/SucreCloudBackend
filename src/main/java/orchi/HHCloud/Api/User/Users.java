@@ -413,6 +413,10 @@ public class Users extends API {
                 break;
 
             default:
+                response.setStatus("error");
+                response.setError("by_missing");
+                response.setMsg("se necesita saber como se buscara el usuario: email,username,id");
+                resp.getWriter().println(om.writeValueAsString(response));
                 break;
         }
 

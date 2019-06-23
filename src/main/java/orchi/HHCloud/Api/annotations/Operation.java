@@ -16,6 +16,6 @@ public @interface Operation {
 
     String name();
 
-    boolean isRequired() default false;
+    boolean session() default false;
 
 }

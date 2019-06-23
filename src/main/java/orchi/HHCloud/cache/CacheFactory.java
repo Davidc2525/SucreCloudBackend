@@ -18,7 +18,7 @@ public class CacheFactory {
         T cache = null;
         if (caches.containsKey(name)) {
             log.debug("-- get cache {}", name);
-            throw new CacheAleardyExistException("cache with name aleardy exist " + name);
+            throw new CacheAleardyExistException("cache with group aleardy exist " + name);
         } else {
             log.debug("-- create cache {}", name);
             cache = (T) new MapCache<>(name);
@@ -35,7 +35,7 @@ public class CacheFactory {
         T cache = null;
         if (caches.containsKey(name)) {
             log.debug("-- get cache {}", name);
-            throw new CacheAleardyExistException("cache with name aleardy exist " + name);
+            throw new CacheAleardyExistException("cache with group aleardy exist " + name);
         } else {
             log.debug("-- create cache {}", name);
             cache = (T) new LRUCache<>(name);

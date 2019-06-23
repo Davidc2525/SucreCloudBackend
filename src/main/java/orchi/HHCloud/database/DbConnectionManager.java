@@ -1,5 +1,8 @@
 package orchi.HHCloud.database;
 
+import orchi.HHCloud.provider.GetProvider;
+import orchi.HHCloud.provider.ProviderManager;
+import orchi.HHCloud.provider.ProviderManagerInstance;
 import orchi.HHCloud.Start;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +11,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.MissingResourceException;
 
+@ProviderManager
 public class DbConnectionManager {
 
     private static final Logger Log = LoggerFactory.getLogger(DbConnectionManager.class);
@@ -41,6 +45,7 @@ public class DbConnectionManager {
         }
     }
 
+    @ProviderManagerInstance
     public static DbConnectionManager getInstance() {
         if (instance == null) {
             instance = new DbConnectionManager();
@@ -48,6 +53,7 @@ public class DbConnectionManager {
         return instance;
     }
 
+    @GetProvider
     public ConnectionProvider getConnectionProvider() {
         Log.debug("obtener proveedor: {}", connectionProvider.getClass().getName());
         return connectionProvider;

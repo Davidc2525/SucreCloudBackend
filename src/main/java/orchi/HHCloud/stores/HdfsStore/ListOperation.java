@@ -1,22 +1,8 @@
 package orchi.HHCloud.stores.HdfsStore;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Util;
-import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.share.ShareProvider;
 import orchi.HHCloud.share.Shared;
 import orchi.HHCloud.store.RestrictedNames;
@@ -25,6 +11,19 @@ import orchi.HHCloud.store.arguments.GetStatusArguments;
 import orchi.HHCloud.store.arguments.ListArguments;
 import orchi.HHCloud.store.response.GetStatusResponse;
 import orchi.HHCloud.store.response.ListResponse;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ListOperation implements IOperation {
     private static Logger log = LoggerFactory.getLogger(ListOperation.class);
@@ -65,7 +64,7 @@ public class ListOperation implements IOperation {
     }
 
 
-    public ListResponse call() {
+    public ListResponse run() {
 
         try {
             if (!fs.exists(opath) || RestrictedNames.isRestricted(opath.getName())) {
@@ -140,7 +139,7 @@ public class ListOperation implements IOperation {
                 gsa.setShareInfo(shareInfo);
                 gsa.setPath(Paths.get(path));
                 gsa.setUser(args.getUse());
-                GetStatusResponse gs = new GetStatusOperation(gsa).call();
+                GetStatusResponse gs = new GetStatusOperation(gsa).run();
                 ListResponse lr = new ListResponse();
                 if(shareInfo){lr.setShared(gs.isShared());}
                 lr.setStatus(gs.getStatus());
@@ -152,7 +151,7 @@ public class ListOperation implements IOperation {
                 lr.setFile(gs.isFile());
                 lr.setSize(gs.getSize());
 
-                return lr;// new GetStatusOperation(args).call();
+                return lr;// new GetStatusOperation(args).run();
             }
 
         } catch (IllegalArgumentException | IOException e) {

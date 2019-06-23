@@ -1,6 +1,9 @@
 package orchi.HHCloud.user;
 
 import orchi.HHCloud.Start;
+import orchi.HHCloud.provider.GetProvider;
+import orchi.HHCloud.provider.ProviderManager;
+import orchi.HHCloud.provider.ProviderManagerInstance;
 import orchi.HHCloud.user.role.RoleProvider;
 import orchi.HHCloud.user.search.SearchUserProvider;
 import orchi.HHCloud.user.userAvailable.UserAvailableProvider;
@@ -12,6 +15,8 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * administrador de proveedor de usuarios
  */
+@ProviderManager
+
 public class UserManager {
     private static UserManager instance;
     private static String classNameUserProvider = Start.conf.getString("user.usermanager.provider.user");
@@ -61,8 +66,9 @@ public class UserManager {
     }
 
     /**
-     * obtener la instancia estatica de {@link orchi.HHCloud.user.UserManger}
+     * obtener la instancia estatica de {@link orchi.HHCloud.user.UserManager}
      */
+    @ProviderManagerInstance
     public static UserManager getInstance() {
         if (instance == null) {
             try {
@@ -78,6 +84,7 @@ public class UserManager {
     /**
      * devuelve el proveedor de usuario en la instancia
      */
+    @GetProvider
     public UserProvider getUserProvider() {
         return userProvider;
     }
@@ -90,14 +97,18 @@ public class UserManager {
         this.userProvider = userProvider;
     }
 
+
+    @GetProvider
     public UserAvailableProvider getUserAvailableProvider() {
         return userAvailableProvider;
     }
 
+    @GetProvider
     public RoleProvider getUserRoleProvider() {
         return roleProvider;
     }
 
+    @GetProvider
     public SearchUserProvider getSearchUserProvider() {
         return searchUserProvider;
     }

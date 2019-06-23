@@ -20,7 +20,6 @@
 
     <dependencies>
 
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -263,7 +262,6 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-spellchecker</artifactId>
@@ -271,9 +269,9 @@
         </dependency>
 
         <dependency>
-	        <groupId>org.apache.lucene</groupId>
-	        <artifactId>lucene-core</artifactId>
-	        <version>${lucene.version}</version>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${lucene.version}</version>
         </dependency>
 
         <dependency>
@@ -282,23 +280,22 @@
             <version>${lucene.version}</version>
         </dependency>
 
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-common</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queryparser</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-common</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
             <version>0.4.8</version>
         </dependency>
-
 
     </dependencies>
 
@@ -355,31 +352,31 @@
 
             <!-- execution -->
 
-               <plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
                 <executions>
-                  <execution>
-                    <goals>
-                      <goal>java</goal>
-                    </goals>
-                  </execution>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
                 </executions>
                 <configuration>
-                  <mainClass>orchi.HHCloud.Start</mainClass>
-                  <!--<arguments>
-                    <argument>argument1</argument>
-                  </arguments>-->
-                  <workingDirectory>target/classes/</workingDirectory>
-                  <systemProperties>
-                    <systemProperty>
-                      <key>myproperty</key>
-                      <value>myvalue</value>
-                    </systemProperty>
-                  </systemProperties>
+                    <mainClass>orchi.HHCloud.Start</mainClass>
+                    <!--<arguments>
+                      <argument>argument1</argument>
+                    </arguments>-->
+                    <workingDirectory>target/classes/</workingDirectory>
+                    <systemProperties>
+                        <systemProperty>
+                            <key>myproperty</key>
+                            <value>myvalue</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
-              </plugin>
+            </plugin>
 
             <!--<plugin>
                 <groupId>com.zenjava</groupId>
@@ -404,7 +401,7 @@
                     <showWeaveInfo>true</showWeaveInfo>
                     <verbose>true</verbose>
                     <Xlint>ignore</Xlint>
-                    <encoding>UTF-8 </encoding>
+                    <encoding>UTF-8</encoding>
                 </configuration>
                 <executions>
                     <execution>

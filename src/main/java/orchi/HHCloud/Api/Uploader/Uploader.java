@@ -129,7 +129,7 @@ public class Uploader extends API {
                     } else {
                         if (name.equalsIgnoreCase("f")) {
                             System.out
-                                    .println("File field " + name + " with file name " + item.getName() + " detected.");
+                                    .println("File field " + name + " with file group " + item.getName() + " detected.");
                             process.toStore(path, stream, req);
                         }
 

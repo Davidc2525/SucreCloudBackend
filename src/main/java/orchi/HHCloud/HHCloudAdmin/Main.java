@@ -14,13 +14,13 @@ import javafx.stage.Window;
 import orchi.HHCloud.HHCloudAdmin.controller.LogIn;
 import orchi.HHCloud.HHCloudAdmin.controller.PersonEditDialog;
 import orchi.HHCloud.HHCloudAdmin.model.Person;
+import orchi.HHCloud.provider.Providers;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
 import orchi.HHCloud.user.Users;
-import org.apache.xmlrpc.XmlRpcException;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.lang.reflect.InvocationTargetException;
 
 public class Main extends Application {
 
@@ -29,8 +29,7 @@ public class Main extends Application {
     public static BorderPane root;
     public static Window primaryStage;
 
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws InvocationTargetException, IllegalAccessException {
         launch(args);
     }
 
@@ -55,6 +54,7 @@ public class Main extends Application {
             Util.exceptionDialog(e);
             System.exit(1);
         }
+        //login
         if(!showLogIn()){
             System.exit(1);
         }
@@ -62,9 +62,11 @@ public class Main extends Application {
         //loadUsers();
 
         this.primaryStage = primaryStage;
+
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Main.class.getClassLoader().getResource("RootLayout.fxml"));
         root = (BorderPane) loader.load();
+        //root.getStylesheets().add(Main.class.getClassLoader().getResource("modena_dark.css").toExternalForm());
         primaryStage.setTitle("HHCloud admin");
         primaryStage.setScene(new Scene(root, 600, 400));
         primaryStage.show();

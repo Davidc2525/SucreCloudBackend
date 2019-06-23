@@ -2,7 +2,6 @@ package orchi.HHCloud.Api.Avatar;
 
 import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.ServiceTaskAPIImpl;
-import orchi.HHCloud.Api.Uploader.Uploader;
 import orchi.HHCloud.Api.annotations.Ignore;
 import orchi.HHCloud.ParseParamsMultiPart2;
 import orchi.HHCloud.Start;
@@ -13,28 +12,24 @@ import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.User;
 import orchi.HHCloud.user.UserProvider;
 import orchi.HHCloud.user.avatar.Bound;
-import orchi.HHCloud.user.Exceptions.*;
 import orchi.HHCloud.user.avatar.Exceptions.DeleteAvatarException;
 import orchi.HHCloud.user.avatar.Exceptions.GetAvatarException;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.util.Streams;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.net.URLDecoder;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -45,9 +40,9 @@ public class Avatar extends API {
     public static Logger log = LoggerFactory.getLogger(Avatar.class);
     public static String apiName = "/avatar";
     private static UserProvider up;
+    private static ObjectMapper om;
     private StoreProvider sp;
     private ThreadPoolExecutor executor;
-    private static ObjectMapper om;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -120,7 +115,6 @@ public class Avatar extends API {
             resp.setHeader("Content-type", "application/json");
 
 
-
             // parse request
             try {
                 checkAvailability(apiName, null);
@@ -145,7 +139,7 @@ public class Avatar extends API {
 
     }
 
-    public static class TaskPost extends  ServiceTaskAPIImpl implements  Runnable{
+    public static class TaskPost extends ServiceTaskAPIImpl implements Runnable {
 
 
         public TaskPost(AsyncContext ctx) {
@@ -182,15 +176,14 @@ public class Avatar extends API {
                     } else {
                         if (name.equalsIgnoreCase("o")) {
                             System.out
-                                    .println("File field " + name + " with file name " + item.getName() + " detected.");
+                                    .println("File field " + name + " with file group " + item.getName() + " detected.");
 
                         }
                         if (name.equalsIgnoreCase("f")) {
                             System.out
-                                    .println("File field " + name + " with file name " + item.getName() + " detected.");
+                                    .println("File field " + name + " with file group " + item.getName() + " detected.");
                             process.toStore(path, stream, req);
                         }
-
 
 
                     }
@@ -221,13 +214,13 @@ public class Avatar extends API {
 
         }
 
-            @Override
+        @Override
         public void run() {
-                proceess();
+            proceess();
         }
     }
 
-    public static class TaskDelete extends  ServiceTaskAPIImpl implements  Runnable{
+    public static class TaskDelete extends ServiceTaskAPIImpl implements Runnable {
 
 
         public TaskDelete(AsyncContext ctx) {
@@ -256,7 +249,7 @@ public class Avatar extends API {
                     user.setId(root);
                     //java.nio.file.Path p = Paths.get("avatars",user.getId());
                     //Start.getStoreManager().getStoreProvider().create(p, in);
-                    try{
+                    try {
                         Start.getUserManager().getUserProvider().getAvatarProvider().delete(user);
                         response.setStatus("ok");
                         resp.getWriter().print(om.writeValueAsString(response));
@@ -270,7 +263,7 @@ public class Avatar extends API {
                         }
                     }
 
-                }else{
+                } else {
                     log.error("no tiene session");
                 }
 
@@ -289,9 +282,9 @@ public class Avatar extends API {
 
         }
 
-            @Override
+        @Override
         public void run() {
-                proceess();
+            proceess();
         }
     }
 
@@ -348,7 +341,7 @@ public class Avatar extends API {
                 id = id.toLowerCase();
 
                 bound = p.getString("size");
-                if(bound == null){
+                if (bound == null) {
                     bound = "0x0";
                 }
                 checkAvailability(apiName, null, false);
@@ -385,28 +378,25 @@ public class Avatar extends API {
             HttpServletResponse resps = (HttpServletResponse) getCtx().getResponse();
             String fileName = "";
             Bound bound = avatar.getBound();
-            fileName+=avatar.getId();
-            fileName+="_";
-            fileName+=bound.getWidth();
-            fileName+="x";
-            fileName+=bound.getHeight();
-            fileName+=".jpg";
+            fileName += avatar.getId();
+            fileName += "_";
+            fileName += bound.getWidth();
+            fileName += "x";
+            fileName += bound.getHeight();
+            fileName += ".jpg";
 
             resps.setHeader("Content-type", "image/jpg");
             resps.setHeader("cache-control", "no-cache, max-age=86400");
-            resps.setHeader("Content-Disposition", "filename=\""+fileName+"\"");
+            resps.setHeader("Content-Disposition", "filename=\"" + fileName + "\"");
             resps.setHeader("etag", hashtext);
 
             avatar.readStream(getCtx().getResponse().getOutputStream());
-            getCtx().getResponse().getOutputStream().flush();;
+            getCtx().getResponse().getOutputStream().flush();
             getCtx().getResponse().getOutputStream().close();
-
 
 
         }
     }
-
-
 
 
     private static class Process {
@@ -423,8 +413,8 @@ public class Avatar extends API {
                 user.setId(root);
                 //java.nio.file.Path p = Paths.get("avatars",user.getId());
                 //Start.getStoreManager().getStoreProvider().create(p, in);
-                Start.getUserManager().getUserProvider().getAvatarProvider().set(user,in);
-            }else{
+                Start.getUserManager().getUserProvider().getAvatarProvider().set(user, in);
+            } else {
                 log.error("no tiene session");
             }
         }

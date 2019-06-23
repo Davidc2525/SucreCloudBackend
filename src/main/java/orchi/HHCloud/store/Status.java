@@ -3,27 +3,31 @@ package orchi.HHCloud.store;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
 
-public class Status {
+public class Status implements Externalizable {
     private boolean shared = false;
-    private Long size;
-    private Long elements;
-    private Long fileCount;
-    private Long directoryCount;
-    private Long spaceQuota;
-    private String name;
+    private Long size = 0L;
+    private Long elements = 0L;
+    private Long fileCount = 0L;
+    private Long directoryCount = 0L;
+    private Long spaceQuota = 0L;
+    private String name = "";
     @JsonIgnore
-    private Path path;
-    private String mime;
-    private String permission;
-    private Long accessTime;
-    private Long modificacionTime;
-    private boolean file;
-    private Long replication;
+    private Path path = Paths.get("/");
+    private String mime ="";
+    private String permission = "";
+    private Long accessTime = 0L;
+    private Long modificacionTime = 0L;
+    private boolean file = false;
+    private Long replication = 0L;
 
-    public Status() {
-    }
 
     public Long getSize() {
         return size;
@@ -141,5 +145,64 @@ public class Status {
     public void setShared(boolean shared) {
         this.shared = shared;
     }
+
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        System.err.println(this);
+        out.writeLong(size);
+        out.writeLong(elements);
+        out.writeLong(fileCount);
+        out.writeLong(directoryCount);
+        out.writeLong(spaceQuota);
+        out.writeBytes(name);
+        out.writeBytes(getStringPath());
+        out.writeBytes(mime != null? mime:"");
+        out.writeBytes(permission);
+        out.writeLong(accessTime);
+        out.writeLong(modificacionTime);
+        out.writeBoolean(file);
+        out.writeLong(replication);
+    }
+
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+
+        size = in.readLong();
+        elements = in.readLong();
+        fileCount = in.readLong();
+        directoryCount = in.readLong();
+        spaceQuota = in.readLong();
+        name = in.readUTF();
+        path = Paths.get(in.readUTF());
+        mime = in.readUTF();
+        permission = in.readUTF();
+        accessTime = in.readLong();
+        modificacionTime = in.readLong();
+        file = in.readBoolean();
+        replication = in.readLong();
+    }
+
+    @Override
+    public String toString() {
+        return "Status{" +
+                "shared=" + shared +
+                ", size=" + size +
+                ", elements=" + elements +
+                ", fileCount=" + fileCount +
+                ", directoryCount=" + directoryCount +
+                ", spaceQuota=" + spaceQuota +
+                ", group='" + name + '\'' +
+                ", path=" + path +
+                ", mime='" + mime + '\'' +
+                ", permission='" + permission + '\'' +
+                ", accessTime=" + accessTime +
+                ", modificacionTime=" + modificacionTime +
+                ", file=" + file +
+                ", replication=" + replication +
+                '}';
+    }
+
 
 }

@@ -3,8 +3,8 @@ package orchi.HHCloud.HHCloudAdmin.controller;
 import com.jfoenix.controls.JFXSpinner;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -66,6 +66,8 @@ public class PersonOverview implements Initializable {
     private JFXSpinner spinnerWait;
     @FXML
     private ComboBox filterBy;
+    @FXML
+    private Button userCloud;
 
     private Main mainApp;
 
@@ -80,6 +82,7 @@ public class PersonOverview implements Initializable {
         task.setOnSucceeded(ws -> {
             Users users = (Users) ws.getSource().getValue();
             users.getUsers().forEach((User u) -> {
+
                 DataUser user = (DataUser) u;
                 personData.add(new Person(
                         user.getId(),
@@ -97,9 +100,9 @@ public class PersonOverview implements Initializable {
         new Thread(task).start();
     }
 
-    private void getUser(Person p){
+    private void getUser(Person p) {
         spinnerWait.setVisible(true);
-        if(p.getPassword().equalsIgnoreCase("")){
+        if (p.getPassword().equalsIgnoreCase("")) {
             Task<User> task = new Task<User>() {
                 @Override
                 protected User call() throws Exception {
@@ -110,18 +113,18 @@ public class PersonOverview implements Initializable {
                 spinnerWait.setVisible(false);
                 Person np = Util.userToPerson((User) ws.getSource().getValue());
                 //personData.get(personData.indexOf(p)).setPassword(np.getPassword());
-                int index =personData.indexOf(p);
+                int index = personData.indexOf(p);
                 Person pind = personData.get(index);
                 pind.setPassword(np.getPassword());
                 pind.setLastName(np.getLastName());
                 pind.setFirstName(np.getFirstName());
                 pind.setUsername(np.getUsername());
-               // personTable.getSelectionModel().select(index);
+                // personTable.getSelectionModel().select(index);
                 setPersonDetails(np);
             });
 
             new Thread(task).start();
-        }else{
+        } else {
 
             setPersonDetails(p);
         }
@@ -180,18 +183,16 @@ public class PersonOverview implements Initializable {
         lastNameColumn.setCellValueFactory(cellData -> cellData.getValue().lastNameProperty());
 
 
-
-
         filterInput.textProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println("escibiendo");
             //String filterby = (String) filterBy.getValue();
             //System.out.println("filtrando por " + filterby);
             //filterby = filterby.toLowerCase();
             //String finalFilterby = filterby;
-            if(newValue.length()==0){
+            if (newValue.length() == 0) {
                 personData.clear();
                 loadUsers();
-            }else if(!newValue.startsWith("*")){
+            } else if (!newValue.startsWith("*")) {
                 searchUsers(newValue);
             }
         });
@@ -203,9 +204,9 @@ public class PersonOverview implements Initializable {
         // Escuchar por cambios de selecion y mostrar los datos de personas cuando cambian
         personTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
-                    if(filterInput.getText().length()>0&&!filterInput.getText().startsWith("*")){
+                    if (filterInput.getText().length() > 0 && !filterInput.getText().startsWith("*")) {
                         getUser(newValue);
-                    }else{
+                    } else {
                         setPersonDetails(newValue);
                     }
 
@@ -242,6 +243,7 @@ public class PersonOverview implements Initializable {
         if (person != null) {
             openQuotaDialog.setDisable(false);
             userAvailable.setDisable(false);
+            userCloud.setDisable(false);
             idLabel.setText(person.getId());
             firstNameLabel.setText(person.getFirstName());
             lastNameLabel.setText(person.getLastName());
@@ -252,6 +254,7 @@ public class PersonOverview implements Initializable {
         } else {
             openQuotaDialog.setDisable(true);
             userAvailable.setDisable(true);
+            userCloud.setDisable(true);
             idLabel.setText("");
             firstNameLabel.setText("");
             lastNameLabel.setText("");
@@ -377,6 +380,7 @@ public class PersonOverview implements Initializable {
         }
 
     }
+
     /**
      * Llamada cuando se clickea en boton edicion de disponibilidad de usuario
      */
@@ -398,6 +402,14 @@ public class PersonOverview implements Initializable {
 
     }
 
+    public void handleOpenUserCloud(ActionEvent actionEvent) {
+        Person selectedPerson = personTable.getSelectionModel().getSelectedItem();
+        if (selectedPerson != null) {
+            showCloudUser(selectedPerson);
+        }
+
+    }
+
     public void updateTalbePerson() {
         setPersonDetails(null);
         new Thread(() -> {
@@ -407,10 +419,37 @@ public class PersonOverview implements Initializable {
 
 
             loadUsers();
-            ;
             spinnerWait.setVisible(false);
         }).start();
 
+    }
+
+    public void showCloudUser(Person person) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getClassLoader().getResource("PersonCloudView.fxml"));
+            AnchorPane page = loader.<AnchorPane>load();
+
+            // Create the dialog Stage.
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Nube de usuario");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            // dialogStage.initOwner(Main.primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+
+            // Set the person into the controller.
+            PersonCloudView controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setPerson(person);
+
+            // Show the dialog and wait until the user closes it
+            dialogStage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void showCreateOrEditUser(Person person, Boolean isCreate) {
@@ -418,7 +457,7 @@ public class PersonOverview implements Initializable {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main.class.getClassLoader().getResource("PersonEditDialog.fxml"));
-            AnchorPane page = (AnchorPane) loader.load();
+            AnchorPane page = loader.load();
 
             // Create the dialog Stage.
             Stage dialogStage = new Stage();
@@ -451,7 +490,7 @@ public class PersonOverview implements Initializable {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main.class.getClassLoader().getResource("PersonEditDialog.fxml"));
-            AnchorPane page = (AnchorPane) loader.load();
+            AnchorPane page = loader.load();
 
             // Create the dialog Stage.
             Stage dialogStage = new Stage();
@@ -484,7 +523,7 @@ public class PersonOverview implements Initializable {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main.class.getClassLoader().getResource("QuotaEdit.fxml"));
-            AnchorPane page = (AnchorPane) loader.load();
+            AnchorPane page = loader.load();
 
             // Create the dialog Stage.
             Stage dialogStage = new Stage();
@@ -517,7 +556,7 @@ public class PersonOverview implements Initializable {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main.class.getClassLoader().getResource("AvailableUser.fxml"));
-            AnchorPane page = (AnchorPane) loader.load();
+            AnchorPane page = loader.load();
 
             // Create the dialog Stage.
             Stage dialogStage = new Stage();
@@ -541,4 +580,6 @@ public class PersonOverview implements Initializable {
             return false;
         }
     }
+
+
 }

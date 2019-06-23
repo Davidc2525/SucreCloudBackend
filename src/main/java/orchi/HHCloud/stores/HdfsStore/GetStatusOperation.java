@@ -1,27 +1,25 @@
 package orchi.HHCloud.stores.HdfsStore;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-
+import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.Util;
-import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.share.ShareProvider;
 import orchi.HHCloud.share.Shared;
 import orchi.HHCloud.store.RestrictedNames;
 import orchi.HHCloud.store.Status;
 import orchi.HHCloud.store.arguments.GetStatusArguments;
 import orchi.HHCloud.store.response.GetStatusResponse;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GetStatusOperation implements IOperation {
     private static Logger log = org.slf4j.LoggerFactory.getLogger(GetStatusOperation.class);
@@ -61,7 +59,7 @@ public class GetStatusOperation implements IOperation {
         log.info("Nueva operacion de estatus de archivo {}", opath.toString());
     }
 
-    public GetStatusResponse call() {
+    public GetStatusResponse run() {
         if (paths != null) {// Multiple
             try {
                 response.setMultiple(true);
@@ -79,7 +77,7 @@ public class GetStatusOperation implements IOperation {
                     GetStatusArguments arguments = new GetStatusArguments();
                     arguments.setPath(Paths.get(itemPath));
                     arguments.setUser(args.getUse());
-                    GetStatusResponse contentItem = new GetStatusOperation(arguments).call();
+                    GetStatusResponse contentItem = new GetStatusOperation(arguments).run();
                     Status status = null;
                     if (contentItem.getPayload() != null) {
                         status = (Status) contentItem.getPayload();

@@ -1,8 +1,10 @@
 package orchi.HHCloud.user.search;
 
-import orchi.HHCloud.user.*;
+import orchi.HHCloud.user.DataUser;
+import orchi.HHCloud.user.ScoreUser;
+import orchi.HHCloud.user.User;
+import orchi.HHCloud.user.Users;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -15,8 +17,10 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.Lock;
@@ -120,6 +124,7 @@ public class DefaultSearchUserProvider implements SearchUserProvider {
         doc.add(new StringField("username", u.getUsername().toLowerCase(), Field.Store.YES));
         doc.add(new StringField("firstname", u.getFirstName().toLowerCase(), Field.Store.YES));
         doc.add(new StringField("lastname", u.getLastName().toLowerCase(), Field.Store.YES));
+        doc.add(new StringField("id", u.getId()+"", Field.Store.YES));
 
         String all = String.format("%s %s %s %s %s",
                 u.getEmail().toLowerCase(),
@@ -283,7 +288,7 @@ public class DefaultSearchUserProvider implements SearchUserProvider {
 
             DirectoryReader read = DirectoryReader.open(dir);
             IndexSearcher searcher = new IndexSearcher(read);
-            Query q = new MultiFieldQueryParser(new String[]{"all","firstname", "lastname", "username", "email"}, analyzer).parse(queryString);
+            Query q = new MultiFieldQueryParser(new String[]{"all","id","firstname", "lastname", "username", "email"}, analyzer).parse(queryString);
 
             TopDocs docs = null;
             docs = searcher.search(q, 150);
@@ -302,7 +307,7 @@ public class DefaultSearchUserProvider implements SearchUserProvider {
                 fUser.setLastName(d.get("lastname"));
                 fUser.setEmail(d.get("email"));
                 fUser.setScore(hits[i].score);
-                //System.out.println((i + 1) + ". " + d.get("id") + "\t" + d.get("name") + "\t" + d.get("email"));
+                //System.out.println((i + 1) + ". " + d.get("id") + "\t" + d.get("group") + "\t" + d.get("email"));
                 f.add((fUser));
 
                 fUser=null;

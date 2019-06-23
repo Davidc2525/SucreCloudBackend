@@ -1,17 +1,16 @@
 package orchi.HHCloud.stores.HdfsStore;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-
+import orchi.HHCloud.Api.Fs.operations.IOperation;
+import orchi.HHCloud.store.RestrictedNames;
+import orchi.HHCloud.store.arguments.MkDirArguments;
+import orchi.HHCloud.store.response.CreateDirectoryResponse;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import orchi.HHCloud.Api.Fs.operations.IOperation;
-import orchi.HHCloud.store.RestrictedNames;
-import orchi.HHCloud.store.arguments.MkDirArguments;
-import orchi.HHCloud.store.response.CreateDirectoryResponse;
+import java.io.IOException;
+import java.nio.file.Paths;
 
 public class CreateDirectoryOperation implements IOperation {
     private static Logger log = LoggerFactory.getLogger(CreateDirectoryOperation.class);
@@ -35,7 +34,7 @@ public class CreateDirectoryOperation implements IOperation {
         log.debug("nueva operacio de crear directorio");
     }
 
-    public CreateDirectoryResponse call() {
+    public CreateDirectoryResponse run() {
 
         try {
             if (fs.exists(pathWithRoot) || RestrictedNames.isRestricted(pathWithRoot.getName())) {

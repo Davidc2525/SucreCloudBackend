@@ -29,11 +29,6 @@ public class Login extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     public static ThreadPoolExecutor executorw2;
-    /**
-     *
-     */
-    //private static String ACCESS_CONTROL_ALLOW_ORIGIN = Start.conf.getString("api.headers.aclo");
-    ;
     private static ObjectMapper om = new ObjectMapper();
     /**
      * proveedor de auttenticacion
@@ -171,8 +166,6 @@ public class Login extends HttpServlet {
 
         }
 
-        ;
-
         @Override
         public void run() {
             try {
@@ -192,13 +185,13 @@ public class Login extends HttpServlet {
             //HttpServletRequest req = ((HttpServletRequest) ctx.getRequest());
             String username = jsonArgs.has("username") ? jsonArgs.getString("username") : "";
             String password = jsonArgs.has("password") ? jsonArgs.getString("password") : "";
-            boolean isRemember = jsonArgs.has("remember") ? jsonArgs.getBoolean("remember") : false;
+            boolean isRemember = jsonArgs.has("remember") && jsonArgs.getBoolean("remember");
 
 
             return new LoginDataUser().bind(username, password, isRemember);
         }
 
-        public void process() throws JsonGenerationException, JsonMappingException, IOException, InterruptedException {
+        public void process() throws IOException, InterruptedException {
             HttpServletRequest req = ((HttpServletRequest) ctx.getRequest());
             HttpServletResponse resp = ((HttpServletResponse) ctx.getResponse());
             HttpSession s = req.getSession(false);

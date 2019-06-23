@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import orchi.HHCloud.user.role.Role;
+import orchi.HHCloud.user.role.RoleProvider;
+
+import org.codehaus.jackson.annotate.JsonProperty;
+
 public class DataUser extends BasicUser {
 
     private String firstName = "";
@@ -24,7 +29,12 @@ public class DataUser extends BasicUser {
         this.setEmailVerified(emailVerified);
         return this;
     }
-
+    
+     @JsonProperty(value = "role")
+     public Role _getRole(){
+        return RoledUser.byUser(this).getRole();
+     }
+    
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);

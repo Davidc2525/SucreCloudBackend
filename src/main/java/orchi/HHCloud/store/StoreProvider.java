@@ -24,18 +24,39 @@ public interface StoreProvider extends QuotaProvider {
      */
     public CreateDirectoryResponse mkdir(MkDirArguments args);
 
+    /**
+     * Eliminar un o varias rutas
+     * */
     public DeleteResponse delete(DeleteArguments args);
 
+    /**
+     * Listar una rruta
+     */
     public ListResponse list(ListArguments args);
 
+    /**
+     * Obtener info de una rruta
+     * */
     public GetStatusResponse status(GetStatusArguments args);
 
+    /**
+     * Copiar una rruta a otra rruta
+     * */
     public MoveOrCopyResponse copy(MoveOrCopyArguments args);
 
+    /**
+     * Mover una rruta
+     * */
     public MoveOrCopyResponse move(MoveOrCopyArguments args);
 
+    /**
+     * Renombrar una rruta
+     * */
     public RenameResponse rename(RenameArguments args);
 
+    /**
+     * Descargar una rruta
+     * */
     public void download(DownloadArguments args);
 
     /**

@@ -30,6 +30,7 @@ insert into USER_AVAILABLE values ('123','por mmg',123124123);
 --('1234', 'david@gmail.com', true, 'david.c', 'david','colmenares','m',1533252085955,'AUQk/iNJ+0h0xfHhyTwlUVuIXu7VofOHaS9J1HOtbvrd9KQmcNK7mlk=');
 
 -- ROLES: (ADMIN, USER), por el momento solo sera usado por el administrador
+-- ROLES ESPECIALIZADOS PARA USO EN INSTITUTO: (ADMIN(0), DOCENTE(1), ESTUDIANTE(2))
 CREATE TABLE ROLES (
     IDUSER varchar(100) not null,
     ROLE varchar(10) not null

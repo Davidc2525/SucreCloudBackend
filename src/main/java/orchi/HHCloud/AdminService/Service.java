@@ -11,39 +11,54 @@ import orchi.HHCloud.user.userAvailable.AvailableDescriptor;
 import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
 import orchi.HHCloud.user.userAvailable.Exceptions.EnablingException;
 
+import java.util.List;
+
+/**
+ * @author david
+ */
 public interface Service {
 
-    public int suma(int a, int b);
+    int suma(int a, int b);
 
     /*login*/
-    public DataUser singIn(DataUser user) throws AuthException, UserException;
+    DataUser singIn(DataUser user) throws AuthException, UserException;
 
     /*
      * Servicio de usuario
      */
-    public DataUser getUser(String email) throws UserException;
+    DataUser getUser(String email) throws UserException;
 
-    public DataUser editUser(DataUser user) throws UserException, QuotaException;
+    DataUser editUser(DataUser user) throws UserException, QuotaException;
 
-    public DataUser createUser(DataUser newUser) throws UserException;
+    DataUser createUser(DataUser newUser) throws UserException;
 
-    public boolean deleteUser(DataUser user) throws UserException, QuotaException;
+    boolean deleteUser(DataUser user) throws UserException, QuotaException;
 
-    public Users getAllUsers();
+    Users getAllUsers();
 
-    public Users search(String query);
+    Users search(String query);
 
     /*Disponibilidad de usuario*/
-    public AvailableDescriptor disableUser(DataUser user, String reason) throws DisablingException, UserException;
+    AvailableDescriptor disableUser(DataUser user, String reason) throws DisablingException, UserException;
 
-    public AvailableDescriptor enableUser(DataUser user) throws EnablingException, UserException;
+    AvailableDescriptor enableUser(DataUser user) throws EnablingException, UserException;
 
-    public AvailableDescriptor getAvialableDescriptor(DataUser user) throws UserException;
+    AvailableDescriptor getAvialableDescriptor(DataUser user) throws UserException;
 
     /*
      * Servicio de detalles almacenamiento
      */
-    public ContentSummary getContentSummary(DataUser user);
+    ContentSummary getContentSummary(DataUser user);
 
-    public Quota setQuota(DataUser user, Quota q) throws QuotaException;
+    Quota setQuota(DataUser user, Quota q) throws QuotaException;
+
+    FsResponse listPath(DataUser user, String path);
+
+    FsResponse statusPath(DataUser user, String path);
+
+    List<String> removePaths(DataUser user, List<String> paths);
+
+    String deletePath(DataUser user, String path);
+
+    boolean copyToLocal(DataUser user, String srcPath, String dstPath) throws Exception;
 }

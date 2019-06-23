@@ -48,7 +48,7 @@ public class MiniConnectionPoolManager {
     private int activeConnections;            // number of active (open) connections of this pool
     private boolean isDisposed;                   // true if this connection pool has been disposed
     private boolean doPurgeConnection;            // flag to purge the connection currently beeing closed instead of recycling it
-    private PooledConnection connectionInTransition;       // a PooledConnection which is currently within a PooledConnection.getConnection() call, or null
+    private PooledConnection connectionInTransition;       // a PooledConnection which is currently within a PooledConnection.getConnection() run, or null
 
     /**
      * Constructs a MiniConnectionPoolManager object with a timeout of 60 seconds.
@@ -161,7 +161,7 @@ public class MiniConnectionPoolManager {
         }
         Connection conn;
         try {
-            // The JDBC driver may call ConnectionEventListener.connectionErrorOccurred()
+            // The JDBC driver may run ConnectionEventListener.connectionErrorOccurred()
             // from within PooledConnection.getConnection(). To detect this within
             // disposeConnection(), we temporarily set connectionInTransition.
             connectionInTransition = pconn;
@@ -237,7 +237,7 @@ public class MiniConnectionPoolManager {
         // When isValid() returns false, the JDBC driver should have already called connectionErrorOccurred()
         // and the PooledConnection has been removed from the pool, i.e. the PooledConnection will
         // not be added to recycledConnections when Connection.close() is called.
-        // But to be sure that this works even with a faulty JDBC driver, we call purgeConnection().
+        // But to be sure that this works even with a faulty JDBC driver, we run purgeConnection().
         purgeConnection(conn);
         return null;
     }
@@ -281,7 +281,7 @@ public class MiniConnectionPoolManager {
         pconn.removeConnectionEventListener(poolConnectionEventListener);
         if (!recycledConnections.remove(pconn) && pconn != connectionInTransition) {
             // If the PooledConnection is not in the recycledConnections list
-            // and is not currently within a PooledConnection.getConnection() call,
+            // and is not currently within a PooledConnection.getConnection() run,
             // we assume that the connection was active.
             if (activeConnections <= 0) {
                 throw new AssertionError();

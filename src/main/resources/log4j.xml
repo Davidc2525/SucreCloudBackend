@@ -26,7 +26,7 @@
         <param name="Threshold" value="TRACE"/>
 
         <layout class="org.apache.log4j.PatternLayout">
-            <!--<param name="ConversionPattern" value="%d{HH:mm:ss,SSS} | %-5p | %c | %m%n"/>-->
+            <!--<param group="ConversionPattern" value="%d{HH:mm:ss,SSS} | %-5p | %c | %m%n"/>-->
             <param name="ConversionPattern" value="%d{HH:mm:ss,SSS}| %-5p | %c | %m%n"/>
         </layout>
     </appender>
@@ -36,7 +36,7 @@
         <param name="Threshold" value="TRACE"/>
 
         <layout class="org.apache.log4j.PatternLayout">
-            <!--<param name="ConversionPattern" value="%d{HH:mm:ss,SSS} | %-5p | %c | %m%n"/>-->
+            <!--<param group="ConversionPattern" value="%d{HH:mm:ss,SSS} | %-5p | %c | %m%n"/>-->
             <param name="ConversionPattern" value="%d{HH:mm:ss,SSS}| %-5p | %c | %m%n"/>
         </layout>
     </appender>
@@ -53,19 +53,23 @@
         </layout>
     </appender>
 
-    <!--<appender name="STANZA" class="org.apache.log4j.RollingFileAppender">
-      <param name="File" value="log/stanza.log"/>
-      <param name="Append" value="true"/>
-      <param name="MaxFileSize" value="5GB"/>
-      <param name="MaxBackupIndex" value="1"/>
-      <param name="Threshold" value="INFO"/>
+    <!--<appender group="STANZA" class="org.apache.log4j.RollingFileAppender">
+      <param group="File" value="log/stanza.log"/>
+      <param group="Append" value="true"/>
+      <param group="MaxFileSize" value="5GB"/>
+      <param group="MaxBackupIndex" value="1"/>
+      <param group="Threshold" value="INFO"/>
 
       <layout class="org.apache.log4j.PatternLayout">
-        <param name="ConversionPattern" value="%-5p %d{HH:mm:ss,SSS} | %c{1} | %m%n"/>
+        <param group="ConversionPattern" value="%-5p %d{HH:mm:ss,SSS} | %c{1} | %m%n"/>
       </layout>
     </appender>-->
 
     <category name="orchi.HHCloud">
+        <priority value="TRACE"/>
+    </category>
+
+    <category name="org.apache.commons.beanutils.converters">
         <priority value="ERROR"/>
     </category>
 

@@ -334,19 +334,19 @@ public class PersonEditDialog {
             errorMessage += "No valid id!\n";
         }
         if (firstNameField.getText() == null || firstNameField.getText().length() == 0) {
-            errorMessage += "No valid first name!\n";
+            errorMessage += "No valid first group!\n";
         }
         if (lastNameField.getText() == null || lastNameField.getText().length() == 0) {
-            errorMessage += "No valid last name!\n";
+            errorMessage += "No valid last group!\n";
         }
         if (emailField.getText() == null || lastNameField.getText().length() == 0) {
-            errorMessage += "No valid last name!\n";
+            errorMessage += "No valid last group!\n";
         }
         if (passwordField.getText() == null || lastNameField.getText().length() == 0) {
-            errorMessage += "No valid last name!\n";
+            errorMessage += "No valid last group!\n";
         }
         if (usernameField.getText() == null || lastNameField.getText().length() == 0) {
-            errorMessage += "No valid last name!\n";
+            errorMessage += "No valid last group!\n";
         }
         if (errorMessage.length() > 0) {
             throw new Exception(errorMessage);

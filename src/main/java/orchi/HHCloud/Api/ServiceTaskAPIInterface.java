@@ -18,7 +18,7 @@ public interface ServiceTaskAPIInterface {
     /**
      * permite comprobar la disponibilidad de una api junto con su operacion
      */
-    void checkAvailability(String apiName, String operationName,boolean checkOrigin) throws Exception;
+    void checkAvailability(String apiName, String operationName, boolean checkOrigin) throws Exception;
 
     /**
      * permite comprobar la disponibilidad de una api junto con su operacion

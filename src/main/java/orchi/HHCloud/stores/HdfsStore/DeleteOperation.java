@@ -1,19 +1,17 @@
 package orchi.HHCloud.stores.HdfsStore;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.List;
-
+import orchi.HHCloud.Api.Fs.operations.IOperation;
 import orchi.HHCloud.Start;
 import orchi.HHCloud.share.ShareProvider;
-import orchi.HHCloud.store.StoreProvider;
+import orchi.HHCloud.store.arguments.DeleteArguments;
+import orchi.HHCloud.store.response.DeleteResponse;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import orchi.HHCloud.Api.Fs.operations.IOperation;
-import orchi.HHCloud.store.arguments.DeleteArguments;
-import orchi.HHCloud.store.response.DeleteResponse;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class DeleteOperation implements IOperation {
     private static Logger log = LoggerFactory.getLogger(DeleteOperation.class);
@@ -37,7 +35,7 @@ public class DeleteOperation implements IOperation {
 
     }
 
-    public DeleteResponse call() {
+    public DeleteResponse run() {
         try {
             if (paths != null) {
                 Path opath = null;

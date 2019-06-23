@@ -44,13 +44,13 @@ public class Client {
         // set configuration
         client.setConfig(config);
 
-        // make the a regular call
+        // make the a regular run
         Object[] params = new Object[]
                 {new Integer(2), new Integer(3)};
         Integer result = (Integer) client.execute("admin-service.suma", params);
         System.out.println("2 + 3 = " + result);
 
-        // make a call using dynamic proxy
+        // make a run using dynamic proxy
         ClientFactory factory = new ClientFactory(client);
         service = (Service) factory.newInstance(Service.class);
         int sum = service.suma(2, 4);

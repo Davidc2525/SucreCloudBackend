@@ -1,6 +1,5 @@
 package orchi.HHCloud.Api.Auth;
 
-import com.google.api.client.util.Base64;
 import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Operation;
@@ -29,10 +28,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-@Operation(name = "login", isRequired = false)
-@Operation(name = "logout", isRequired = true)
+@Operation(name = "login", session = false)
+@Operation(name = "logout", session = true)
 @Operation(name = "verifyemail")
 @Operation(name = "verifyemailpage")
+
 /**
  * Api para autenticacion
  * */
@@ -60,6 +60,14 @@ public class Auth extends API {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String createBody(Map<String, String> values, String template) {
+        StrSubstitutor sub = new StrSubstitutor(values);
+        sub.setVariablePrefix("${{");
+        sub.setVariableSuffix("}}");
+        String resolvedString = sub.replace(template);
+        return resolvedString;
     }
 
     @Override
@@ -182,7 +190,6 @@ public class Auth extends API {
             // req.getAttribute("params");
 
             JSONObject jsonArgs = null;
-            ;
             try {
                 jsonArgs = new JSONObject(p.getString("args"));
             } catch (JSONException e1) {
@@ -205,11 +212,11 @@ public class Auth extends API {
                 case "verifyemailpage":
                     HttpServletResponse response = ((HttpServletResponse) getCtx().getResponse());
                     HttpServletRequest request = (HttpServletRequest) getCtx().getRequest();
-                    response.setHeader("Content-type","text/html");
+                    response.setHeader("Content-type", "text/html");
 
                     String pagedefaultLocationRedirect = String.format("%s/SC/account", appDomain);
                     String pageidVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
-                    boolean pageredirect = jsonArgs.has("redirect") ? jsonArgs.getBoolean("redirect") : false;
+                    boolean pageredirect = jsonArgs.has("redirect") && jsonArgs.getBoolean("redirect");
                     String pageredirectTo = jsonArgs.has("redirectTo") ? jsonArgs.getString("redirectTo") : pagedefaultLocationRedirect;
 
 
@@ -219,7 +226,7 @@ public class Auth extends API {
                     String host = Start.conf.getString("app.host");
                     String apiHost = Start.conf.getString("api.host");
                     int apiPort = Start.conf.getInt("api.port");
-                    String apiUrl = String.format("%s://%s:%s", protocol,apiHost, apiPort);
+                    String apiUrl = String.format("%s://%s:%s", protocol, apiHost, apiPort);
                     String appUrl = host;
                     String args = request.getParameter("args");
                     String url = apiUrl + "/api/auth?op=verifyemail&args=" + args;
@@ -247,7 +254,7 @@ public class Auth extends API {
                     String defaultLocationRedirect = String.format("%s/SC/account", appDomain);
                     // verifyEmailOperation(jsonArgs);
                     String idVeryfy = jsonArgs.has("token") ? jsonArgs.getString("token") : null;
-                    boolean redirect = jsonArgs.has("redirect") ? jsonArgs.getBoolean("redirect") : false;
+                    boolean redirect = jsonArgs.has("redirect") && jsonArgs.getBoolean("redirect");
                     String redirectTo = jsonArgs.has("redirectTo") ? jsonArgs.getString("redirectTo") : defaultLocationRedirect;
 
                     if (idVeryfy == null) {
@@ -284,14 +291,6 @@ public class Auth extends API {
 
         }
 
-    }
-
-    private static String createBody(Map<String, String> values, String template) {
-        StrSubstitutor sub = new StrSubstitutor(values);
-        sub.setVariablePrefix("${{");
-        sub.setVariableSuffix("}}");
-        String resolvedString = sub.replace(template);
-        return resolvedString;
     }
 
 }

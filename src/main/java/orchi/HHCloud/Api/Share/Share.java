@@ -41,15 +41,15 @@ import java.util.concurrent.TimeUnit;
 @Operation(name = "fs::status")
 @Operation(name = "fs::download")
 
-@Operation(name = "user::list", isRequired = true)
-@Operation(name = "user::delete", isRequired = true)
-@Operation(name = "user::copy", isRequired = true)
+@Operation(name = "user::list", session = true)
+@Operation(name = "user::delete", session = true)
+@Operation(name = "user::copy", session = true)
 
-@Operation(name = "own::get", isRequired = true)
-@Operation(name = "own::share", isRequired = true)
-@Operation(name = "own::delete", isRequired = true)
-@Operation(name = "own::set_users_path", isRequired = true)
-@Operation(name = "own::set_mode", isRequired = true)
+@Operation(name = "own::get", session = true)
+@Operation(name = "own::share", session = true)
+@Operation(name = "own::delete", session = true)
+@Operation(name = "own::set_users_path", session = true)
+@Operation(name = "own::set_mode", session = true)
 public class Share extends API {
 
     public static String apiName = "/share";
@@ -508,7 +508,7 @@ public class Share extends API {
                 moc.setContextDst(user);
                 moc.setContextSrc(ownerUser);
 
-                MoveOrCopyResponse res = moc.call();
+                MoveOrCopyResponse res = moc.run();
 
                 response.setPayload(res);
             }

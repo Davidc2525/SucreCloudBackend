@@ -21,7 +21,7 @@ public class DefaultCipherProvider implements CipherProvider {
         try {
             AeadConfig.register();
             String keysetFilename = "keyset.json";
-            System.out.println("KEYSET: "+new File(keysetFilename).toString());
+            //System.out.println("KEYSET: "+new File(keysetFilename).toString());
             KeysetHandle keysetHandle = null;
             // 1. Obtener o generar KeySet
             try {

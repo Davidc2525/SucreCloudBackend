@@ -5,7 +5,6 @@ import orchi.HHCloud.Api.Fs.operations.OperationsManager;
 import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Operation;
 import orchi.HHCloud.ParseParamsMultiPart2;
-import orchi.HHCloud.Start;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -21,14 +20,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-@Operation(name = "list", isRequired = true)
-@Operation(name = "getstatus", isRequired = true)
-@Operation(name = "mkdir", isRequired = true)
-@Operation(name = "delete", isRequired = true)
-@Operation(name = "move", isRequired = true)
-@Operation(name = "copy", isRequired = true)
-@Operation(name = "rename", isRequired = true)
-@Operation(name = "download", isRequired = true)
+@Operation(name = "list", session = true)
+@Operation(name = "getstatus", session = true)
+@Operation(name = "mkdir", session = true)
+@Operation(name = "delete", session = true)
+@Operation(name = "move", session = true)
+@Operation(name = "copy", session = true)
+@Operation(name = "rename", session = true)
+@Operation(name = "download", session = true)
 public class Fs extends API {
 
     private static final long serialVersionUID = -7283584531584394004L;

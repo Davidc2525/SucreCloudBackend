@@ -112,7 +112,7 @@ public class DownloadOperation implements IOperation {
     }
 
     @Override
-    public Response call() {
+    public Response run() {
 
         return null;
     }
@@ -259,14 +259,14 @@ public class DownloadOperation implements IOperation {
         }
 
         /**
-         * @return the name
+         * @return the group
          */
         public String getName() {
             return name;
         }
 
         /**
-         * @param name the name to set
+         * @param name the group to set
          */
         public void setName(String name) {
             this.name = name;

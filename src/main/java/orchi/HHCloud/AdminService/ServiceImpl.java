@@ -10,6 +10,10 @@ import orchi.HHCloud.store.ContentSummary;
 import orchi.HHCloud.store.ContextStore;
 import orchi.HHCloud.store.StoreManager;
 import orchi.HHCloud.store.StoreProvider;
+import orchi.HHCloud.store.arguments.DeleteArguments;
+import orchi.HHCloud.store.arguments.ListArguments;
+import orchi.HHCloud.store.response.DeleteResponse;
+import orchi.HHCloud.stores.HdfsStore.HdfsManager;
 import orchi.HHCloud.user.DataUser;
 import orchi.HHCloud.user.Exceptions.UserException;
 import orchi.HHCloud.user.RoledUser;
@@ -22,8 +26,11 @@ import orchi.HHCloud.user.userAvailable.AvailableDescriptor;
 import orchi.HHCloud.user.userAvailable.Exceptions.DisablingException;
 import orchi.HHCloud.user.userAvailable.Exceptions.EnablingException;
 import orchi.HHCloud.user.userAvailable.UserAvailableProvider;
+import org.apache.hadoop.fs.Path;
 
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ServiceImpl implements Service {
     private QuotaProvider qp = Start.getQuotaManager().getProvider();
@@ -146,5 +153,64 @@ public class ServiceImpl implements Service {
 
     }
 
+    @Override
+    public FsResponse listPath(DataUser user, String path) {
+        ListArguments status = new ListArguments();
+        status.setUser(user);
+        status.setPath(Paths.get(path));
+        return FsResponse.fromList(sp.list(status));
+    }
+
+    @Override
+    public FsResponse statusPath(DataUser user, String path) {
+        ListArguments status = new ListArguments();
+        status.setUser(user);
+        status.setPath(Paths.get(path));
+        return FsResponse.fromStatus(sp.list(status));
+        //return sp.list(listArgs);
+
+    }
+
+    /**
+     * @param user
+     * @param paths
+     */
+    @Override
+    public List<String> removePaths(DataUser user, List<String>paths) {
+        DeleteArguments args = new DeleteArguments();
+        args.setUser(user);
+        args.setPath(Paths.get("/"));
+        args.setPaths(paths.stream().map(p->Paths.get(p)).collect(Collectors.toList()));
+
+        DeleteResponse delete = sp.delete(args);
+
+        return paths;
+    }
+
+    @Override
+    public String deletePath(DataUser user, String path) {
+       try {
+           DeleteArguments args = new DeleteArguments();
+           args.setUser(user);
+           args.setPath(Paths.get(path));
+
+           DeleteResponse delete = sp.delete(args);
+       }catch (Exception e){
+           e.printStackTrace();
+       }
+
+
+
+       return path;
+
+    }
+
+    @Override
+    public boolean copyToLocal(DataUser user,String srcPath, String dstPath) throws Exception {
+        Path p1 = new Path(HdfsManager.newPath(user.getId(),srcPath).toString());
+        Path p2 = new Path(dstPath);
+        HdfsManager.getInstance().fs.copyToLocalFile(p1,p2);
+        return true;
+    }
 
 }

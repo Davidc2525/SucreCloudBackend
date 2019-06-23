@@ -1,11 +1,12 @@
 package orchi.HHCloud.store.response;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public abstract class Response {
+public abstract class Response implements Serializable {
     private boolean shared = false;
     private String status;
     private String error;

@@ -1,7 +1,12 @@
 package orchi.HHCloud.cipher;
 
-import orchi.HHCloud.Start;
+import orchi.HHCloud.*;
+import orchi.HHCloud.provider.GetProvider;
+import orchi.HHCloud.provider.ProviderManager;
+import orchi.HHCloud.provider.ProviderManagerInstance;
+import orchi.HHCloud.provider.Providers;
 
+@ProviderManager
 public class CipherManager {
 
     private static CipherManager instance = new CipherManager();
@@ -15,6 +20,8 @@ public class CipherManager {
             setCipherProvider((CipherProvider) classCipherProvider.newInstance());
 
             getCipherProvider().init();
+
+            Providers.extractInterfaces(cipherProvider);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
             System.exit(1);
@@ -22,6 +29,7 @@ public class CipherManager {
 
     }
 
+    @ProviderManagerInstance
     public static CipherManager getInstance() {
         if (instance == null) {
             instance = new CipherManager();
@@ -29,6 +37,7 @@ public class CipherManager {
         return instance;
     }
 
+    @GetProvider
     /**
      * @return the cipherProvider
      */

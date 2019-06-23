@@ -7,7 +7,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,8 +20,8 @@ import java.util.Map;
  * @author david
  */
 public class ApiManager {
-    private static Logger log = LoggerFactory.getLogger(ApiManager.class);
     public static Map<String, ApiDescriptor> api = new HashMap<String, ApiDescriptor>();
+    private static Logger log = LoggerFactory.getLogger(ApiManager.class);//esta linea tiene q rit antes de instance
     public static ApiManager instance = new ApiManager();
 
 
@@ -64,7 +63,7 @@ public class ApiManager {
         ServletHolder context = null;
         try {
             ApiDescriptor apid = new ApiDescriptor(name);
-            context = new ServletHolder((Servlet) clazz.newInstance());
+            context = new ServletHolder(clazz.newInstance());
             context.setAsyncSupported(true);
             log.debug("Add api: {} {}", name, context.getName());
             log.info("- {}", name);
@@ -84,7 +83,7 @@ public class ApiManager {
             for (orchi.HHCloud.Api.annotations.Operation o : opsInClass) {
                 log.info("	|-{}", o.name());
                 Operation op = new Operation();
-                if (o.isRequired()) {
+                if (o.session()) {
                     log.info("	   |-session is required");
                     op.sr = true;
                     apid.addOperation(o.name(), op);

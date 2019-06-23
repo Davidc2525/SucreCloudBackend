@@ -29,7 +29,8 @@ public abstract class User implements Externalizable, Comparator<User> {
     protected String email = "";
     @JsonIgnore //ocultar la clave a la api de usuario
     protected String password = "";
-
+        
+      
     @JsonProperty(value = "avatars")
     public HashMap<String, String> getAvatarsJson() {
         HashMap<String, String> avatars = new HashMap<>();

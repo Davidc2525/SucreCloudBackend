@@ -1,7 +1,11 @@
 package orchi.HHCloud.mail;
 
+import orchi.HHCloud.provider.GetProvider;
+import orchi.HHCloud.provider.ProviderManager;
+import orchi.HHCloud.provider.ProviderManagerInstance;
 import orchi.HHCloud.Start;
 
+@ProviderManager
 public class MailManager {
     private static MailManager instance;
     private static String nameProvider = Start.conf.getString("mail.mailmanager.mail.provider");
@@ -24,6 +28,7 @@ public class MailManager {
         }
     }
 
+    @ProviderManagerInstance
     public static MailManager getInstance() {
         if (instance == null) {
             instance = new MailManager();
@@ -31,6 +36,7 @@ public class MailManager {
         return instance;
     }
 
+    @GetProvider
     public MailProvider getProvider() {
         return provider;
     }

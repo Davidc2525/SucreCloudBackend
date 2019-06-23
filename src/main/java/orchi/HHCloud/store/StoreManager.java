@@ -1,10 +1,14 @@
 package orchi.HHCloud.store;
 
-import orchi.HHCloud.Providers;
-import orchi.HHCloud.Start;
+import orchi.HHCloud.*;
+import orchi.HHCloud.provider.GetProvider;
+import orchi.HHCloud.provider.ProviderManager;
+import orchi.HHCloud.provider.ProviderManagerInstance;
+import orchi.HHCloud.provider.Providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@ProviderManager
 public class StoreManager {
     public static final long SPACE_QUOTA_SIZE = Start.conf.getLong("store.storemanager.quote.users.verified");
     public static final long SPACE_QUOTA_SIZE_NO_VERIFIED_USER = Start.conf.getLong("store.storemanager.quote.users.unverified");
@@ -58,6 +62,7 @@ public class StoreManager {
         }
     }
 
+    @ProviderManagerInstance
     public static StoreManager getInstance() {
         log.debug("Obtener de StoreManager");
         if (instance == null) {
@@ -68,6 +73,7 @@ public class StoreManager {
         return instance;
     }
 
+    @GetProvider
     public StoreProvider getStoreProvider() {
         log.debug("Obtener proveedor de almacenamiento: {}", storeProvider.getClass().getName());
         return storeProvider;

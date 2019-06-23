@@ -18,7 +18,7 @@ public enum Operation {
     }
 
     public boolean equalsName(String otherName) {
-        // (otherName == null) check is not needed because name.equals(null)
+        // (otherName == null) check is not needed because group.equals(null)
         // returns false
         return name.equals(otherName);
     }

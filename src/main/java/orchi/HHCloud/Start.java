@@ -9,8 +9,8 @@ import orchi.HHCloud.Api.Opener.Opener;
 import orchi.HHCloud.Api.Share.Share;
 import orchi.HHCloud.Api.Uploader.Uploader;
 import orchi.HHCloud.Api.User.Users;
+import orchi.HHCloud.auth.AuthManager;
 import orchi.HHCloud.auth.AuthProvider;
-import orchi.HHCloud.auth.DefaultAuthProvider;
 import orchi.HHCloud.auth.logIO.LogInAndOut;
 import orchi.HHCloud.cipher.CipherManager;
 import orchi.HHCloud.conf.ConfManager;
@@ -124,7 +124,7 @@ public class Start {
     }
 
     public static AuthProvider getAuthProvider() {
-        return DefaultAuthProvider.getInstance();
+        return AuthManager.getInstance().getProvider();
     }
 
     public static LogInAndOut getLoginAndOut() {

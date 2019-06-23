@@ -298,7 +298,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
                 "dq=" + dq +
                 ", map=" + map +
                 ", SIZE=" + SIZE +
-                ", name='" + name + '\'' +
+                ", group='" + name + '\'' +
                 "}@" + hashCode();
     }
 }

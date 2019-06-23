@@ -1,36 +1,29 @@
 package orchi.HHCloud.Api.Fs.operations;
 
+import orchi.HHCloud.Start;
+import orchi.HHCloud.store.Store;
+import orchi.HHCloud.store.StoreProvider;
+import orchi.HHCloud.store.arguments.*;
+import orchi.HHCloud.store.response.Response;
+import orchi.HHCloud.user.DataUser;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONObject;
+
+import javax.servlet.AsyncContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import orchi.HHCloud.user.DataUser;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.json.JSONObject;
-
-import orchi.HHCloud.Start;
-import orchi.HHCloud.store.Store;
-import orchi.HHCloud.store.StoreProvider;
-import orchi.HHCloud.store.arguments.DeleteArguments;
-import orchi.HHCloud.store.arguments.DownloadArguments;
-import orchi.HHCloud.store.arguments.GetStatusArguments;
-import orchi.HHCloud.store.arguments.ListArguments;
-import orchi.HHCloud.store.arguments.MkDirArguments;
-import orchi.HHCloud.store.arguments.MoveOrCopyArguments;
-import orchi.HHCloud.store.arguments.RenameArguments;
-import orchi.HHCloud.store.response.Response;
-
 
 /**
- * @author david
  * <p>
  * Se encarga de manejar las operaciones de la api Fs
+ * </p>
+ * @author david
  */
 public class OperationsManager {
 
@@ -83,9 +76,8 @@ public class OperationsManager {
      * la cabesera de respuesta es 'application/json' por defecto, para
      * descargar se cambia a 'application/octet-stream'
      *
-     * @param ctx    {@link AsyncContext} contexto asincrono de la peticion actual
-     * @param arg    {@link JSONObject} argumento json con la peticion al api
-     * @param params
+     * @param ctx {@link AsyncContext} contexto asincrono de la peticion actual
+     * @param arg {@link JSONObject} argumento json con la peticion al api
      * @author david
      */
     public JSONObject processOperation(AsyncContext ctx, JSONObject arg) {
@@ -107,7 +99,7 @@ public class OperationsManager {
                 u.setId(arg.getString("root"));
                 listArgs.setUser(u);
                 res = sp.list(listArgs);
-                // response = new ListOperation(arg).call();
+                // response = new ListOperation(arg).run();
             }
             /** Operacion de obtener informacion de un archivo */
             if (Operation.GETSTATUS.equalsName(operation)) {// multiple
@@ -131,11 +123,11 @@ public class OperationsManager {
 
                 }
                 res = sp.status(getArgs);
-                // response = new GetStatusOperation(arg).call();
+                // response = new GetStatusOperation(arg).run();
             }
             if (Operation.RENAME.equalsName(operation)) {// TODO hacer multiple
                 // response = store.rename(arg);
-                // response = new RenameOperation(arg).call();
+                // response = new RenameOperation(arg).run();
                 RenameArguments renameArgs = new RenameArguments(Paths.get(arg.getString("srcPath")),
                         Paths.get(arg.getString("dstPath")));
                 u = new DataUser();
@@ -146,7 +138,7 @@ public class OperationsManager {
             /** Operacion para copiar de una rruta a otra */
             if (Operation.COPY.equalsName(operation)) {// TODO hacer multiple
                 // response = store.copy(arg);
-                // response = new MoveOrCopyOperation(arg,false).call();
+                // response = new MoveOrCopyOperation(arg,false).run();
                 MoveOrCopyArguments copyArgs = new MoveOrCopyArguments();
                 if (arg.has("stcPaths")) {
                     // movido o cuapiado multiple
@@ -171,7 +163,7 @@ public class OperationsManager {
                 u.setId(arg.getString("root"));
                 copyArgs.setUser(u);
                 res = sp.move(copyArgs);
-                // response = new MoveOrCopyOperation(arg,true).call();
+                // response = new MoveOrCopyOperation(arg,true).run();
             }
             /**
              * Operacion para descargar un archivo o carpeta en formato ZIP,
@@ -189,7 +181,6 @@ public class OperationsManager {
                 if (arg.has("paths")) {
                     if (!arg.isNull("paths")) {
                         List<Path> paths = new ArrayList<>();
-                        ;
                         arg.getJSONArray("paths").toList().forEach(item -> {
                             paths.add(Paths.get(item + ""));
                         });
@@ -214,7 +205,7 @@ public class OperationsManager {
                 mkdirArgs.setPath(Paths.get(arg.getString("path")));
                 res = sp.mkdir(mkdirArgs);
                 // response = store.mkdir(arg);
-                // response = new CreateDirectoryOperation(arg).call();
+                // response = new CreateDirectoryOperation(arg).run();
             }
 
             /** operacion para eliminar de una rruta a otra */
@@ -237,7 +228,7 @@ public class OperationsManager {
                 }
                 res = sp.delete(deleteArgs);
                 // response = store.delete(arg);
-                // response = new DeleteOperation(ctx, arg).call();
+                // response = new DeleteOperation(ctx, arg).run();
             }
             /** operacion pendiente por validad */
             if (Operation.PUT.equalsName(operation)) {
