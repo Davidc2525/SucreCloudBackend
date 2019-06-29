@@ -1,5 +1,6 @@
 package orchi.HHCloud.Api.User;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import orchi.HHCloud.Api.API;
 import orchi.HHCloud.Api.ServiceTaskAPIImpl;
 import orchi.HHCloud.Api.annotations.Operation;
@@ -28,6 +29,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -261,7 +263,70 @@ public class Users extends API {
 
     }
 
-    @Operation(name = "sendrecoveryemail")
+    @Operation(name = "setavatarbypath",session = true)
+    @SessionRequired
+    public static void setAvatarFromPath(AsyncContext ctx, JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException {
+        HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
+        HttpServletRequest req = (HttpServletRequest) ctx.getRequest();
+        HttpSession session = req.getSession(false);
+        String idInSession = (String) session.getAttribute("uid");
+        boolean hasError = false;
+       // AccoutStatePayload payload = new AccoutStatePayload();
+        JsonResponse response = new JsonResponse();
+        DataUser user = null;
+        String path = null;
+
+        try {
+            user = (DataUser) up.getUserById(idInSession);
+        } catch (UserNotExistException e) {
+            hasError = true;
+            response.setStatus("error");
+            response.setError("user_no_exists");
+            response.setMsg(e.getMessage());
+        } catch (UserException e) {
+            hasError = true;
+            response.setStatus("error");
+            response.setError("user_exception");
+            response.setMsg(e.getMessage());
+            // e.printStackTrace();
+        }
+
+        if(jsonArgs.has("path")){
+            path = jsonArgs.getString("path");
+        }else{
+            hasError = true;
+            response.setStatus("error");
+            response.setError("missing_path");
+            response.setMsg("tiene que proporcionar una rruta para cambiar el avatar.");
+        }
+
+        if (!hasError) {
+           try{
+
+               ByteOutputStream out = new ByteOutputStream();
+               Start.getStoreManager().getStoreProvider().read(user,Paths.get(path),out);
+
+               ByteArrayInputStream in = new ByteArrayInputStream(out.getBytes());
+               Start.getUserManager().getUserProvider().getAvatarProvider().set(user,in);
+
+           }catch(Exception e){
+               hasError = true;
+
+               response.setStatus("error");
+               response.setError("user_exception");
+               response.setMsg(e.getMessage());
+           }
+        }
+
+        if (!hasError) {
+            response.setStatus("ok");
+            resp.getWriter().println(om.writeValueAsString(response));
+        } else {
+            resp.getWriter().println(om.writeValueAsString(response));
+        }
+        ctx.complete();
+    }
+        @Operation(name = "sendrecoveryemail")
     //@SessionRequired
     public static void sendRecoveryEmailOperation(AsyncContext ctx, JSONObject jsonArgs) throws JsonGenerationException, JsonMappingException, IOException {
         HttpServletResponse resp = (HttpServletResponse) ctx.getResponse();
@@ -1059,6 +1124,9 @@ public class Users extends API {
 
                 case "search"://no session
                     searchUserOperation(ctx, jsonArgs);
+                    break;
+                case "setavatarbypath":
+                    setAvatarFromPath(ctx,jsonArgs);
                     break;
 
                 default:

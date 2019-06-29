@@ -77,6 +77,7 @@ public class Avatar extends API {
         executor.execute(new TaskDelete(req.startAsync()));
     }
 
+
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         /**Access-Control-Request-Method: POST
@@ -287,6 +288,7 @@ public class Avatar extends API {
             proceess();
         }
     }
+
 
     public static class Task extends ServiceTaskAPIImpl implements Runnable {
 
