@@ -1,4 +1,9 @@
 
+## 1.0.3 (2019-07-06)
+
+### Bugs coregidos
+* El Api share tenia un problema al copiar un enlace a unidad, corregido
+
 ## 1.0.3 (2019-06-29)
 
 ### Nuevas caracteristicas

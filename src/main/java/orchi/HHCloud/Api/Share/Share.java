@@ -462,7 +462,7 @@ public class Share extends API {
                             response.setMsg("Esta rruta esta compartida en modo privado con algunos usuarios, tienes que iniciar sesion y debe estar compartida contigo.");
                         } else {
                             DataUser u2 = (DataUser) Start.getUserManager().getUserProvider().getUserById((String) s.getAttribute("uid"));
-                            if (!shp.isSharedWith(ownerUser, u2, ssPath) || shp.isShared(u2, ssPath)) {
+                            if (!shp.isSharedWith(ownerUser, u2, ssPath) || ownerUser.equals(u2) ) {
 
                                 hasError = true;
                                 response.setError("not_share_with_you");
